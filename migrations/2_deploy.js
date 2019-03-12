@@ -1,5 +1,5 @@
-var MPV = artifacts.require("./MasterPropertyValue.sol");
+const MPV = artifacts.require('./MasterPropertyValue.sol');
 
-module.exports = function(deployer) {
+module.exports = function (deployer) {
   deployer.deploy(MPV);
 };

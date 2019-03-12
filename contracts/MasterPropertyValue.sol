@@ -308,30 +308,30 @@ contract MasterPropertyValue is Initializable {
 
   // addAsset adds an asset to the assets mapping mapping and pending list.
   function addAsset(Asset memory asset) public isOwner isUnfrozen {
-      require(asset.id != 0);
-      require(assets[asset.id].id == 0);
-      precheck();
+    require(asset.id != 0);
+    require(assets[asset.id].id == 0);
+    precheck();
 
-      asset.state = State.PENDING;
-      assets[asset.id] = asset;
-      pendingAssets.push(asset.id);
+    asset.state = State.PENDING;
+    assets[asset.id] = asset;
+    pendingAssets.push(asset.id);
   }
 
   // removeAsset remove an asset to the assets mapping and pending list.
   function removeAsset(uint256 assetId) public isOwner isUnfrozen {
-      require(assetId != 0);
-      require(assets[assetId].id != 0);
-      precheck();
+    require(assetId != 0);
+    require(assets[assetId].id != 0);
+    precheck();
 
-      delete assets[assetId];
+    delete assets[assetId];
 
-      for (uint256 i = 0; i < pendingAssets.length; i++) {
-        if (pendingAssets[i] == assetId) {
-          delete pendingAssets[i];
-          pendingAssets.length--;
-          break;
-        }
+    for (uint256 i = 0; i < pendingAssets.length; i++) {
+      if (pendingAssets[i] == assetId) {
+        delete pendingAssets[i];
+        pendingAssets.length--;
+        break;
       }
+    }
   }
 
   // startVotingPeriod starts the voting period.
