@@ -1,0 +1,24 @@
+{
+  "name": "master-property-value",
+  "version": "0.1.0",
+  "description": "> Ethereum smart contracts for Master Property Value assets",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "dotenv": "^6.2.0",
+    "moment": "^2.24.0",
+    "truffle": "^5.0.4",
+    "truffle-hdwallet-provider": "^1.0.5",
+    "truffle-privatekey-provider": "^1.1.0",
+    "web3-providers-ws": "^1.0.0-beta.37",
+    "zos-lib": "^2.2.1"
+  },
+  "scripts": {
+    "test": "truffle test"
+  },
+  "author": "",
+  "license": "MIT"
+}

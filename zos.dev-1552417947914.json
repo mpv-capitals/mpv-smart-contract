@@ -1,0 +1,373 @@
+{
+  "contracts": {
+    "MasterPropertyValue": {
+      "address": "0x3dF9D07124Cb18f664f7197D3c7C2cE313f26483",
+      "constructorCode": "608060405234801561001057600080fd5b50614580806100206000396000f3fe",
+      "bodyBytecodeHash": "2024bd09122b8717f771cc946f41eaea210d513271cc1e194d59bde47ad93905",
+      "localBytecodeHash": "e5abe808160a4347cb8079bc7ea7f505d90d94ea2a64c804ebfb36a568a2b0db",
+      "deployedBytecodeHash": "e5abe808160a4347cb8079bc7ea7f505d90d94ea2a64c804ebfb36a568a2b0db",
+      "types": {
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        },
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_array:50<t_uint256>": {
+          "id": "t_array:50<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "50",
+          "kind": "array",
+          "label": "uint256[50]"
+        },
+        "t_mapping<t_bool>": {
+          "id": "t_mapping<t_bool>",
+          "valueType": "t_bool",
+          "label": "mapping(key => bool)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_uint256>": {
+          "id": "t_mapping<t_uint256>",
+          "valueType": "t_uint256",
+          "label": "mapping(key => uint256)",
+          "kind": "mapping"
+        },
+        "t_struct<MasterPropertyValue.Asset>": {
+          "id": "t_struct<MasterPropertyValue.Asset>",
+          "kind": "struct",
+          "label": "MasterPropertyValue.Asset",
+          "members": [
+            {
+              "label": "id",
+              "astId": 90,
+              "type": "t_uint256",
+              "src": "3975:10:0"
+            },
+            {
+              "label": "state",
+              "astId": 92,
+              "type": "t_enum<MasterPropertyValue.State>",
+              "src": "4035:11:0"
+            },
+            {
+              "label": "valuation",
+              "astId": 94,
+              "type": "t_uint256",
+              "src": "4096:17:0"
+            },
+            {
+              "label": "fingerprint",
+              "astId": 96,
+              "type": "t_bytes32",
+              "src": "4180:19:0"
+            },
+            {
+              "label": "tokensRequired",
+              "astId": 98,
+              "type": "t_uint256",
+              "src": "4282:22:0"
+            },
+            {
+              "label": "owner",
+              "astId": 100,
+              "type": "t_address",
+              "src": "4354:13:0"
+            }
+          ]
+        },
+        "t_enum<MasterPropertyValue.State>": {
+          "id": "t_enum<MasterPropertyValue.State>",
+          "kind": "enum",
+          "label": "MasterPropertyValue.State",
+          "members": [
+            "PENDING",
+            "ENLISTED",
+            "LOCKED",
+            "REDEEMED"
+          ]
+        },
+        "t_bytes32": {
+          "id": "t_bytes32",
+          "kind": "elementary",
+          "label": "bytes32"
+        },
+        "t_address": {
+          "id": "t_address",
+          "kind": "elementary",
+          "label": "address"
+        },
+        "t_mapping<t_struct<MasterPropertyValue.Asset>>": {
+          "id": "t_mapping<t_struct<MasterPropertyValue.Asset>>",
+          "valueType": "t_struct<MasterPropertyValue.Asset>",
+          "label": "mapping(key => MasterPropertyValue.Asset)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_address>": {
+          "id": "t_mapping<t_address>",
+          "valueType": "t_address",
+          "label": "mapping(key => address)",
+          "kind": "mapping"
+        },
+        "t_array:dyn<t_uint256>": {
+          "id": "t_array:dyn<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "dyn",
+          "kind": "array",
+          "label": "uint256[]"
+        },
+        "t_struct<MasterPropertyValue.Vote>": {
+          "id": "t_struct<MasterPropertyValue.Vote>",
+          "kind": "struct",
+          "label": "MasterPropertyValue.Vote",
+          "members": [
+            {
+              "label": "voter",
+              "astId": 83,
+              "type": "t_address",
+              "src": "3744:13:0"
+            },
+            {
+              "label": "voted",
+              "astId": 85,
+              "type": "t_bool",
+              "src": "3801:10:0"
+            },
+            {
+              "label": "value",
+              "astId": 87,
+              "type": "t_uint8",
+              "src": "3871:11:0"
+            }
+          ]
+        },
+        "t_uint8": {
+          "id": "t_uint8",
+          "kind": "elementary",
+          "label": "uint8"
+        },
+        "t_array:dyn<t_struct<MasterPropertyValue.Vote>>": {
+          "id": "t_array:dyn<t_struct<MasterPropertyValue.Vote>>",
+          "valueType": "t_struct<MasterPropertyValue.Vote>",
+          "length": "dyn",
+          "kind": "array",
+          "label": "MasterPropertyValue.Vote[]"
+        },
+        "t_mapping<t_array:dyn<t_struct<MasterPropertyValue.Vote>>>": {
+          "id": "t_mapping<t_array:dyn<t_struct<MasterPropertyValue.Vote>>>",
+          "valueType": "t_array:dyn<t_struct<MasterPropertyValue.Vote>>",
+          "label": "mapping(key => MasterPropertyValue.Vote[])",
+          "kind": "mapping"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Initializable",
+          "path": "zos-lib/contracts/Initializable.sol",
+          "label": "initialized",
+          "astId": 1682,
+          "type": "t_bool",
+          "src": "757:24:3"
+        },
+        {
+          "contract": "Initializable",
+          "path": "zos-lib/contracts/Initializable.sol",
+          "label": "initializing",
+          "astId": 1684,
+          "type": "t_bool",
+          "src": "876:25:3"
+        },
+        {
+          "contract": "Initializable",
+          "path": "zos-lib/contracts/Initializable.sol",
+          "label": "______gap",
+          "astId": 1733,
+          "type": "t_array:50<t_uint256>",
+          "src": "1891:29:3"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "frozen",
+          "astId": 11,
+          "type": "t_bool",
+          "src": "344:18:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "mintingVoteThreshold",
+          "astId": 13,
+          "type": "t_uint256",
+          "src": "473:35:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "redemptionVoteThreshold",
+          "astId": 15,
+          "type": "t_uint256",
+          "src": "633:38:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "mintingCountdownLength",
+          "astId": 17,
+          "type": "t_uint256",
+          "src": "752:37:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "redemptionCountdownLength",
+          "astId": 19,
+          "type": "t_uint256",
+          "src": "894:40:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "mintingVotingInProgress",
+          "astId": 21,
+          "type": "t_bool",
+          "src": "1031:35:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "mintingVotingEndDate",
+          "astId": 23,
+          "type": "t_uint256",
+          "src": "1134:35:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "mintingAdminsCount",
+          "astId": 25,
+          "type": "t_uint256",
+          "src": "1236:33:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "redemptionVotingInProgress",
+          "astId": 29,
+          "type": "t_mapping<t_bool>",
+          "src": "1384:59:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "redemptionVotingEndDate",
+          "astId": 33,
+          "type": "t_mapping<t_uint256>",
+          "src": "1523:59:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "owners",
+          "astId": 37,
+          "type": "t_mapping<t_bool>",
+          "src": "1705:39:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "operationAdmins",
+          "astId": 41,
+          "type": "t_mapping<t_bool>",
+          "src": "1908:48:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "mintingAdmins",
+          "astId": 45,
+          "type": "t_mapping<t_bool>",
+          "src": "2103:46:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "redemptionAdmins",
+          "astId": 49,
+          "type": "t_mapping<t_bool>",
+          "src": "2292:49:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "whitelist",
+          "astId": 53,
+          "type": "t_mapping<t_bool>",
+          "src": "2431:42:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "blacklist",
+          "astId": 57,
+          "type": "t_mapping<t_bool>",
+          "src": "2567:42:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "assets",
+          "astId": 61,
+          "type": "t_mapping<t_struct<MasterPropertyValue.Asset>>",
+          "src": "2672:40:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "pendingRedemptions",
+          "astId": 65,
+          "type": "t_mapping<t_address>",
+          "src": "2800:54:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "pendingAssets",
+          "astId": 68,
+          "type": "t_array:dyn<t_uint256>",
+          "src": "2943:30:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "mintingVotes",
+          "astId": 71,
+          "type": "t_array:dyn<t_struct<MasterPropertyValue.Vote>>",
+          "src": "3059:26:0"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "redemptionVotes",
+          "astId": 76,
+          "type": "t_mapping<t_array:dyn<t_struct<MasterPropertyValue.Vote>>>",
+          "src": "3161:50:0"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
+    }
+  },
+  "solidityLibs": {},
+  "proxies": {},
+  "zosversion": "2.2",
+  "version": "0.1.0"
+}

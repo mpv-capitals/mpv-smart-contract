@@ -1,0 +1,11 @@
+{
+  "zosversion": "2.2",
+  "name": "master-property-value",
+  "version": "0.1.0",
+  "contracts": {
+    "MasterPropertyValue": "MasterPropertyValue"
+  },
+  "dependencies": {
+
+  }
+}

@@ -1,0 +1,28 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:latest
+      - image: trufflesuite/ganache-cli
+        command: ganache-cli --deterministic
+
+    working_directory: ~/project
+
+    steps:
+      - checkout
+
+      # Download and cache dependecies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # Fallback cache
+          - v1-dependencies-
+
+      - run: npm i
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-dependencies-{{ checksum "package.json" }}
+
+      - run: truffle test

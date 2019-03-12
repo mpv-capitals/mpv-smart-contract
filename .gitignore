@@ -1,0 +1,9 @@
+.DS_Store
+node_modules
+.secret
+.env
+.env.*
+build
+dist
+#.zos.session
+#.zos.dev*
