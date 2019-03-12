@@ -2,8 +2,8 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:latest
-      - image: trufflesuite/ganache-cli
+      - image: circleci/node:10.0.0
+      - image: trufflesuite/ganache-cli:v6.4.1
         command: ganache-cli --deterministic
 
     working_directory: ~/project
@@ -25,4 +25,4 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      - run: truffle test
+      - run: npm test
