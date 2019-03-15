@@ -1,3 +1,5 @@
+network = development
+
 all: build
 
 .PHONY: install
@@ -15,9 +17,16 @@ start:
 
 .PHONY: deploy
 deploy:
-	@#@truffle deploy
 	@zos push --network=$(network)
+
+.PHONY: deploy/deps
+deploy/deps:
+	@npx zos push --deploy-dependencies --network=$(network)
+
+.PHONY: create
+create:
+	@npx zos create MasterPropertyValue --init initialize --network=$(network)
 
 .PHONY: test
 test:
-	@truffle test
+	@npm test

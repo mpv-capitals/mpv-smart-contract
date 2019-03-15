@@ -1,0 +1,317 @@
+{
+  "contracts": {
+    "MasterPropertyValue": {
+      "address": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec",
+      "constructorCode": "608060405234801561001057600080fd5b5061162a806100206000396000f3fe",
+      "bodyBytecodeHash": "4a1bc5ad0fb32b104b2dd7ff30088a311f16d49f40b9d03f004244a6e736cee0",
+      "localBytecodeHash": "d9af404d19db0bed8b9e98dbb35c95782444c5f94641b25468ae01fe537aefa1",
+      "deployedBytecodeHash": "951d250dc345ca728daecbe2aac6d5f28ed5e510ccfe490b23a13c4fa97e7a08",
+      "types": {
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        },
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_array:50<t_uint256>": {
+          "id": "t_array:50<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "50",
+          "kind": "array",
+          "label": "uint256[50]"
+        },
+        "t_struct<Roles.Role>": {
+          "id": "t_struct<Roles.Role>",
+          "kind": "struct",
+          "label": "Roles.Role",
+          "members": [
+            {
+              "label": "bearer",
+              "astId": 569,
+              "type": "t_mapping<t_bool>",
+              "src": "159:32:3"
+            }
+          ]
+        },
+        "t_mapping<t_bool>": {
+          "id": "t_mapping<t_bool>",
+          "valueType": "t_bool",
+          "label": "mapping(key => bool)",
+          "kind": "mapping"
+        },
+        "t_struct<Polls.Poll>": {
+          "id": "t_struct<Polls.Poll>",
+          "kind": "struct",
+          "label": "Polls.Poll",
+          "members": [
+            {
+              "label": "polls",
+              "astId": 414,
+              "type": "t_mapping<t_struct<Polls.PollItem>>",
+              "src": "256:35:2"
+            }
+          ]
+        },
+        "t_struct<Polls.PollItem>": {
+          "id": "t_struct<Polls.PollItem>",
+          "kind": "struct",
+          "label": "Polls.PollItem",
+          "members": [
+            {
+              "label": "key",
+              "astId": 395,
+              "type": "t_bytes32",
+              "src": "74:11:2"
+            },
+            {
+              "label": "data",
+              "astId": 397,
+              "type": "t_bytes",
+              "src": "91:10:2"
+            },
+            {
+              "label": "active",
+              "astId": 399,
+              "type": "t_bool",
+              "src": "107:11:2"
+            },
+            {
+              "label": "executed",
+              "astId": 401,
+              "type": "t_bool",
+              "src": "124:13:2"
+            },
+            {
+              "label": "executedAt",
+              "astId": 403,
+              "type": "t_uint256",
+              "src": "143:18:2"
+            },
+            {
+              "label": "caller",
+              "astId": 405,
+              "type": "t_address",
+              "src": "167:14:2"
+            },
+            {
+              "label": "threshold",
+              "astId": 407,
+              "type": "t_uint256",
+              "src": "187:17:2"
+            },
+            {
+              "label": "totalVoters",
+              "astId": 409,
+              "type": "t_uint256",
+              "src": "210:19:2"
+            }
+          ]
+        },
+        "t_bytes32": {
+          "id": "t_bytes32",
+          "kind": "elementary",
+          "label": "bytes32"
+        },
+        "t_bytes": {
+          "id": "t_bytes",
+          "kind": "elementary",
+          "label": "bytes"
+        },
+        "t_address": {
+          "id": "t_address",
+          "kind": "elementary",
+          "label": "address"
+        },
+        "t_mapping<t_struct<Polls.PollItem>>": {
+          "id": "t_mapping<t_struct<Polls.PollItem>>",
+          "valueType": "t_struct<Polls.PollItem>",
+          "label": "mapping(key => Polls.PollItem)",
+          "kind": "mapping"
+        },
+        "t_struct<Assets.State>": {
+          "id": "t_struct<Assets.State>",
+          "kind": "struct",
+          "label": "Assets.State",
+          "members": [
+            {
+              "label": "assets",
+              "astId": 31,
+              "type": "t_mapping<t_struct<Assets.Asset>>",
+              "src": "1347:33:0"
+            }
+          ]
+        },
+        "t_struct<Assets.Asset>": {
+          "id": "t_struct<Assets.Asset>",
+          "kind": "struct",
+          "label": "Assets.Asset",
+          "members": [
+            {
+              "label": "id",
+              "astId": 6,
+              "type": "t_uint256",
+              "src": "240:10:0"
+            },
+            {
+              "label": "status",
+              "astId": 8,
+              "type": "t_enum<Assets.Status>",
+              "src": "301:13:0"
+            },
+            {
+              "label": "valuation",
+              "astId": 10,
+              "type": "t_uint256",
+              "src": "364:17:0"
+            },
+            {
+              "label": "fingerprint",
+              "astId": 12,
+              "type": "t_bytes32",
+              "src": "448:19:0"
+            },
+            {
+              "label": "tokens",
+              "astId": 14,
+              "type": "t_uint256",
+              "src": "542:14:0"
+            },
+            {
+              "label": "owner",
+              "astId": 16,
+              "type": "t_address",
+              "src": "606:13:0"
+            },
+            {
+              "label": "timestamp",
+              "astId": 18,
+              "type": "t_uint256",
+              "src": "676:17:0"
+            },
+            {
+              "label": "statusEvents",
+              "astId": 21,
+              "type": "t_array:dyn<t_enum<Assets.Status>>",
+              "src": "793:21:0"
+            }
+          ]
+        },
+        "t_enum<Assets.Status>": {
+          "id": "t_enum<Assets.Status>",
+          "kind": "enum",
+          "label": "Assets.Status",
+          "members": [
+            "PENDING",
+            "ENLISTED",
+            "LOCKED",
+            "REDEEMED"
+          ]
+        },
+        "t_array:dyn<t_enum<Assets.Status>>": {
+          "id": "t_array:dyn<t_enum<Assets.Status>>",
+          "valueType": "t_enum<Assets.Status>",
+          "length": "dyn",
+          "kind": "array",
+          "label": "Assets.Status[]"
+        },
+        "t_mapping<t_struct<Assets.Asset>>": {
+          "id": "t_mapping<t_struct<Assets.Asset>>",
+          "valueType": "t_struct<Assets.Asset>",
+          "label": "mapping(key => Assets.Asset)",
+          "kind": "mapping"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Initializable",
+          "path": "zos-lib/contracts/Initializable.sol",
+          "label": "initialized",
+          "astId": 2283,
+          "type": "t_bool",
+          "src": "757:24:6"
+        },
+        {
+          "contract": "Initializable",
+          "path": "zos-lib/contracts/Initializable.sol",
+          "label": "initializing",
+          "astId": 2285,
+          "type": "t_bool",
+          "src": "876:25:6"
+        },
+        {
+          "contract": "Initializable",
+          "path": "zos-lib/contracts/Initializable.sol",
+          "label": "______gap",
+          "astId": 2334,
+          "type": "t_array:50<t_uint256>",
+          "src": "1891:29:6"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "owners",
+          "astId": 136,
+          "type": "t_struct<Roles.Role>",
+          "src": "381:25:1"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "polls",
+          "astId": 138,
+          "type": "t_struct<Polls.Poll>",
+          "src": "410:24:1"
+        },
+        {
+          "contract": "MasterPropertyValue",
+          "path": "contracts/MasterPropertyValue.sol",
+          "label": "assets",
+          "astId": 140,
+          "type": "t_struct<Assets.State>",
+          "src": "438:27:1"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
+    }
+  },
+  "solidityLibs": {
+    "Assets": {
+      "address": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66",
+      "constructorCode": "610c0a610030600b82828239805160001a6073146000811461002057610022565bfe5b5030600052607381538281f3fe",
+      "bodyBytecodeHash": "1a298eaa95e83867e64053b797689492af3de710102be2f0b1a8705cc1e4aa44",
+      "localBytecodeHash": "6fb214ae00309e79fb6fb0241153bb008e90afaed9805df2f8f2707ebbeec5d4",
+      "deployedBytecodeHash": "6fb214ae00309e79fb6fb0241153bb008e90afaed9805df2f8f2707ebbeec5d4"
+    },
+    "Polls": {
+      "address": "0xA57B8a5584442B467b4689F1144D269d096A3daF",
+      "constructorCode": "61076d610030600b82828239805160001a6073146000811461002057610022565bfe5b5030600052607381538281f3fe",
+      "bodyBytecodeHash": "db98fc7358ee2128d021b13f1eb0a486627c40bcf3b4ed03684702101b8b120f",
+      "localBytecodeHash": "0c4787d9c3b7d2d6930a7932ff836309505074cd12e23a38bdbdbe1ef94800ba",
+      "deployedBytecodeHash": "0c4787d9c3b7d2d6930a7932ff836309505074cd12e23a38bdbdbe1ef94800ba"
+    }
+  },
+  "proxies": {
+    "master-property-value/MasterPropertyValue": [
+      {
+        "address": "0xDb56f2e9369E0D7bD191099125a3f6C370F8ed15",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      }
+    ]
+  },
+  "zosversion": "2.2",
+  "version": "0.1.0",
+  "proxyAdmin": {
+    "address": "0x0E696947A06550DEf604e82C26fd9E493e576337"
+  }
+}
