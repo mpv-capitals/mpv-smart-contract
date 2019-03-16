@@ -2,8 +2,8 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:10.0.0
-      - image: trufflesuite/ganache-cli:v6.4.1
+      - image: circleci/node:latest
+      - image: trufflesuite/ganache-cli:latest
         command: ganache-cli --deterministic
 
     working_directory: ~/project
