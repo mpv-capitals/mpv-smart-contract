@@ -3,7 +3,7 @@ pragma solidity >=0.4.21 <0.6.0;
 import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
 
 
-contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
+contract RedemptionAdminMultiSigWallet is BaseMultiSigWallet {
     address public mpv;
 
     modifier onlyMPV() {
@@ -13,14 +13,6 @@ contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
 
     modifier ownerExists(address owner) {
         require(isOwner[owner]);
-        _;
-    }
-
-    modifier validRequirement(uint ownerCount, uint _required) {
-        require(ownerCount <= MAX_OWNER_COUNT
-            && _required <= ownerCount
-            && _required != 0
-            && ownerCount != 0);
         _;
     }
 
@@ -41,7 +33,7 @@ contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
     function addOwner(address owner)
         public
         //onlyWallet
-        validRequirement(owners.length + 1, required)
+        //validRequirement(owners.length + 1, required)
     {
         super.addOwner(owner);
     }
@@ -63,7 +55,7 @@ contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
     function changeRequirement(uint _required)
         public
         //onlyWallet
-        validRequirement(owners.length, _required)
+        //validRequirement(owners.length, _required)
     {
         super.changeRequirement(_required);
     }
@@ -81,28 +73,25 @@ contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
         bytes memory data
     )
         public
-        //onlyMPV()
+        onlyMPV()
         returns (uint transactionId)
     {
         return addTransaction(destination, value, data);
     }
 
     function confirmTransaction(uint transactionId)
-        ownerExists(msg.sender)
         public
     {
         super.confirmTransaction(transactionId);
     }
 
     function revokeConfirmation(uint transactionId)
-        ownerExists(msg.sender)
         public
     {
         return super.revokeConfirmation(transactionId);
     }
 
     function executeTransaction(uint transactionId)
-        ownerExists(msg.sender)
         public
     {
         super.executeTransaction(transactionId);
