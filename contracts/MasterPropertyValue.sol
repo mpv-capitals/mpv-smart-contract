@@ -6,9 +6,10 @@ import "./MultiSigWallet/MultiSigWallet.sol";
 import "./IMultiSigWallet.sol";
 import "./SafeMath.sol";
 import "./Assets.sol";
+import "./Pausable.sol";
 
 
-contract MasterPropertyValue is Initializable {
+contract MasterPropertyValue is Initializable, Pausable {
     using Assets for Assets.State;
     using SafeMath for uint256;
 
@@ -518,5 +519,43 @@ contract MasterPropertyValue is Initializable {
       public
       returns (Assets.Asset memory) {
         return assets.get(id);
+    }
+
+    function pauseContract()
+      public
+      onlySuperOwner()
+      returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._pause.selector
+        );
+
+        transactionId = superOwnerMultiSig.mpvSubmitTransaction(
+            address(this), 0, data);
+    }
+
+    function _pause()
+        public
+        onlySuperOwnerMultiSig()
+    {
+        super.pause();
+    }
+
+    function unpauseContract()
+      public
+      onlySuperOwner()
+      returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._unpause.selector
+        );
+
+        transactionId = superOwnerMultiSig.mpvSubmitTransaction(
+            address(this), 0, data);
+    }
+
+    function _unpause()
+        public
+        onlySuperOwnerMultiSig()
+    {
+        super.unpause();
     }
 }
