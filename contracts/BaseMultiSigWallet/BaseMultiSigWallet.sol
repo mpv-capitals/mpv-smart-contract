@@ -1,6 +1,7 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 
+/// NOTE: This is a modified version with reduced modifiers.
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net>
 contract BaseMultiSigWallet {
@@ -30,7 +31,6 @@ contract BaseMultiSigWallet {
     mapping (uint => mapping (address => bool)) public confirmations;
     mapping (address => bool) public isOwner;
     address[] public owners;
-    address public mpv;
     uint public required;
     uint public transactionCount;
 
@@ -92,11 +92,6 @@ contract BaseMultiSigWallet {
         _;
     }
 
-    modifier onlyMPV() {
-        require(msg.sender == mpv);
-        _;
-    }
-
     /// @dev Fallback function allows to deposit ether.
     function()
         external
@@ -124,21 +119,12 @@ contract BaseMultiSigWallet {
         required = _required;
     }
 
-    function setMPV(address _mpv)
-        public
-        ownerExists(msg.sender)
-    {
-        mpv = _mpv;
-    }
-
     /// @dev Allows to add a new owner. Transaction has to be sent by wallet.
     /// @param owner Address of new owner.
     function addOwner(address owner)
         public
-        //onlyWallet
         ownerDoesNotExist(owner)
         notNull(owner)
-        validRequirement(owners.length + 1, required)
     {
         isOwner[owner] = true;
         owners.push(owner);
@@ -149,7 +135,6 @@ contract BaseMultiSigWallet {
     /// @param owner Address of owner.
     function removeOwner(address owner)
         public
-        onlyWallet
         ownerExists(owner)
     {
         isOwner[owner] = false;
@@ -169,7 +154,6 @@ contract BaseMultiSigWallet {
     /// @param newOwner Address of new owner.
     function replaceOwner(address owner, address newOwner)
         public
-        onlyWallet
         ownerExists(owner)
         ownerDoesNotExist(newOwner)
     {
@@ -188,8 +172,6 @@ contract BaseMultiSigWallet {
     /// @param _required Number of required confirmations.
     function changeRequirement(uint _required)
         public
-        //onlyWallet
-        validRequirement(owners.length, _required)
     {
         required = _required;
         emit RequirementChange(_required);
@@ -208,23 +190,10 @@ contract BaseMultiSigWallet {
         confirmTransaction(transactionId);
     }
 
-    function mpvSubmitTransaction(
-        address destination,
-        uint value,
-        bytes memory data
-    )
-        public
-        onlyMPV
-        returns (uint transactionId)
-    {
-        transactionId = addTransaction(destination, value, data);
-    }
-
     /// @dev Allows an owner to confirm a transaction.
     /// @param transactionId Transaction ID.
     function confirmTransaction(uint transactionId)
         public
-        ownerExists(msg.sender)
         transactionExists(transactionId)
         notConfirmed(transactionId, msg.sender)
     {
@@ -237,7 +206,6 @@ contract BaseMultiSigWallet {
     /// @param transactionId Transaction ID.
     function revokeConfirmation(uint transactionId)
         public
-        ownerExists(msg.sender)
         confirmed(transactionId, msg.sender)
         notExecuted(transactionId)
     {
@@ -249,7 +217,6 @@ contract BaseMultiSigWallet {
     /// @param transactionId Transaction ID.
     function executeTransaction(uint transactionId)
         public
-        ownerExists(msg.sender)
         confirmed(transactionId, msg.sender)
         notExecuted(transactionId)
     {

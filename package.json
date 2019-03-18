@@ -8,7 +8,7 @@
     "lint": "npm run lint:js && npm run lint:sol",
     "lint:fix": "npm run lint:js:fix",
     "lint:js": "eslint .",
-    "lint:js:fix": "eslint . --fix",
+    "lint:js:fix": "eslint --fix test/*",
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\""
   },
   "dependencies": {},
@@ -37,5 +37,20 @@
     "zos-lib": "^2.2.1"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "standard": {
+    "globals": [
+      "describe",
+      "context",
+      "before",
+      "beforeEach",
+      "after",
+      "afterEach",
+      "it",
+      "expect",
+      "contract",
+      "web3",
+      "artifacts"
+    ]
+  }
 }

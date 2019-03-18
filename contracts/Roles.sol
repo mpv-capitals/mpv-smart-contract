@@ -1,5 +1,6 @@
 pragma solidity >=0.4.21 <0.6.0;
 
+
 /**
  * @title Roles
  * @dev Library for managing addresses assigned to a Role.

@@ -13,7 +13,7 @@ build:
 
 .PHONY: start
 start:
-	@ganache-cli --deterministic
+	@ganache-cli --deterministic -a 20
 
 .PHONY: deploy
 deploy:
@@ -30,3 +30,7 @@ create:
 .PHONY: test
 test:
 	@npm test
+
+.PHONY: lint
+lint:
+	@npm run lint:fix

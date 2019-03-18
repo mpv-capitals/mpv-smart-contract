@@ -24,6 +24,12 @@ make start
 make test
 ```
 
+## Lint
+
+```bash
+make lint
+```
+
 ## Deploy
 
 First create a `.env` file with either a `MNEMONIC` or `PRIVATE_KEY` variable to export.
