@@ -6,17 +6,26 @@ const MPV = artifacts.require('MasterPropertyValue')
 const Assets = artifacts.require('Assets')
 const SuperOwnerMultiSigWallet = artifacts.require('SuperOwnerMultiSigWallet')
 const BasicOwnerMultiSigWallet = artifacts.require('BasicOwnerMultiSigWallet')
+const OperationAdminMultiSigWallet = artifacts.require('OperationAdminMultiSigWallet')
+const MintingAdminMultiSigWallet = artifacts.require('MintingAdminMultiSigWallet')
+const RedemptionAdminMultiSigWallet = artifacts.require('RedemptionAdminMultiSigWallet')
 
 contract('MPV', accounts => {
   let mpv = null
   let assets = null
   let superOwnerMultiSig = null
   let basicOwnerMultiSig = null
+  let operationAdminMultiSig = null
+  let mintingAdminMultiSig = null
+  let redemptionAdminMultiSig = null
 
   it('should deploy contract', async () => {
     assets = await Assets.new()
     superOwnerMultiSig = await SuperOwnerMultiSigWallet.new([accounts[0]], 1)
     basicOwnerMultiSig = await BasicOwnerMultiSigWallet.new([accounts[0]], 1)
+    operationAdminMultiSig = await OperationAdminMultiSigWallet.new([accounts[0]], 1)
+    mintingAdminMultiSig = await MintingAdminMultiSigWallet.new([accounts[0]], 1)
+    redemptionAdminMultiSig = await RedemptionAdminMultiSigWallet.new([accounts[0]], 1)
 
     await MPV.link({
       Assets: assets.address,
@@ -25,7 +34,10 @@ contract('MPV', accounts => {
     mpv = await MPV.new()
     mpv.initialize(
       superOwnerMultiSig.address,
-      basicOwnerMultiSig.address
+      basicOwnerMultiSig.address,
+      operationAdminMultiSig.address,
+      mintingAdminMultiSig.address,
+      redemptionAdminMultiSig.address,
     )
 
     await superOwnerMultiSig.setMPV(mpv.address, {
@@ -33,6 +45,18 @@ contract('MPV', accounts => {
     })
 
     await basicOwnerMultiSig.setMPV(mpv.address, {
+      from: accounts[0],
+    })
+
+    await operationAdminMultiSig.setMPV(mpv.address, {
+      from: accounts[0],
+    })
+
+    await mintingAdminMultiSig.setMPV(mpv.address, {
+      from: accounts[0],
+    })
+
+    await redemptionAdminMultiSig.setMPV(mpv.address, {
       from: accounts[0],
     })
   })
@@ -296,5 +320,144 @@ contract('MPV', accounts => {
     }]
 
     await mpv.addAssets(assets)
+  })
+
+  it('add 2nd operation admin', async () => {
+    const newAdmin = accounts[21]
+
+    let isAdmin = await mpv.isOperationAdmin.call(newAdmin)
+    isAdmin.should.equal(false)
+
+    const txId = await mpv.addOperationAdmin.call(newAdmin, {
+      from: accounts[0],
+    })
+    await mpv.addOperationAdmin(newAdmin, {
+      from: accounts[0],
+    })
+
+    await basicOwnerMultiSig.confirmTransaction(txId, {
+      from: accounts[0],
+    })
+
+    isAdmin = await mpv.isOperationAdmin.call(newAdmin)
+    isAdmin.should.equal(true)
+  })
+
+  it('remove 2nd operation admin', async () => {
+    const admin = accounts[21]
+
+    let isAdmin = await mpv.isOperationAdmin.call(admin)
+    isAdmin.should.equal(true)
+
+    const txId = await mpv.removeOperationAdmin.call(admin, {
+      from: accounts[0],
+    })
+    await mpv.removeOperationAdmin(admin, {
+      from: accounts[0],
+    })
+
+    await basicOwnerMultiSig.confirmTransaction(txId, {
+      from: accounts[0],
+    })
+
+    isAdmin = await mpv.isOperationAdmin.call(admin)
+    isAdmin.should.equal(false)
+  })
+
+  it('add 2nd minting admin', async () => {
+    const newAdmin = accounts[31]
+
+    let isAdmin = await mpv.isMintingAdmin.call(newAdmin)
+    isAdmin.should.equal(false)
+
+    const txId = await mpv.addMintingAdmin.call(newAdmin, {
+      from: accounts[0],
+    })
+    await mpv.addMintingAdmin(newAdmin, {
+      from: accounts[0],
+    })
+
+    await basicOwnerMultiSig.confirmTransaction(txId, {
+      from: accounts[0],
+    })
+
+    isAdmin = await mpv.isMintingAdmin.call(newAdmin)
+    isAdmin.should.equal(true)
+  })
+
+  it('remove 2nd minting admin', async () => {
+    const admin = accounts[31]
+
+    let isAdmin = await mpv.isMintingAdmin.call(admin)
+    isAdmin.should.equal(true)
+
+    const txId = await mpv.removeMintingAdmin.call(admin, {
+      from: accounts[0],
+    })
+    await mpv.removeMintingAdmin(admin, {
+      from: accounts[0],
+    })
+
+    await basicOwnerMultiSig.confirmTransaction(txId, {
+      from: accounts[0],
+    })
+
+    isAdmin = await mpv.isMintingAdmin.call(admin)
+    isAdmin.should.equal(false)
+  })
+
+  it('add 2nd redemption admin', async () => {
+    const newAdmin = accounts[41]
+
+    let isAdmin = await mpv.isRedemptionAdmin.call(newAdmin)
+    isAdmin.should.equal(false)
+
+    const txId = await mpv.addRedemptionAdmin.call(newAdmin, {
+      from: accounts[0],
+    })
+    await mpv.addRedemptionAdmin(newAdmin, {
+      from: accounts[0],
+    })
+
+    const notABasicOwner = accounts[1]
+    await shouldFail(basicOwnerMultiSig.confirmTransaction(txId, {
+      from: notABasicOwner,
+    }))
+
+    await basicOwnerMultiSig.confirmTransaction(txId, {
+      from: accounts[0],
+    })
+
+    isAdmin = await mpv.isRedemptionAdmin.call(newAdmin)
+    isAdmin.should.equal(true)
+  })
+
+  it('remove 2nd redemption admin', async () => {
+    const admin = accounts[41]
+
+    let isAdmin = await mpv.isRedemptionAdmin.call(admin)
+    isAdmin.should.equal(true)
+
+    const txId = await mpv.removeRedemptionAdmin.call(admin, {
+      from: accounts[0],
+    })
+    await mpv.removeRedemptionAdmin(admin, {
+      from: accounts[0],
+    })
+
+    await basicOwnerMultiSig.confirmTransaction(txId, {
+      from: accounts[0],
+    })
+
+    isAdmin = await mpv.isRedemptionAdmin.call(admin)
+    isAdmin.should.equal(false)
+  })
+
+  it('add user to whitelist', async () => {
+
+  })
+
+  it('remove user from whitelist', async () => {
+
   })
 })

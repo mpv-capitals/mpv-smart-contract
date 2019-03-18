@@ -1,7 +1,8 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 
-/// NOTE: This is a modified version with reduced modifiers.
+/// NOTE: This is a modified version of the multisig wallet that has reduced modifiers and relies on the child contracts to implement the access modifiers.
+
 /// @title Multisignature wallet - Allows multiple parties to agree on transactions before execution.
 /// @author Stefan George - <stefan.george@consensys.net>
 contract BaseMultiSigWallet {

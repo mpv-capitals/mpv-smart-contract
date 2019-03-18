@@ -33,14 +33,14 @@ contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
 
     function setMPV(address _mpv)
         public
-        //ownerExists(msg.sender)
+        ownerExists(msg.sender)
     {
         mpv = _mpv;
     }
 
     function addOwner(address owner)
         public
-        //onlyWallet
+        onlyMPV()
         validRequirement(owners.length + 1, required)
     {
         super.addOwner(owner);
@@ -48,21 +48,23 @@ contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
 
     function removeOwner(address owner)
         public
-        //onlyWallet
+        onlyMPV()
+        validRequirement(owners.length + 1, required)
     {
         super.removeOwner(owner);
     }
 
     function replaceOwner(address owner, address newOwner)
         public
-        //onlyWallet
+        onlyMPV()
+        validRequirement(owners.length + 1, required)
     {
         super.replaceOwner(owner, newOwner);
     }
 
     function changeRequirement(uint _required)
         public
-        //onlyWallet
+        onlyMPV()
         validRequirement(owners.length, _required)
     {
         super.changeRequirement(_required);
@@ -81,7 +83,7 @@ contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
         bytes memory data
     )
         public
-        //onlyMPV()
+        onlyMPV()
         returns (uint transactionId)
     {
         return addTransaction(destination, value, data);
