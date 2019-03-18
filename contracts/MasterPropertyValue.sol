@@ -21,11 +21,22 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     Assets.State private assets;
 
-    uint256 public superOwnerActionsThreshold;
-    uint256 public basicOwnerActionsThreshold;
-    uint256 public operationAdminActionsThreshold;
-    uint256 public mintingAdminActionsThreshold;
-    uint256 public redemptionAdminActionsThreshold;
+    uint256 public superOwnerActionThreshold;
+    uint256 public basicOwnerActionThreshold;
+    uint256 public operationAdminActionThreshold;
+    uint256 public mintingAdminActionThreshold;
+    uint256 public redemptionAdminActionThreshold;
+
+    uint256 public mintingAdminStartMintingCountdownThreshold;
+    uint256 public redemptionAdminStartBurningCountdownThreshold;
+
+    uint256 public superOwnerActionCountdown;
+    uint256 public basicOwnerActionCountdown;
+    uint256 public whitelistRemovalActionCountdown;
+    uint256 public mintingActionCountdown;
+    uint256 public burningActionCountdown;
+
+    address public mintingReceiverWallet;
 
     struct Asset {
         uint256 id;
@@ -63,11 +74,12 @@ contract MasterPropertyValue is Initializable, Pausable {
     event LogRemoveAsset(uint256 assetId);
 
     function initialize(
-      address _superOwnerMultiSig,
-      address _basicOwnerMultiSig,
-      address _operationAdminMultiSig,
-      address _mintingAdminMultiSig,
-      address _redemptionAdminMultiSig
+        address _superOwnerMultiSig,
+        address _basicOwnerMultiSig,
+        address _operationAdminMultiSig,
+        address _mintingAdminMultiSig,
+        address _redemptionAdminMultiSig,
+        address _mintingReceiverWallet
     ) public initializer {
         superOwnerMultiSig = IMultiSigWallet(_superOwnerMultiSig);
         basicOwnerMultiSig = IMultiSigWallet(_basicOwnerMultiSig);
@@ -75,11 +87,22 @@ contract MasterPropertyValue is Initializable, Pausable {
         mintingAdminMultiSig = IMultiSigWallet(_mintingAdminMultiSig);
         redemptionAdminMultiSig = IMultiSigWallet(_redemptionAdminMultiSig);
 
-        superOwnerActionsThreshold = 40;
-        basicOwnerActionsThreshold = 100;
-        operationAdminActionsThreshold = 100;
-        mintingAdminActionsThreshold = 100;
-        redemptionAdminActionsThreshold = 100;
+        mintingReceiverWallet = _mintingReceiverWallet;
+
+        superOwnerActionThreshold = 40;
+        basicOwnerActionThreshold = 100;
+        operationAdminActionThreshold = 100;
+        mintingAdminActionThreshold = 100;
+        redemptionAdminActionThreshold = 100;
+
+        mintingAdminStartMintingCountdownThreshold = 100;
+        redemptionAdminStartBurningCountdownThreshold = 100;
+
+        superOwnerActionCountdown = 48 hours;
+        basicOwnerActionCountdown = 48 hours;
+        whitelistRemovalActionCountdown = 48 hours;
+        mintingActionCountdown = 48 hours;
+        burningActionCountdown = 48 hours;
     }
 
     modifier onlyMPV() {
@@ -137,6 +160,120 @@ contract MasterPropertyValue is Initializable, Pausable {
         _;
     }
 
+    function setSuperOwnerActionCountdown(uint256 newCountdown)
+      public
+      onlySuperOwner()
+      returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._setSuperOwnerActionCountdown.selector,
+            newCountdown
+        );
+
+        return _submitTransaction(superOwnerMultiSig, data);
+    }
+
+    function _setSuperOwnerActionCountdown(uint256 newCountdown)
+        public
+        onlySuperOwnerMultiSig()
+    {
+        superOwnerActionCountdown = newCountdown;
+    }
+
+    function setBasicOwnerActionCountdown(uint256 newCountdown)
+      public
+      onlySuperOwner()
+      returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._setBasicOwnerActionCountdown.selector,
+            newCountdown
+        );
+
+        return _submitTransaction(superOwnerMultiSig, data);
+    }
+
+    function _setBasicOwnerActionCountdown(uint256 newCountdown)
+        public
+        onlySuperOwnerMultiSig()
+    {
+        basicOwnerActionCountdown = newCountdown;
+    }
+
+    function setWhitelistRemovalActionCountdown(uint256 newCountdown)
+      public
+      onlySuperOwner()
+      returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._setWhitelistRemovalActionCountdown.selector,
+            newCountdown
+        );
+
+        return _submitTransaction(superOwnerMultiSig, data);
+    }
+
+    function _setWhitelistRemovalActionCountdown(uint256 newCountdown)
+        public
+        onlySuperOwnerMultiSig()
+    {
+        whitelistRemovalActionCountdown = newCountdown;
+    }
+
+    function setMintingActionCountdown(uint256 newCountdown)
+      public
+      onlySuperOwner()
+      returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._setMintingActionCountdown.selector,
+            newCountdown
+        );
+
+        return _submitTransaction(superOwnerMultiSig, data);
+    }
+
+    function _setMintingActionCountdown(uint256 newCountdown)
+        public
+        onlySuperOwnerMultiSig()
+    {
+        mintingActionCountdown = newCountdown;
+    }
+
+    function setBurningActionCountdown(uint256 newCountdown)
+      public
+      onlySuperOwner()
+      returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._setBurningActionCountdown.selector,
+            newCountdown
+        );
+
+        return _submitTransaction(superOwnerMultiSig, data);
+    }
+
+    function _setBurningActionCountdown(uint256 newCountdown)
+        public
+        onlySuperOwnerMultiSig()
+    {
+        burningActionCountdown = newCountdown;
+    }
+
+    function setMintingReceiverWallet(address newMintingReceiverWallet)
+      public
+      onlySuperOwner()
+      returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._setMintingReceiverWallet.selector,
+            newMintingReceiverWallet
+        );
+
+        return _submitTransaction(superOwnerMultiSig, data);
+    }
+
+    function _setMintingReceiverWallet(address newMintingReceiverWallet)
+        public
+        onlySuperOwnerMultiSig()
+    {
+        mintingReceiverWallet = newMintingReceiverWallet;
+    }
+
     function addSuperOwner(address newSuperOwner)
       public
       onlySuperOwner()
@@ -146,8 +283,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             newSuperOwner
         );
 
-        transactionId = superOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(superOwnerMultiSig, data);
         emit LogAddSuperOwner(transactionId, newSuperOwner);
     }
 
@@ -169,8 +305,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             superOwner
         );
 
-        transactionId = superOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(superOwnerMultiSig, data);
         emit LogRemoveSuperOwner(transactionId, superOwner);
     }
 
@@ -192,8 +327,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             newBasicOwner
         );
 
-        transactionId = superOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(superOwnerMultiSig, data);
         emit LogAddBasicOwner(transactionId, newBasicOwner);
     }
 
@@ -215,8 +349,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             basicOwner
         );
 
-        transactionId = superOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(superOwnerMultiSig, data);
         emit LogRemoveBasicOwner(transactionId, basicOwner);
     }
 
@@ -238,8 +371,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             newOperationAdmin
         );
 
-        transactionId = basicOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(basicOwnerMultiSig, data);
         emit LogAddOperationAdmin(transactionId, newOperationAdmin);
     }
 
@@ -261,8 +393,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             operationAdmin
         );
 
-        transactionId = basicOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(basicOwnerMultiSig, data);
         emit LogRemoveOperationAdmin(transactionId, operationAdmin);
     }
 
@@ -284,8 +415,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             newMintingAdmin
         );
 
-        transactionId = basicOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(basicOwnerMultiSig, data);
         emit LogAddMintingAdmin(transactionId, newMintingAdmin);
     }
 
@@ -307,8 +437,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             mintingAdmin
         );
 
-        transactionId = basicOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(basicOwnerMultiSig, data);
         emit LogRemoveMintingAdmin(transactionId, mintingAdmin);
     }
 
@@ -330,8 +459,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             newRedemptionAdmin
         );
 
-        transactionId = basicOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(basicOwnerMultiSig, data);
         emit LogAddRedemptionAdmin(transactionId, newRedemptionAdmin);
     }
 
@@ -353,8 +481,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             redemptionAdmin
         );
 
-        transactionId = basicOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(basicOwnerMultiSig, data);
         emit LogRemoveRedemptionAdmin(transactionId, redemptionAdmin);
     }
 
@@ -370,31 +497,31 @@ contract MasterPropertyValue is Initializable, Pausable {
     function _updateSuperOwnerRequirement()
         internal
         onlySuperOwnerMultiSig() {
-        _updateRequirement(superOwnerMultiSig, superOwnerActionsThreshold);
+        _updateRequirement(superOwnerMultiSig, superOwnerActionThreshold);
     }
 
     function _updateBasicOwnerRequirement()
         internal
         onlySuperOwnerMultiSig() {
-        _updateRequirement(basicOwnerMultiSig, basicOwnerActionsThreshold);
+        _updateRequirement(basicOwnerMultiSig, basicOwnerActionThreshold);
     }
 
     function _updateOperationAdminRequirement()
         internal
         onlyBasicOwnerMultiSig() {
-        _updateRequirement(operationAdminMultiSig, operationAdminActionsThreshold);
+        _updateRequirement(operationAdminMultiSig, operationAdminActionThreshold);
     }
 
     function _updateMintingAdminRequirement()
         internal
         onlyBasicOwnerMultiSig() {
-        _updateRequirement(mintingAdminMultiSig, mintingAdminActionsThreshold);
+        _updateRequirement(mintingAdminMultiSig, mintingAdminActionThreshold);
     }
 
     function _updateRedemptionAdminRequirement()
         internal
         onlyBasicOwnerMultiSig() {
-        _updateRequirement(redemptionAdminMultiSig, redemptionAdminActionsThreshold);
+        _updateRequirement(redemptionAdminMultiSig, redemptionAdminActionThreshold);
     }
 
     // updateRequirements updates the requirement property in the multsig.
@@ -529,8 +656,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             this._pause.selector
         );
 
-        transactionId = superOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(superOwnerMultiSig, data);
     }
 
     function _pause()
@@ -548,8 +674,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             this._unpause.selector
         );
 
-        transactionId = superOwnerMultiSig.mpvSubmitTransaction(
-            address(this), 0, data);
+        transactionId = _submitTransaction(superOwnerMultiSig, data);
     }
 
     function _unpause()
@@ -557,5 +682,12 @@ contract MasterPropertyValue is Initializable, Pausable {
         onlySuperOwnerMultiSig()
     {
         super.unpause();
+    }
+
+    function _submitTransaction(IMultiSigWallet multiSig, bytes memory data)
+        public
+        returns (uint256 transactionId)
+    {
+        transactionId = multiSig.mpvSubmitTransaction(address(this), 0, data);
     }
 }

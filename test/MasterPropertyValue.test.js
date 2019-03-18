@@ -31,6 +31,8 @@ contract('MPV', accounts => {
       Assets: assets.address,
     })
 
+    const mintingReceiverWalletAddress = '0x0000000000000000000000000000000000000000'
+
     mpv = await MPV.new()
     mpv.initialize(
       superOwnerMultiSig.address,
@@ -38,6 +40,7 @@ contract('MPV', accounts => {
       operationAdminMultiSig.address,
       mintingAdminMultiSig.address,
       redemptionAdminMultiSig.address,
+      mintingReceiverWalletAddress,
     )
 
     await superOwnerMultiSig.setMPV(mpv.address, {
@@ -143,7 +146,7 @@ contract('MPV', accounts => {
     let count = await mpv.getSuperOwners.call()
     count.length.should.equal(5)
 
-    const threshold = await mpv.superOwnerActionsThreshold.call()
+    const threshold = await mpv.superOwnerActionThreshold.call()
     threshold.toString().should.equal('40')
 
     let required = await superOwnerMultiSig.required.call()
@@ -451,6 +454,54 @@ contract('MPV', accounts => {
 
     isAdmin = await mpv.isRedemptionAdmin.call(admin)
     isAdmin.should.equal(false)
+  })
+
+  it('super owner should pause contract', async () => {
+    let paused = await mpv.paused.call()
+    paused.should.equal(false)
+
+    const txId = await mpv.pauseContract.call({
+      from: accounts[0],
+    })
+    await mpv.pauseContract({
+      from: accounts[0],
+    })
+
+    const notASuperOwner = accounts[1]
+    await shouldFail(superOwnerMultiSig.confirmTransaction(txId, {
+      from: notASuperOwner,
+    }))
+
+    await superOwnerMultiSig.confirmTransaction(txId, {
+      from: accounts[0],
+    })
+
+    paused = await mpv.paused.call()
+    paused.should.equal(true)
+  })
+
+  it('super owner should unpause contract', async () => {
+    let paused = await mpv.paused.call()
+    paused.should.equal(true)
+
+    const txId = await mpv.unpauseContract.call({
+      from: accounts[0],
+    })
+    await mpv.unpauseContract({
+      from: accounts[0],
+    })
+
+    const notASuperOwner = accounts[1]
+    await shouldFail(superOwnerMultiSig.confirmTransaction(txId, {
+      from: notASuperOwner,
+    }))
+
+    await superOwnerMultiSig.confirmTransaction(txId, {
+      from: accounts[0],
+    })
+
+    paused = await mpv.paused.call()
+    paused.should.equal(false)
   })
 
   it('add user to whitelist', async () => {
