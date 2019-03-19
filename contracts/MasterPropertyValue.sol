@@ -2,9 +2,9 @@ pragma solidity >=0.4.21 <0.6.0;
 pragma experimental ABIEncoderV2;
 
 import "zos-lib/contracts/Initializable.sol";
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "./MultiSigWallet/MultiSigWallet.sol";
 import "./IMultiSigWallet.sol";
-import "./SafeMath.sol";
 import "./Assets.sol";
 import "./Pausable.sol";
 
