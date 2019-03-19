@@ -9,8 +9,14 @@ import './MasterPropertyValue.sol';
 
 contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
-  Whitelist whitelist;
-  MasterPropertyValue masterPropertyValue;
+  Whitelist public whitelist;
+  MasterPropertyValue public masterPropertyValue;
+  mapping(address => DailyLimitInfo) public dailyLimits;
+
+  struct DailyLimitInfo {
+    uint lastDay;
+    uint spentToday;
+  }
 
   modifier whitelistedAddress(address addr) {
     require(whitelist.isWhitelisted(addr));
@@ -47,6 +53,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     MPVNotPaused()
     returns (bool)
   {
+    require(_isUnderLimit(msg.sender, value));
+    dailyLimits[msg.sender].spentToday += value;
     _transfer(msg.sender, to, value);
     return true;
   }
@@ -57,12 +65,15 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     MPVNotPaused()
     returns (bool)
   {
+    require(_isUnderLimit(from, value));
+    dailyLimits[from].spentToday += value;
     return super.transferFrom(from, to, value);
   }
 
   function mint(address account, uint value)
     public
     MPVAccessOnly(msg.sender)
+    whitelistedAddress(account)
   {
     _mint(account, value);
   }
@@ -72,5 +83,23 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     MPVAccessOnly(msg.sender)
   {
     _burn(account, value);
+  }
+
+  function _isUnderLimit(address account, uint amount)
+    internal
+    returns (bool)
+  {
+    uint dailyLimit = masterPropertyValue.dailyTransferLimit();
+    DailyLimitInfo storage limitInfo = dailyLimits[account];
+    if (now > limitInfo.lastDay + 24 hours) {
+      limitInfo.lastDay = now;
+      limitInfo.spentToday = 0;
+    }
+    if (
+      limitInfo.spentToday + amount > dailyLimit ||
+      limitInfo.spentToday + amount < limitInfo.spentToday
+    )
+      return false;
+    return true;
   }
 }

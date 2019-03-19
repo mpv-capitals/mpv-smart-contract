@@ -2,6 +2,7 @@ import "../../contracts/MPVToken.sol";
 
 contract MasterPropertyValueMock {
   bool _paused;
+  uint public dailyTransferLimit = 1000 * 10 ** 4;
 
   function paused() public returns (bool) {
     return _paused;
