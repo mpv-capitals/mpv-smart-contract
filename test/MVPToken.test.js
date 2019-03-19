@@ -3,19 +3,20 @@ require('chai').should()
 
 const MPVToken = artifacts.require('MPVToken')
 const Whitelist = artifacts.require('Whitelist')
+const MasterPropertyValueMock = artifacts.require('MasterPropertyValueMock')
 const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiSigWalletMock')
 
 contract('MPVToken', accounts => {
-  let token, whitelist, mintingAdmin, redemptionAdmin
+  let token, whitelist, masterPropertyValue
 
   beforeEach(async () => {
-    mintingAdmin = accounts[5]
-    redemptionAdmin = accounts[6]
+    masterPropertyValue = await MasterPropertyValueMock.new()
+    await masterPropertyValue.mock_setPaused(true);
     const multiSig = await OperationAdminMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
     whitelist = await Whitelist.new()
     await whitelist.initialize(multiSig.address)
     token = await MPVToken.new()
-    await token.initialize('Master Property Value', 'MPV', 4, whitelist.address, mintingAdmin, redemptionAdmin)
+    await token.initialize('Master Property Value', 'MPV', 4, whitelist.address, masterPropertyValue.address)
 
     await whitelist.addWhitelisted(accounts[0])
     await whitelist.addWhitelisted(accounts[1])
@@ -24,8 +25,8 @@ contract('MPVToken', accounts => {
 
   describe('transfer()', () => {
     beforeEach(async () => {
-      await token.mint(accounts[0], 500, { from: mintingAdmin })
-      await token.mint(accounts[1], 500, { from: mintingAdmin })
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 500)
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 500)
     })
 
     it('sends tokens to whitelisted addresses', async () => {
@@ -40,7 +41,7 @@ contract('MPVToken', accounts => {
   describe('transferFrom()', () => {
     beforeEach(async () => {
       await token.approve(accounts[0], 500, {from: accounts[1]})
-      await token.mint(accounts[1], 500, { from: mintingAdmin })
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 500)
     })
 
     it('sends tokens to whitelisted addresses', async () => {
@@ -53,11 +54,11 @@ contract('MPVToken', accounts => {
   })
 
   describe('mint()', () => {
-    it('mints new tokens if called by mintingAdming', async () => {
+    it('mints new tokens if called by masterPropertyValue', async () => {
       const mintAmount = 500
       const previousTokenSupply = (await token.totalSupply()).toNumber()
 
-      await token.mint(accounts[0], mintAmount, { from: mintingAdmin })
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], mintAmount)
 
       const newTokenSupply = (await token.totalSupply()).toNumber()
       newTokenSupply.should.equal(previousTokenSupply + mintAmount)
@@ -70,14 +71,14 @@ contract('MPVToken', accounts => {
 
   describe('burn()', () => {
     beforeEach(async () => {
-      await token.mint(accounts[0], 500, { from: mintingAdmin })
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 500)
     })
 
     it('burns tokens if called by redemptionAdmin', async () => {
       const burnAmount = 300
       const previousTokenSupply = (await token.totalSupply()).toNumber()
 
-      await token.burn(accounts[0], burnAmount, { from: redemptionAdmin })
+      await masterPropertyValue.mock_callBurn(token.address, accounts[0], burnAmount)
 
       const newTokenSupply = (await token.totalSupply()).toNumber()
       newTokenSupply.should.equal(previousTokenSupply - burnAmount)
