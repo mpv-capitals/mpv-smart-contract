@@ -9,6 +9,7 @@ const BasicOwnerMultiSigWallet = artifacts.require('BasicOwnerMultiSigWallet')
 const OperationAdminMultiSigWallet = artifacts.require('OperationAdminMultiSigWallet')
 const MintingAdminMultiSigWallet = artifacts.require('MintingAdminMultiSigWallet')
 const RedemptionAdminMultiSigWallet = artifacts.require('RedemptionAdminMultiSigWallet')
+const Whitelist = artifacts.require('Whitelist')
 
 contract('MPV', accounts => {
   let mpv = null
@@ -18,6 +19,7 @@ contract('MPV', accounts => {
   let operationAdminMultiSig = null
   let mintingAdminMultiSig = null
   let redemptionAdminMultiSig = null
+  let whitelist = null
 
   before(async () => {
     assets = await Assets.new()
@@ -26,6 +28,8 @@ contract('MPV', accounts => {
     operationAdminMultiSig = await OperationAdminMultiSigWallet.new([accounts[0]], 1)
     mintingAdminMultiSig = await MintingAdminMultiSigWallet.new([accounts[0]], 1)
     redemptionAdminMultiSig = await RedemptionAdminMultiSigWallet.new([accounts[0]], 1)
+    whitelist = await Whitelist.new()
+    await whitelist.initialize(operationAdminMultiSig.address)
 
     await MPV.link({
       Assets: assets.address,
@@ -40,6 +44,7 @@ contract('MPV', accounts => {
       operationAdminMultiSig.address,
       mintingAdminMultiSig.address,
       redemptionAdminMultiSig.address,
+      whitelist.address,
       mintingReceiverWalletAddress,
     )
 
@@ -286,7 +291,7 @@ contract('MPV', accounts => {
     const defaultSuperOwner = accounts[0]
 
     it('add 2nd basic owner', async () => {
-      const newOwner = accounts[11]
+      const newOwner = accounts[2]
 
       let isOwner = await mpv.isBasicOwner.call(newOwner)
       isOwner.should.equal(false)
@@ -307,7 +312,7 @@ contract('MPV', accounts => {
     })
 
     it('remove 2nd basic owner', async () => {
-      const owner = accounts[11]
+      const owner = accounts[2]
 
       let isOwner = await mpv.isBasicOwner.call(owner)
       isOwner.should.equal(true)
@@ -331,7 +336,7 @@ contract('MPV', accounts => {
   describe('OperationAdminMultiSig', () => {
     const defaultBasicOwner = accounts[0]
     it('add 2nd operation admin', async () => {
-      const newAdmin = accounts[21]
+      const newAdmin = accounts[2]
 
       let isAdmin = await mpv.isOperationAdmin.call(newAdmin)
       isAdmin.should.equal(false)
@@ -352,7 +357,7 @@ contract('MPV', accounts => {
     })
 
     it('remove 2nd operation admin', async () => {
-      const admin = accounts[21]
+      const admin = accounts[2]
 
       let isAdmin = await mpv.isOperationAdmin.call(admin)
       isAdmin.should.equal(true)
@@ -375,7 +380,7 @@ contract('MPV', accounts => {
 
   describe('MintingAdminMultiSig', () => {
     it('add 2nd minting admin', async () => {
-      const newAdmin = accounts[31]
+      const newAdmin = accounts[2]
 
       let isAdmin = await mpv.isMintingAdmin.call(newAdmin)
       isAdmin.should.equal(false)
@@ -396,7 +401,7 @@ contract('MPV', accounts => {
     })
 
     it('remove 2nd minting admin', async () => {
-      const admin = accounts[31]
+      const admin = accounts[2]
 
       let isAdmin = await mpv.isMintingAdmin.call(admin)
       isAdmin.should.equal(true)
@@ -419,7 +424,7 @@ contract('MPV', accounts => {
 
   describe('RedemptionAdminMultiSig', () => {
     it('add 2nd redemption admin', async () => {
-      const newAdmin = accounts[41]
+      const newAdmin = accounts[2]
 
       let isAdmin = await mpv.isRedemptionAdmin.call(newAdmin)
       isAdmin.should.equal(false)
@@ -445,7 +450,7 @@ contract('MPV', accounts => {
     })
 
     it('remove 2nd redemption admin', async () => {
-      const admin = accounts[41]
+      const admin = accounts[2]
 
       let isAdmin = await mpv.isRedemptionAdmin.call(admin)
       isAdmin.should.equal(true)
@@ -517,12 +522,34 @@ contract('MPV', accounts => {
   })
 
   describe('Whitelist', () => {
-    it('add user to whitelist', async () => {
+    const defaultOperationAdmin = accounts[0]
 
+    it('add account to whitelist', async () => {
+      const account = accounts[2]
+
+      let isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(false)
+
+      await whitelist.addWhitelisted(account, {
+        from: defaultOperationAdmin
+      })
+
+      isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(true)
     })
 
-    it('remove user from whitelist', async () => {
+    it('instantly remove account from whitelist', async () => {
+      const account = accounts[2]
 
+      let isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(true)
+
+      await whitelist.removeWhitelisted(account, {
+        from: defaultOperationAdmin
+      })
+
+      isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(false)
     })
   })
 

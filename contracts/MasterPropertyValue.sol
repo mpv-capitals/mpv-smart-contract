@@ -3,8 +3,8 @@ pragma experimental ABIEncoderV2;
 
 import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
-import "./MultiSigWallet/MultiSigWallet.sol";
 import "./IMultiSigWallet.sol";
+import './IWhitelist.sol';
 import "./Assets.sol";
 import "./Pausable.sol";
 
@@ -18,6 +18,8 @@ contract MasterPropertyValue is Initializable, Pausable {
     IMultiSigWallet public operationAdminMultiSig;
     IMultiSigWallet public mintingAdminMultiSig;
     IMultiSigWallet public redemptionAdminMultiSig;
+
+    IWhitelist public whitelist;
 
     Assets.State private assets;
 
@@ -76,19 +78,21 @@ contract MasterPropertyValue is Initializable, Pausable {
     event LogRemoveAsset(uint256 assetId);
 
     function initialize(
-        address _superOwnerMultiSig,
-        address _basicOwnerMultiSig,
-        address _operationAdminMultiSig,
-        address _mintingAdminMultiSig,
-        address _redemptionAdminMultiSig,
+        IMultiSigWallet _superOwnerMultiSig,
+        IMultiSigWallet _basicOwnerMultiSig,
+        IMultiSigWallet _operationAdminMultiSig,
+        IMultiSigWallet _mintingAdminMultiSig,
+        IMultiSigWallet _redemptionAdminMultiSig,
+        IWhitelist _whitelist,
         address _mintingReceiverWallet
     ) public initializer {
-        superOwnerMultiSig = IMultiSigWallet(_superOwnerMultiSig);
-        basicOwnerMultiSig = IMultiSigWallet(_basicOwnerMultiSig);
-        operationAdminMultiSig = IMultiSigWallet(_operationAdminMultiSig);
-        mintingAdminMultiSig = IMultiSigWallet(_mintingAdminMultiSig);
-        redemptionAdminMultiSig = IMultiSigWallet(_redemptionAdminMultiSig);
+        superOwnerMultiSig = _superOwnerMultiSig;
+        basicOwnerMultiSig = _basicOwnerMultiSig;
+        operationAdminMultiSig = _operationAdminMultiSig;
+        mintingAdminMultiSig = _mintingAdminMultiSig;
+        redemptionAdminMultiSig = _redemptionAdminMultiSig;
 
+        whitelist = _whitelist;
         mintingReceiverWallet = _mintingReceiverWallet;
 
         superOwnerActionThresholdPercent = 40;

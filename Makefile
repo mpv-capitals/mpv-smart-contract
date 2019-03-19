@@ -13,7 +13,7 @@ build:
 
 .PHONY: start
 start:
-	@ganache-cli --deterministic -a 50
+	@ganache-cli --deterministic -a 10
 
 .PHONY: deploy
 deploy:
