@@ -21,14 +21,14 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     Assets.State private assets;
 
-    uint256 public superOwnerActionThreshold;
-    uint256 public basicOwnerActionThreshold;
-    uint256 public operationAdminActionThreshold;
-    uint256 public mintingAdminActionThreshold;
-    uint256 public redemptionAdminActionThreshold;
+    uint256 public superOwnerActionThresholdPercent;
+    uint256 public basicOwnerActionThresholdPercent;
+    uint256 public operationAdminActionThresholdPercent;
+    uint256 public mintingAdminActionThresholdPercent;
+    uint256 public redemptionAdminActionThresholdPercent;
 
-    uint256 public mintingAdminStartMintingCountdownThreshold;
-    uint256 public redemptionAdminStartBurningCountdownThreshold;
+    uint256 public mintingAdminStartMintingCountdownThresholdPercent;
+    uint256 public redemptionAdminStartBurningCountdownThresholdPercent;
 
     uint256 public superOwnerActionCountdown;
     uint256 public basicOwnerActionCountdown;
@@ -37,6 +37,8 @@ contract MasterPropertyValue is Initializable, Pausable {
     uint256 public burningActionCountdown;
 
     address public mintingReceiverWallet;
+
+    uint256 public redemptionFee;
 
     struct Asset {
         uint256 id;
@@ -89,20 +91,24 @@ contract MasterPropertyValue is Initializable, Pausable {
 
         mintingReceiverWallet = _mintingReceiverWallet;
 
-        superOwnerActionThreshold = 40;
-        basicOwnerActionThreshold = 100;
-        operationAdminActionThreshold = 100;
-        mintingAdminActionThreshold = 100;
-        redemptionAdminActionThreshold = 100;
+        superOwnerActionThresholdPercent = 40;
+        basicOwnerActionThresholdPercent = 100;
+        operationAdminActionThresholdPercent = 100;
+        mintingAdminActionThresholdPercent = 100;
+        redemptionAdminActionThresholdPercent = 100;
 
-        mintingAdminStartMintingCountdownThreshold = 100;
-        redemptionAdminStartBurningCountdownThreshold = 100;
+        mintingAdminStartMintingCountdownThresholdPercent = 100;
+        redemptionAdminStartBurningCountdownThresholdPercent = 100;
 
         superOwnerActionCountdown = 48 hours;
         basicOwnerActionCountdown = 48 hours;
         whitelistRemovalActionCountdown = 48 hours;
         mintingActionCountdown = 48 hours;
         burningActionCountdown = 48 hours;
+
+        // NOTE: default is 0.1 tokens
+        // 1000 = 0.1 * (10 ** 4)
+        redemptionFee = 1000;
     }
 
     modifier onlyMPV() {
@@ -158,6 +164,25 @@ contract MasterPropertyValue is Initializable, Pausable {
     modifier onlyRedemptionAdminMultiSig() {
         require(msg.sender == address(redemptionAdminMultiSig));
         _;
+    }
+
+    function setRedemptionFee(uint256 newRedemptionFee)
+      public
+      onlySuperOwner()
+      returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._setRedemptionFee.selector,
+            newRedemptionFee
+        );
+
+        return _submitTransaction(superOwnerMultiSig, data);
+    }
+
+    function _setRedemptionFee(uint256 newRedemptionFee)
+        public
+        onlySuperOwnerMultiSig()
+    {
+        redemptionFee = newRedemptionFee;
     }
 
     function setSuperOwnerActionCountdown(uint256 newCountdown)
@@ -497,31 +522,31 @@ contract MasterPropertyValue is Initializable, Pausable {
     function _updateSuperOwnerRequirement()
         internal
         onlySuperOwnerMultiSig() {
-        _updateRequirement(superOwnerMultiSig, superOwnerActionThreshold);
+        _updateRequirement(superOwnerMultiSig, superOwnerActionThresholdPercent);
     }
 
     function _updateBasicOwnerRequirement()
         internal
         onlySuperOwnerMultiSig() {
-        _updateRequirement(basicOwnerMultiSig, basicOwnerActionThreshold);
+        _updateRequirement(basicOwnerMultiSig, basicOwnerActionThresholdPercent);
     }
 
     function _updateOperationAdminRequirement()
         internal
         onlyBasicOwnerMultiSig() {
-        _updateRequirement(operationAdminMultiSig, operationAdminActionThreshold);
+        _updateRequirement(operationAdminMultiSig, operationAdminActionThresholdPercent);
     }
 
     function _updateMintingAdminRequirement()
         internal
         onlyBasicOwnerMultiSig() {
-        _updateRequirement(mintingAdminMultiSig, mintingAdminActionThreshold);
+        _updateRequirement(mintingAdminMultiSig, mintingAdminActionThresholdPercent);
     }
 
     function _updateRedemptionAdminRequirement()
         internal
         onlyBasicOwnerMultiSig() {
-        _updateRequirement(redemptionAdminMultiSig, redemptionAdminActionThreshold);
+        _updateRequirement(redemptionAdminMultiSig, redemptionAdminActionThresholdPercent);
     }
 
     // updateRequirements updates the requirement property in the multsig.
