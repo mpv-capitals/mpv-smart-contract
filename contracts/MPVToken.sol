@@ -22,6 +22,11 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     _;
   }
 
+  modifier MPVNotPaused() {
+    require(masterPropertyValue.paused() == false);
+    _;
+  }
+
   function initialize(
     string memory name,
     string memory symbol,
@@ -29,26 +34,43 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     Whitelist _whitelist,
     MasterPropertyValue _masterPropertyValue
 
-  ) public initializer {
+  ) public initializer
+  {
     ERC20Detailed.initialize(name, symbol ,decimals);
     whitelist = _whitelist;
     masterPropertyValue = _masterPropertyValue;
   }
 
-  function transfer(address to, uint256 value) public whitelistedAddress(to) returns (bool) {
+  function transfer(address to, uint256 value)
+    public
+    whitelistedAddress(to)
+    MPVNotPaused()
+    returns (bool)
+  {
     _transfer(msg.sender, to, value);
     return true;
   }
 
-  function transferFrom(address from, address to, uint256 value) public whitelistedAddress(to) returns (bool) {
+  function transferFrom(address from, address to, uint256 value)
+    public
+    whitelistedAddress(to)
+    MPVNotPaused()
+    returns (bool)
+  {
     return super.transferFrom(from, to, value);
   }
 
-  function mint(address account, uint value) public MPVAccessOnly(msg.sender) {
+  function mint(address account, uint value)
+    public
+    MPVAccessOnly(msg.sender)
+  {
     _mint(account, value);
   }
 
-  function burn(address account, uint value) public MPVAccessOnly(msg.sender) {
+  function burn(address account, uint value)
+    public
+    MPVAccessOnly(msg.sender)
+  {
     _burn(account, value);
   }
 }

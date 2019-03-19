@@ -11,7 +11,7 @@ contract('MPVToken', accounts => {
 
   beforeEach(async () => {
     masterPropertyValue = await MasterPropertyValueMock.new()
-    await masterPropertyValue.mock_setPaused(true);
+    await masterPropertyValue.mock_setPaused(false);
     const multiSig = await OperationAdminMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
     whitelist = await Whitelist.new()
     await whitelist.initialize(multiSig.address)
@@ -36,6 +36,11 @@ contract('MPVToken', accounts => {
     it('reverts if transferring to non-whitelisted address', async () => {
       await shouldFail(token.transfer(accounts[3], 30))
     })
+
+    it('reverts if MasterPropertyValue is paused', async () => {
+      await masterPropertyValue.mock_setPaused(true);
+      await shouldFail(token.transfer(accounts[1], 30))
+    })
   })
 
   describe('transferFrom()', () => {
@@ -50,6 +55,11 @@ contract('MPVToken', accounts => {
 
     it('reverts if transferring to non-whitelisted address', async () => {
       await shouldFail(token.transferFrom.call(accounts[1], accounts[3], 20))
+    })
+
+    it('reverts if MasterPropertyValue is paused', async () => {
+      await masterPropertyValue.mock_setPaused(true)
+      await shouldFail(token.transferFrom.call(accounts[1], accounts[2], 20))
     })
   })
 
