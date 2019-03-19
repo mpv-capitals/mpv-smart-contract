@@ -17,7 +17,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     _;
   }
 
-  modifier MPVOnly(address addr) {
+  modifier MPVAccessOnly(address addr) {
     require(addr == address(masterPropertyValue));
     _;
   }
@@ -44,11 +44,11 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     return super.transferFrom(from, to, value);
   }
 
-  function mint(address account, uint value) public MPVOnly(msg.sender) {
+  function mint(address account, uint value) public MPVAccessOnly(msg.sender) {
     _mint(account, value);
   }
 
-  function burn(address account, uint value) public MPVOnly(msg.sender) {
+  function burn(address account, uint value) public MPVAccessOnly(msg.sender) {
     _burn(account, value);
   }
 }
