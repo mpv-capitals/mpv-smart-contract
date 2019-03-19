@@ -4,6 +4,7 @@
   "description": "> Ethereum smart contracts for Master Property Value assets",
   "main": "truffle-config.js",
   "scripts": {
+    "compile": "truffle compile",
     "test": "truffle test",
     "lint": "npm run lint:js && npm run lint:sol",
     "lint:fix": "npm run lint:js:fix",
