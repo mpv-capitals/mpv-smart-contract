@@ -4,7 +4,7 @@ jobs:
     docker:
       - image: circleci/node:latest
       - image: trufflesuite/ganache-cli:latest
-        command: ganache-cli --deterministic -a 10
+        command: ganache-cli --deterministic -a 10 --allowUnlimitedContractSize
 
     working_directory: ~/project
 

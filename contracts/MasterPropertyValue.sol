@@ -670,10 +670,12 @@ contract MasterPropertyValue is Initializable, Pausable {
     function addAssets(Asset[] memory _assets)
       public
       onlyMintingAdmin()
-      {
+      returns (uint256) {
         for (uint256 i = 0; i < _assets.length; i++) {
             addAsset(_assets[i]);
         }
+
+        return pendingAssetsTransactionId;
     }
 
     function _addAssets()
@@ -703,6 +705,31 @@ contract MasterPropertyValue is Initializable, Pausable {
         for (uint256 i = 0; i < _assets.length; i++) {
             _enlistPendingAsset(_assets[i]);
         }
+    }
+
+    function removePendingAsset(uint256 assetId)
+      public
+      onlyMintingAdmin()
+      {
+        for (uint256 i = 0; i < pendingAssets.length; i++) {
+            if (pendingAssets[i].id == assetId) {
+                _removePendingAssetArrayItem(i);
+            }
+        }
+
+        mintingAdminMultiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+    }
+
+    function _removePendingAssetArrayItem(uint256 index)
+    internal {
+        if (index >= pendingAssets.length) return;
+
+        for (uint256 i = index; i<pendingAssets.length-1; i++) {
+            pendingAssets[i] = pendingAssets[i+1];
+        }
+
+        delete pendingAssets[pendingAssets.length-1];
+        pendingAssets.length--;
     }
 
     // getAsset returns asset
