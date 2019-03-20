@@ -6,6 +6,8 @@ const Whitelist = artifacts.require('Whitelist')
 const MasterPropertyValueMock = artifacts.require('MasterPropertyValueMock')
 const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiSigWalletMock')
 
+const MULTIPLIER = 10 ** 4
+
 contract('MPVToken', accounts => {
   let token, whitelist, masterPropertyValue
 
@@ -25,8 +27,8 @@ contract('MPVToken', accounts => {
 
   describe('transfer()', () => {
     beforeEach(async () => {
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 500)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 500)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
     })
 
     it('sends tokens to whitelisted addresses', async () => {
@@ -41,12 +43,19 @@ contract('MPVToken', accounts => {
       await masterPropertyValue.mock_setPaused(true);
       await shouldFail(token.transfer(accounts[1], 30))
     })
+
+    it('reverts if transfer breaches daily limit', async () => {
+      await token.transfer(accounts[1], 500 * MULTIPLIER)
+      await shouldFail(token.transfer(accounts[1], 501 * MULTIPLIER))
+    })
   })
 
   describe('transferFrom()', () => {
     beforeEach(async () => {
-      await token.approve(accounts[0], 500, {from: accounts[1]})
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 500)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await token.approve(accounts[0], 10000 * MULTIPLIER, {from: accounts[1]})
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
     })
 
     it('sends tokens to whitelisted addresses', async () => {
@@ -60,6 +69,11 @@ contract('MPVToken', accounts => {
     it('reverts if MasterPropertyValue is paused', async () => {
       await masterPropertyValue.mock_setPaused(true)
       await shouldFail(token.transferFrom.call(accounts[1], accounts[2], 20))
+    })
+
+    it('reverts if transfer breaches daily limit', async () => {
+      await token.transferFrom(accounts[1], accounts[0], 500 * MULTIPLIER)
+      await shouldFail(token.transferFrom(accounts[1], accounts[0], 501 * MULTIPLIER))
     })
   })
 
@@ -76,6 +90,10 @@ contract('MPVToken', accounts => {
 
     it('reverts if called by address other than the mintingAdmin', async () => {
       await shouldFail(token.mint(accounts[0], 500, { from: accounts[0]}))
+    })
+
+    it('reverts if minting tokens to a non-whitelisted address', async () => {
+      await shouldFail(masterPropertyValue.mock_callMint(token.address, accounts[4], 500))
     })
   })
 

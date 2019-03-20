@@ -46,6 +46,7 @@ contract('MPV', accounts => {
       redemptionAdminMultiSig.address,
       whitelist.address,
       mintingReceiverWalletAddress,
+      1000 * (10 ** 4) // dailyTransferLimit: wei value given token.decimal = 4
     )
 
     await superOwnerMultiSig.setMPV(mpv.address, {

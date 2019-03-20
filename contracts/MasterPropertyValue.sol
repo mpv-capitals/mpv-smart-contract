@@ -20,6 +20,7 @@ contract MasterPropertyValue is Initializable, Pausable {
     IMultiSigWallet public redemptionAdminMultiSig;
 
     IWhitelist public whitelist;
+    uint public dailyTransferLimit;
 
     Assets.State private assets;
 
@@ -85,7 +86,8 @@ contract MasterPropertyValue is Initializable, Pausable {
         IMultiSigWallet _mintingAdminMultiSig,
         IMultiSigWallet _redemptionAdminMultiSig,
         IWhitelist _whitelist,
-        address _mintingReceiverWallet
+        address _mintingReceiverWallet,
+        uint _dailyTransferLimit
     ) public initializer {
         superOwnerMultiSig = _superOwnerMultiSig;
         basicOwnerMultiSig = _basicOwnerMultiSig;
@@ -95,6 +97,8 @@ contract MasterPropertyValue is Initializable, Pausable {
 
         whitelist = _whitelist;
         mintingReceiverWallet = _mintingReceiverWallet;
+
+        dailyTransferLimit = _dailyTransferLimit;
 
         superOwnerActionThresholdPercent = 40;
         basicOwnerActionThresholdPercent = 100;
