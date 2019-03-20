@@ -647,9 +647,6 @@ contract('MPV', accounts => {
       let pendingAssetsCount = await mpv.pendingAssetsCount.call()
       pendingAssetsCount.toNumber().should.equal(1)
 
-      confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
-      confirmationCount.toNumber().should.equal(1)
-
       const asset2 = {
         id: 12,
         valuation: 50,
@@ -688,7 +685,7 @@ contract('MPV', accounts => {
       asset.tokens.should.equal('100')
     })
 
-    it('add multiple pending assets', async () => {
+    it('add multiple pending assets, remove pending asset', async () => {
       const assets = [{
         id: 2,
         valuation: 50,
@@ -701,12 +698,51 @@ contract('MPV', accounts => {
         tokens: 100,
       }]
 
+      const txId = await mpv.addAssets.call(assets, {
+        from: defaultMintingAdmin
+      })
       await mpv.addAssets(assets, {
         from: defaultMintingAdmin
       })
 
+      let pendingAssetsCount = await mpv.pendingAssetsCount.call()
+      pendingAssetsCount.toNumber().should.equal(2)
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: defaultMintingAdmin,
+      })
+
+      let confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
+      confirmationCount.toNumber().should.equal(1)
+
       pendingAssetsCount = await mpv.pendingAssetsCount.call()
       pendingAssetsCount.toNumber().should.equal(2)
+
+      const assetId = 2
+      await mpv.removePendingAsset(assetId, {
+        from: defaultMintingAdmin
+      })
+
+      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+        from: accounts[0]
+      })
+      pendingAssetsCount.toNumber().should.equal(1)
+
+      confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
+      confirmationCount.toNumber().should.equal(0)
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: defaultMintingAdmin,
+      })
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: secondAdmin,
+      })
+
+      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+        from: accounts[0]
+      })
+      pendingAssetsCount.toNumber().should.equal(0)
     })
   })
 })
