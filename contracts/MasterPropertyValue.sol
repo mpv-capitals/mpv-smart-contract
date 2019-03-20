@@ -39,8 +39,9 @@ contract MasterPropertyValue is Initializable, Pausable {
     uint256 public burningActionCountdown;
 
     address public mintingReceiverWallet;
-
     uint256 public redemptionFee;
+    Asset[] public pendingAssets;
+    uint256 public pendingAssetsTransactionId;
 
     struct Asset {
         uint256 id;
@@ -646,27 +647,61 @@ contract MasterPropertyValue is Initializable, Pausable {
         return multiSig.getOwners();
     }
 
-    // addAsset adds an asset
     function addAsset(Asset memory _asset)
       public
-      onlySuperOwner() {
+      onlyMintingAdmin()
+      returns (uint256) {
+        pendingAssets.push(_asset);
+
+        if (pendingAssetsTransactionId == 0) {
+            bytes memory data = abi.encodeWithSelector(
+                this._addAssets.selector
+            );
+
+            uint256 transactionId = mintingAdminMultiSig.mpvSubmitTransaction(address(this), 0, data);
+            pendingAssetsTransactionId = transactionId;
+            return transactionId;
+        } else {
+            mintingAdminMultiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+            return pendingAssetsTransactionId;
+        }
+    }
+
+    function addAssets(Asset[] memory _assets)
+      public
+      onlyMintingAdmin()
+      {
+        for (uint256 i = 0; i < _assets.length; i++) {
+            addAsset(_assets[i]);
+        }
+    }
+
+    function _addAssets()
+    onlyMintingAdminMultiSig()
+    public {
+        enlistPendingAssets(pendingAssets);
+        pendingAssetsTransactionId = 0;
+        delete pendingAssets;
+    }
+
+    function _enlistPendingAsset(Asset memory _asset)
+      internal {
         Assets.Asset memory asset;
         asset.id = _asset.id;
         asset.valuation = _asset.valuation;
         asset.fingerprint = _asset.fingerprint;
         asset.tokens = _asset.tokens;
-        asset.status = Assets.Status.PENDING;
+        asset.status = Assets.Status.ENLISTED;
         asset.timestamp = now;
         assets.add(asset);
         emit LogAddAsset(asset.id);
     }
 
     // addAssets adds a list of assets
-    function addAssets(Asset[] memory _assets)
-      public
-      onlySuperOwner() {
+    function enlistPendingAssets(Asset[] memory _assets)
+      internal {
         for (uint256 i = 0; i < _assets.length; i++) {
-            addAsset(_assets[i]);
+            _enlistPendingAsset(_assets[i]);
         }
     }
 
@@ -675,6 +710,13 @@ contract MasterPropertyValue is Initializable, Pausable {
       public
       returns (Assets.Asset memory) {
         return assets.get(id);
+    }
+
+    function pendingAssetsCount()
+      public
+      view
+      returns (uint256) {
+        return pendingAssets.length;
     }
 
     function pauseContract()

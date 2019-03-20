@@ -397,4 +397,12 @@ contract BaseMultiSigWallet {
 
         return false;
     }
+
+    function ownerConfirmed(uint transactionId, address owner)
+        public
+        view
+        returns (bool)
+    {
+        return confirmations[transactionId][owner];
+    }
 }

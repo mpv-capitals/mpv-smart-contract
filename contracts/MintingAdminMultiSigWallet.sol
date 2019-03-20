@@ -92,7 +92,16 @@ contract MintingAdminMultiSigWallet is BaseMultiSigWallet {
         public
         ownerExists(msg.sender)
     {
-        return super.revokeConfirmation(transactionId);
+        super.revokeConfirmation(transactionId);
+    }
+
+    function revokeAllConfirmations(uint256 transactionId)
+        public
+        onlyMPV()
+    {
+        for (uint256 i=0; i < owners.length; i++) {
+            confirmations[transactionId][owners[i]] = false;
+        }
     }
 
     function executeTransaction(uint transactionId)

@@ -554,7 +554,35 @@ contract('MPV', accounts => {
   })
 
   describe('Asset', () => {
-    it('add asset', async () => {
+    const defaultBasicOwner = accounts[0]
+    const defaultMintingAdmin = accounts[0]
+    const secondAdmin = accounts[2]
+
+    before(async () => {
+      let admins = await mpv.getMintingAdmins.call()
+      admins.length.should.equal(1)
+
+      let txId = await mpv.addMintingAdmin.call(secondAdmin, {
+        from: defaultBasicOwner
+      })
+      await mpv.addMintingAdmin(secondAdmin, {
+        from: defaultBasicOwner
+      })
+
+      await basicOwnerMultiSig.confirmTransaction(txId, {
+        from: defaultBasicOwner
+      })
+
+      const required = await mintingAdminMultiSig.required.call({
+        from: defaultBasicOwner
+      })
+      required.toNumber().should.equal(2)
+
+      admins = await mpv.getMintingAdmins.call()
+      admins.length.should.equal(2)
+    })
+
+    it('add pending asset and enlist', async () => {
       const asset = {
         id: 1,
         valuation: 50,
@@ -562,7 +590,96 @@ contract('MPV', accounts => {
         tokens: 100,
       }
 
-      await mpv.addAsset(asset)
+      let pendingAssetsCount = await mpv.pendingAssetsCount.call({
+        from: accounts[0]
+      })
+      pendingAssetsCount.toNumber().should.equal(0)
+
+      const txId = await mpv.addAsset.call(asset, {
+        from: defaultMintingAdmin
+      })
+      await mpv.addAsset(asset, {
+        from: defaultMintingAdmin
+      })
+
+      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+        from: accounts[0]
+      })
+      pendingAssetsCount.toNumber().should.equal(1)
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: defaultMintingAdmin,
+      })
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: secondAdmin,
+      })
+
+      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+        from: accounts[0]
+      })
+      pendingAssetsCount.toNumber().should.equal(0)
+    })
+
+    it('reset pending asset votes', async () => {
+      const asset = {
+        id: 11,
+        valuation: 50,
+        fingerprint: '0xabcd',
+        tokens: 100,
+      }
+
+      const txId = await mpv.addAsset.call(asset, {
+        from: defaultMintingAdmin
+      })
+      await mpv.addAsset(asset, {
+        from: defaultMintingAdmin
+      })
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: defaultMintingAdmin,
+      })
+
+      let confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
+      confirmationCount.toNumber().should.equal(1)
+
+      let pendingAssetsCount = await mpv.pendingAssetsCount.call()
+      pendingAssetsCount.toNumber().should.equal(1)
+
+      confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
+      confirmationCount.toNumber().should.equal(1)
+
+      const asset2 = {
+        id: 12,
+        valuation: 50,
+        fingerprint: '0xabcd',
+        tokens: 100,
+      }
+
+      await mpv.addAsset(asset2, {
+        from: defaultMintingAdmin
+      })
+
+      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+        from: accounts[0]
+      })
+      pendingAssetsCount.toNumber().should.equal(2)
+
+      confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
+      confirmationCount.toNumber().should.equal(0)
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: defaultMintingAdmin,
+      })
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: secondAdmin,
+      })
+
+      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+        from: accounts[0]
+      })
+      pendingAssetsCount.toNumber().should.equal(0)
     })
 
     it('get asset', async () => {
@@ -570,7 +687,7 @@ contract('MPV', accounts => {
       asset.tokens.should.equal('100')
     })
 
-    it('add multiple assets', async () => {
+    it('add multiple pending assets', async () => {
       const assets = [{
         id: 2,
         valuation: 50,
@@ -583,7 +700,12 @@ contract('MPV', accounts => {
         tokens: 100,
       }]
 
-      await mpv.addAssets(assets)
+      await mpv.addAssets(assets, {
+        from: defaultMintingAdmin
+      })
+
+      pendingAssetsCount = await mpv.pendingAssetsCount.call()
+      pendingAssetsCount.toNumber().should.equal(2)
     })
   })
 })
