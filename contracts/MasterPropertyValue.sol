@@ -7,73 +7,44 @@ import "./IMultiSigWallet.sol";
 import './IWhitelist.sol';
 import "./Assets.sol";
 import "./Pausable.sol";
+import "./MPVState.sol";
+import "./SuperOwnerRole.sol";
+import "./BasicOwnerRole.sol";
+import "./OperationAdminRole.sol";
+import "./MintingAdminRole.sol";
+import "./RedemptionAdminRole.sol";
 
 
 contract MasterPropertyValue is Initializable, Pausable {
     using Assets for Assets.State;
     using SafeMath for uint256;
+    using MPVState for MPVState.State;
+    using SuperOwnerRole for SuperOwnerRole.State;
+    using BasicOwnerRole for BasicOwnerRole.State;
+    using OperationAdminRole for OperationAdminRole.State;
+    using MintingAdminRole for MintingAdminRole.State;
+    using RedemptionAdminRole for RedemptionAdminRole.State;
 
-    IMultiSigWallet public superOwnerMultiSig;
-    IMultiSigWallet public basicOwnerMultiSig;
-    IMultiSigWallet public operationAdminMultiSig;
-    IMultiSigWallet public mintingAdminMultiSig;
-    IMultiSigWallet public redemptionAdminMultiSig;
+    MPVState.State private state;
+    SuperOwnerRole.State private superOwnerRole;
+    BasicOwnerRole.State private basicOwnerRole;
+    OperationAdminRole.State private operationAdminRole;
+    MintingAdminRole.State private mintingAdminRole;
+    RedemptionAdminRole.State private redemptionAdminRole;
 
-    IWhitelist public whitelist;
-    uint public dailyTransferLimit;
-
-    Assets.State private assets;
-
-    uint256 public superOwnerActionThresholdPercent;
-    uint256 public basicOwnerActionThresholdPercent;
-    uint256 public operationAdminActionThresholdPercent;
-    uint256 public mintingAdminActionThresholdPercent;
-    uint256 public redemptionAdminActionThresholdPercent;
-
-    uint256 public mintingAdminStartMintingCountdownThresholdPercent;
-    uint256 public redemptionAdminStartBurningCountdownThresholdPercent;
-
-    uint256 public superOwnerActionCountdown;
-    uint256 public basicOwnerActionCountdown;
-    uint256 public whitelistRemovalActionCountdown;
-    uint256 public mintingActionCountdown;
-    uint256 public burningActionCountdown;
-
-    address public mintingReceiverWallet;
-    uint256 public redemptionFee;
-    Asset[] public pendingAssets;
-    uint256 public pendingAssetsTransactionId;
-
-    struct Asset {
-        uint256 id;
-        uint256 valuation;
-        bytes32 fingerprint;
-        uint256 tokens;
-    }
-
-    event LogAddSuperOwner(uint256 transactionId, address superOwner);
     event LogSuperOwnerAdded(address superOwner);
-    event LogRemoveSuperOwner(uint256 transactionId, address superOwner);
     event LogSuperOwnerRemoved(address superOwner);
 
-    event LogAddBasicOwner(uint256 transactionId, address basicOwner);
     event LogBasicOwnerAdded(address basicOwner);
-    event LogRemoveBasicOwner(uint256 transactionId, address basicOwner);
     event LogBasicOwnerRemoved(address basicOwner);
 
-    event LogAddOperationAdmin(uint256 transactionId, address operationAdmin);
     event LogOperationAdminAdded(address operationAdmin);
-    event LogRemoveOperationAdmin(uint256 transactionId, address operationAdmin);
     event LogOperationAdminRemoved(address operationAdmin);
 
-    event LogAddMintingAdmin(uint256 transactionId, address mintingAdmin);
     event LogMintingAdminAdded(address mintingAdmin);
-    event LogRemoveMintingAdmin(uint256 transactionId, address mintingAdmin);
     event LogMintingAdminRemoved(address mintingAdmin);
 
-    event LogAddRedemptionAdmin(uint256 transactionId, address redemptionAdmin);
     event LogRedemptionAdminAdded(address redemptionAdmin);
-    event LogRemoveRedemptionAdmin(uint256 transactionId, address redemptionAdmin);
     event LogRedemptionAdminRemoved(address redemptionAdmin);
 
     event LogAddAsset(uint256 assetId);
@@ -89,473 +60,489 @@ contract MasterPropertyValue is Initializable, Pausable {
         address _mintingReceiverWallet,
         uint _dailyTransferLimit
     ) public initializer {
-        superOwnerMultiSig = _superOwnerMultiSig;
-        basicOwnerMultiSig = _basicOwnerMultiSig;
-        operationAdminMultiSig = _operationAdminMultiSig;
-        mintingAdminMultiSig = _mintingAdminMultiSig;
-        redemptionAdminMultiSig = _redemptionAdminMultiSig;
+        superOwnerRole.superOwnerMultiSig = _superOwnerMultiSig;
+        basicOwnerRole.basicOwnerMultiSig = _basicOwnerMultiSig;
+        operationAdminRole.operationAdminMultiSig = _operationAdminMultiSig;
+        mintingAdminRole.mintingAdminMultiSig = _mintingAdminMultiSig;
+        redemptionAdminRole.redemptionAdminMultiSig = _redemptionAdminMultiSig;
 
-        whitelist = _whitelist;
-        mintingReceiverWallet = _mintingReceiverWallet;
+        state.whitelist = _whitelist;
+        state.mintingReceiverWallet = _mintingReceiverWallet;
 
-        dailyTransferLimit = _dailyTransferLimit;
+        state.dailyTransferLimit = _dailyTransferLimit;
 
-        superOwnerActionThresholdPercent = 40;
-        basicOwnerActionThresholdPercent = 100;
-        operationAdminActionThresholdPercent = 100;
-        mintingAdminActionThresholdPercent = 100;
-        redemptionAdminActionThresholdPercent = 100;
+        state.superOwnerActionThresholdPercent = 40;
+        state.basicOwnerActionThresholdPercent = 100;
+        state.operationAdminActionThresholdPercent = 100;
+        state.mintingAdminActionThresholdPercent = 100;
+        state.redemptionAdminActionThresholdPercent = 100;
 
-        mintingAdminStartMintingCountdownThresholdPercent = 100;
-        redemptionAdminStartBurningCountdownThresholdPercent = 100;
+        state.mintingAdminStartMintingCountdownThresholdPercent = 100;
+        state.redemptionAdminStartBurningCountdownThresholdPercent = 100;
 
-        superOwnerActionCountdown = 48 hours;
-        basicOwnerActionCountdown = 48 hours;
-        whitelistRemovalActionCountdown = 48 hours;
-        mintingActionCountdown = 48 hours;
-        burningActionCountdown = 48 hours;
+        state.superOwnerActionCountdown = 48 hours;
+        state.basicOwnerActionCountdown = 48 hours;
+        state.whitelistRemovalActionCountdown = 48 hours;
+        state.mintingActionCountdown = 48 hours;
+        state.burningActionCountdown = 48 hours;
 
         // NOTE: default is 0.1 tokens
         // 1000 = 0.1 * (10 ** 4)
-        redemptionFee = 1000;
-    }
-
-    modifier onlyMPV() {
-        require(msg.sender == address(this));
-        _;
+        state.redemptionFee = 1000;
     }
 
     modifier onlySuperOwnerMultiSig() {
-        require(msg.sender == address(superOwnerMultiSig));
+        require(msg.sender == address(superOwnerRole.superOwnerMultiSig));
         _;
     }
 
     modifier onlySuperOwner() {
-        require(_isOwner(superOwnerMultiSig, msg.sender));
+        require(_isOwner(superOwnerRole.superOwnerMultiSig, msg.sender));
         _;
     }
 
     modifier onlyBasicOwner() {
-        require(_isOwner(basicOwnerMultiSig, msg.sender));
+        require(_isOwner(basicOwnerRole.basicOwnerMultiSig, msg.sender));
         _;
     }
 
     modifier onlyBasicOwnerMultiSig() {
-        require(msg.sender == address(basicOwnerMultiSig));
-        _;
-    }
-
-    modifier onlyOperationAdmin() {
-        require(_isOwner(operationAdminMultiSig, msg.sender));
-        _;
-    }
-
-    modifier onlyOperationAdminMultiSig() {
-        require(msg.sender == address(operationAdminMultiSig));
+        require(msg.sender == address(basicOwnerRole.basicOwnerMultiSig));
         _;
     }
 
     modifier onlyMintingAdmin() {
-        require(_isOwner(operationAdminMultiSig, msg.sender));
+        require(_isOwner(operationAdminRole.operationAdminMultiSig, msg.sender));
         _;
     }
 
     modifier onlyMintingAdminMultiSig() {
-        require(msg.sender == address(mintingAdminMultiSig));
-        _;
-    }
-
-    modifier onlyRedemptionAdmin() {
-        require(_isOwner(redemptionAdminMultiSig, msg.sender));
-        _;
-    }
-
-    modifier onlyRedemptionAdminMultiSig() {
-        require(msg.sender == address(redemptionAdminMultiSig));
+        require(msg.sender == address(mintingAdminRole.mintingAdminMultiSig));
         _;
     }
 
     function setRedemptionFee(uint256 newRedemptionFee)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.setRedemptionFee(
             this._setRedemptionFee.selector,
             newRedemptionFee
         );
-
-        return _submitTransaction(superOwnerMultiSig, data);
     }
 
     function _setRedemptionFee(uint256 newRedemptionFee)
-        public
-        onlySuperOwnerMultiSig()
+    public
+    onlySuperOwnerMultiSig()
     {
-        redemptionFee = newRedemptionFee;
+        state.redemptionFee = newRedemptionFee;
     }
 
-    function setSuperOwnerActionCountdown(uint256 newCountdown)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function setRedemptionFeeReceiverWallet(
+        address newRedemptionFeeReceiverWallet
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.setRedemptionFeeReceiverWallet(
+            this._setRedemptionFeeReceiverWallet.selector,
+            newRedemptionFeeReceiverWallet
+        );
+    }
+
+    function _setRedemptionFeeReceiverWallet(
+        address newRedemptionFeeReceiverWallet
+    )
+    public
+    onlySuperOwnerMultiSig()
+    {
+        state.redemptionFeeReceiverWallet = newRedemptionFeeReceiverWallet;
+    }
+
+    function setSuperOwnerActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.setSuperOwnerActionCountdown(
             this._setSuperOwnerActionCountdown.selector,
             newCountdown
         );
-
-        return _submitTransaction(superOwnerMultiSig, data);
     }
 
-    function _setSuperOwnerActionCountdown(uint256 newCountdown)
-        public
-        onlySuperOwnerMultiSig()
+    function _setSuperOwnerActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        superOwnerActionCountdown = newCountdown;
+        state.superOwnerActionCountdown = newCountdown;
     }
 
-    function setBasicOwnerActionCountdown(uint256 newCountdown)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function setBasicOwnerActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.setBasicOwnerActionCountdown(
             this._setBasicOwnerActionCountdown.selector,
             newCountdown
         );
-
-        return _submitTransaction(superOwnerMultiSig, data);
     }
 
-    function _setBasicOwnerActionCountdown(uint256 newCountdown)
-        public
-        onlySuperOwnerMultiSig()
+    function _setBasicOwnerActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        basicOwnerActionCountdown = newCountdown;
+        state.basicOwnerActionCountdown = newCountdown;
     }
 
-    function setWhitelistRemovalActionCountdown(uint256 newCountdown)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function setWhitelistRemovalActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.setWhitelistRemovalActionCountdown(
             this._setWhitelistRemovalActionCountdown.selector,
             newCountdown
         );
-
-        return _submitTransaction(superOwnerMultiSig, data);
     }
 
-    function _setWhitelistRemovalActionCountdown(uint256 newCountdown)
-        public
-        onlySuperOwnerMultiSig()
+    function _setWhitelistRemovalActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        whitelistRemovalActionCountdown = newCountdown;
+        state.whitelistRemovalActionCountdown = newCountdown;
     }
 
-    function setMintingActionCountdown(uint256 newCountdown)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function setMintingActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.setMintingActionCountdown(
             this._setMintingActionCountdown.selector,
             newCountdown
         );
-
-        return _submitTransaction(superOwnerMultiSig, data);
     }
 
-    function _setMintingActionCountdown(uint256 newCountdown)
-        public
-        onlySuperOwnerMultiSig()
+    function _setMintingActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        mintingActionCountdown = newCountdown;
+        state.mintingActionCountdown = newCountdown;
     }
 
-    function setBurningActionCountdown(uint256 newCountdown)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function setBurningActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.setBurningActionCountdown(
             this._setBurningActionCountdown.selector,
             newCountdown
         );
-
-        return _submitTransaction(superOwnerMultiSig, data);
     }
 
-    function _setBurningActionCountdown(uint256 newCountdown)
-        public
-        onlySuperOwnerMultiSig()
+    function _setBurningActionCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        burningActionCountdown = newCountdown;
+        state.burningActionCountdown = newCountdown;
     }
 
-    function setMintingReceiverWallet(address newMintingReceiverWallet)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function setMintingReceiverWallet(
+        address newMintingReceiverWallet
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.setMintingReceiverWallet(
             this._setMintingReceiverWallet.selector,
             newMintingReceiverWallet
         );
-
-        return _submitTransaction(superOwnerMultiSig, data);
     }
 
-    function _setMintingReceiverWallet(address newMintingReceiverWallet)
-        public
-        onlySuperOwnerMultiSig()
+    function _setMintingReceiverWallet(
+        address newMintingReceiverWallet
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        mintingReceiverWallet = newMintingReceiverWallet;
+        state.mintingReceiverWallet = newMintingReceiverWallet;
     }
 
-    function addSuperOwner(address newSuperOwner)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function addSuperOwner(
+        address newSuperOwner
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.addSuperOwner(
             this._addSuperOwner.selector,
             newSuperOwner
         );
-
-        transactionId = _submitTransaction(superOwnerMultiSig, data);
-        emit LogAddSuperOwner(transactionId, newSuperOwner);
     }
 
-    function _addSuperOwner(address newSuperOwner)
-        public
-        onlySuperOwnerMultiSig()
+    function _addSuperOwner(
+        address newSuperOwner
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        superOwnerMultiSig.addOwner(newSuperOwner);
+        superOwnerRole.superOwnerMultiSig.addOwner(newSuperOwner);
         _updateSuperOwnerRequirement();
         emit LogSuperOwnerAdded(newSuperOwner);
     }
 
-    function removeSuperOwner(address superOwner)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function removeSuperOwner(
+        address superOwner
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.removeSuperOwner(
             this._removeSuperOwner.selector,
             superOwner
         );
-
-        transactionId = _submitTransaction(superOwnerMultiSig, data);
-        emit LogRemoveSuperOwner(transactionId, superOwner);
     }
 
-    function _removeSuperOwner(address superOwner)
-        public
-        onlySuperOwnerMultiSig()
+    function _removeSuperOwner(
+        address superOwner
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        superOwnerMultiSig.removeOwner(superOwner);
+        superOwnerRole.superOwnerMultiSig.removeOwner(superOwner);
         _updateSuperOwnerRequirement();
         emit LogSuperOwnerRemoved(superOwner);
     }
 
-    function addBasicOwner(address newBasicOwner)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function addBasicOwner(
+        address newBasicOwner
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.removeSuperOwner(
             this._addBasicOwner.selector,
             newBasicOwner
         );
-
-        transactionId = _submitTransaction(superOwnerMultiSig, data);
-        emit LogAddBasicOwner(transactionId, newBasicOwner);
     }
 
-    function _addBasicOwner(address newBasicOwner)
-        public
-        onlySuperOwnerMultiSig()
+    function _addBasicOwner(
+        address newBasicOwner
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        basicOwnerMultiSig.addOwner(newBasicOwner);
+        basicOwnerRole.basicOwnerMultiSig.addOwner(newBasicOwner);
         _updateBasicOwnerRequirement();
         emit LogBasicOwnerAdded(newBasicOwner);
     }
 
-    function removeBasicOwner(address basicOwner)
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function removeBasicOwner(
+        address basicOwner
+    )
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
+        return superOwnerRole.removeSuperOwner(
             this._removeBasicOwner.selector,
             basicOwner
         );
-
-        transactionId = _submitTransaction(superOwnerMultiSig, data);
-        emit LogRemoveBasicOwner(transactionId, basicOwner);
     }
 
-    function _removeBasicOwner(address basicOwner)
-        public
-        onlySuperOwnerMultiSig()
+    function _removeBasicOwner(
+        address basicOwner
+    )
+    public
+    onlySuperOwnerMultiSig()
     {
-        basicOwnerMultiSig.removeOwner(basicOwner);
+        basicOwnerRole.basicOwnerMultiSig.removeOwner(basicOwner);
         _updateBasicOwnerRequirement();
         emit LogBasicOwnerRemoved(basicOwner);
     }
 
-    function addOperationAdmin(address newOperationAdmin)
-      public
-      onlyBasicOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function addOperationAdmin(
+        address newOperationAdmin
+    )
+    public
+    onlyBasicOwner()
+    returns(uint256 transactionId) {
+        return basicOwnerRole.addOperationAdmin(
             this._addOperationAdmin.selector,
             newOperationAdmin
         );
-
-        transactionId = _submitTransaction(basicOwnerMultiSig, data);
-        emit LogAddOperationAdmin(transactionId, newOperationAdmin);
     }
 
-    function _addOperationAdmin(address newOperationAdmin)
-        public
-        onlyBasicOwnerMultiSig()
+    function _addOperationAdmin(
+        address newOperationAdmin
+    )
+    public
+    onlyBasicOwnerMultiSig()
     {
-        operationAdminMultiSig.addOwner(newOperationAdmin);
+        operationAdminRole.operationAdminMultiSig.addOwner(newOperationAdmin);
         _updateOperationAdminRequirement();
         emit LogOperationAdminAdded(newOperationAdmin);
     }
 
-    function removeOperationAdmin(address operationAdmin)
-      public
-      onlyBasicOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function removeOperationAdmin(
+        address operationAdmin
+    )
+    public
+    onlyBasicOwner()
+    returns(uint256 transactionId) {
+        return basicOwnerRole.removeOperationAdmin(
             this._removeOperationAdmin.selector,
             operationAdmin
         );
-
-        transactionId = _submitTransaction(basicOwnerMultiSig, data);
-        emit LogRemoveOperationAdmin(transactionId, operationAdmin);
     }
 
-    function _removeOperationAdmin(address operationAdmin)
-        public
-        onlyBasicOwnerMultiSig()
+    function _removeOperationAdmin(
+        address operationAdmin
+    )
+    public
+    onlyBasicOwnerMultiSig()
     {
-        operationAdminMultiSig.removeOwner(operationAdmin);
+        operationAdminRole.operationAdminMultiSig.removeOwner(operationAdmin);
         _updateOperationAdminRequirement();
         emit LogOperationAdminRemoved(operationAdmin);
     }
 
-    function addMintingAdmin(address newMintingAdmin)
-      public
-      onlyBasicOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function addMintingAdmin(
+        address newMintingAdmin
+    )
+    public
+    onlyBasicOwner()
+    returns(uint256 transactionId) {
+        return basicOwnerRole.addMintingAdmin(
             this._addMintingAdmin.selector,
             newMintingAdmin
         );
-
-        transactionId = _submitTransaction(basicOwnerMultiSig, data);
-        emit LogAddMintingAdmin(transactionId, newMintingAdmin);
     }
 
-    function _addMintingAdmin(address newMintingAdmin)
-        public
-        onlyBasicOwnerMultiSig()
+    function _addMintingAdmin(
+        address newMintingAdmin
+    )
+    public
+    onlyBasicOwnerMultiSig()
     {
-        mintingAdminMultiSig.addOwner(newMintingAdmin);
+        mintingAdminRole.mintingAdminMultiSig.addOwner(newMintingAdmin);
         _updateMintingAdminRequirement();
         emit LogMintingAdminAdded(newMintingAdmin);
     }
 
-    function removeMintingAdmin(address mintingAdmin)
-      public
-      onlyBasicOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function removeMintingAdmin(
+        address mintingAdmin
+    )
+    public
+    onlyBasicOwner()
+    returns(uint256 transactionId) {
+        return basicOwnerRole.removeMintingAdmin(
             this._removeMintingAdmin.selector,
             mintingAdmin
         );
-
-        transactionId = _submitTransaction(basicOwnerMultiSig, data);
-        emit LogRemoveMintingAdmin(transactionId, mintingAdmin);
     }
 
-    function _removeMintingAdmin(address mintingAdmin)
-        public
-        onlyBasicOwnerMultiSig()
+    function _removeMintingAdmin(
+        address mintingAdmin
+    )
+    public
+    onlyBasicOwnerMultiSig()
     {
-        mintingAdminMultiSig.removeOwner(mintingAdmin);
+        mintingAdminRole.mintingAdminMultiSig.removeOwner(mintingAdmin);
         _updateMintingAdminRequirement();
         emit LogMintingAdminRemoved(mintingAdmin);
     }
 
-    function addRedemptionAdmin(address newRedemptionAdmin)
-      public
-      onlyBasicOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function addRedemptionAdmin(
+        address newRedemptionAdmin
+    )
+    public
+    onlyBasicOwner()
+    returns(uint256 transactionId) {
+        return basicOwnerRole.addRedemptionAdmin(
             this._addRedemptionAdmin.selector,
             newRedemptionAdmin
         );
-
-        transactionId = _submitTransaction(basicOwnerMultiSig, data);
-        emit LogAddRedemptionAdmin(transactionId, newRedemptionAdmin);
     }
 
-    function _addRedemptionAdmin(address newRedemptionAdmin)
-        public
-        onlyBasicOwnerMultiSig()
+    function _addRedemptionAdmin(
+        address newRedemptionAdmin
+    )
+    public
+    onlyBasicOwnerMultiSig()
     {
-        redemptionAdminMultiSig.addOwner(newRedemptionAdmin);
+        redemptionAdminRole.redemptionAdminMultiSig.addOwner(newRedemptionAdmin);
         _updateRedemptionAdminRequirement();
         emit LogRedemptionAdminAdded(newRedemptionAdmin);
     }
 
-    function removeRedemptionAdmin(address redemptionAdmin)
-      public
-      onlyBasicOwner()
-      returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
+    function removeRedemptionAdmin(
+        address redemptionAdmin
+    )
+    public
+    onlyBasicOwner()
+    returns(uint256 transactionId) {
+        return basicOwnerRole.removeRedemptionAdmin(
             this._removeRedemptionAdmin.selector,
             redemptionAdmin
         );
-
-        transactionId = _submitTransaction(basicOwnerMultiSig, data);
-        emit LogRemoveRedemptionAdmin(transactionId, redemptionAdmin);
     }
 
-    function _removeRedemptionAdmin(address redemptionAdmin)
-        public
-        onlyBasicOwnerMultiSig()
+    function _removeRedemptionAdmin(
+        address redemptionAdmin
+    )
+    public
+    onlyBasicOwnerMultiSig()
     {
-        redemptionAdminMultiSig.removeOwner(redemptionAdmin);
+        redemptionAdminRole.redemptionAdminMultiSig.removeOwner(redemptionAdmin);
         _updateRedemptionAdminRequirement();
         emit LogRedemptionAdminRemoved(redemptionAdmin);
     }
 
     function _updateSuperOwnerRequirement()
-        internal
-        onlySuperOwnerMultiSig() {
-        _updateRequirement(superOwnerMultiSig, superOwnerActionThresholdPercent);
+    internal
+    onlySuperOwnerMultiSig() {
+        _updateRequirement(superOwnerRole.superOwnerMultiSig, state.superOwnerActionThresholdPercent);
     }
 
     function _updateBasicOwnerRequirement()
-        internal
-        onlySuperOwnerMultiSig() {
-        _updateRequirement(basicOwnerMultiSig, basicOwnerActionThresholdPercent);
+    internal
+    onlySuperOwnerMultiSig() {
+        _updateRequirement(basicOwnerRole.basicOwnerMultiSig, state.basicOwnerActionThresholdPercent);
     }
 
     function _updateOperationAdminRequirement()
-        internal
-        onlyBasicOwnerMultiSig() {
-        _updateRequirement(operationAdminMultiSig, operationAdminActionThresholdPercent);
+    internal
+    onlyBasicOwnerMultiSig() {
+        _updateRequirement(operationAdminRole.operationAdminMultiSig, state.operationAdminActionThresholdPercent);
     }
 
     function _updateMintingAdminRequirement()
-        internal
-        onlyBasicOwnerMultiSig() {
-        _updateRequirement(mintingAdminMultiSig, mintingAdminActionThresholdPercent);
+    internal
+    onlyBasicOwnerMultiSig() {
+        _updateRequirement(mintingAdminRole.mintingAdminMultiSig, state.mintingAdminActionThresholdPercent);
     }
 
     function _updateRedemptionAdminRequirement()
-        internal
-        onlyBasicOwnerMultiSig() {
-        _updateRequirement(redemptionAdminMultiSig, redemptionAdminActionThresholdPercent);
+    internal
+    onlyBasicOwnerMultiSig() {
+        _updateRequirement(redemptionAdminRole.redemptionAdminMultiSig, state.redemptionAdminActionThresholdPercent);
     }
 
     // updateRequirements updates the requirement property in the multsig.
@@ -579,119 +566,119 @@ contract MasterPropertyValue is Initializable, Pausable {
     }
 
     function isSuperOwner(address superOwner)
-      public
-      returns (bool) {
-        return _isOwner(superOwnerMultiSig, superOwner);
+    public
+    returns (bool) {
+        return _isOwner(superOwnerRole.superOwnerMultiSig, superOwner);
     }
 
     function isBasicOwner(address basicOwner)
-      public
-      returns (bool) {
-        return _isOwner(basicOwnerMultiSig, basicOwner);
+    public
+    returns (bool) {
+        return _isOwner(basicOwnerRole.basicOwnerMultiSig, basicOwner);
     }
 
     function isOperationAdmin(address operationAdmin)
-      public
-      returns (bool) {
-        return _isOwner(operationAdminMultiSig, operationAdmin);
+    public
+    returns (bool) {
+        return _isOwner(operationAdminRole.operationAdminMultiSig, operationAdmin);
     }
 
     function isMintingAdmin(address mintingAdmin)
-      public
-      returns (bool) {
-        return _isOwner(mintingAdminMultiSig, mintingAdmin);
+    public
+    returns (bool) {
+        return _isOwner(mintingAdminRole.mintingAdminMultiSig, mintingAdmin);
     }
 
     function isRedemptionAdmin(address redemptionAdmin)
-      public
-      returns (bool) {
-        return _isOwner(redemptionAdminMultiSig, redemptionAdmin);
+    public
+    returns (bool) {
+        return _isOwner(redemptionAdminRole.redemptionAdminMultiSig, redemptionAdmin);
     }
 
     function _isOwner(IMultiSigWallet multiSig, address owner)
-      internal
-      returns (bool) {
+    internal
+    returns (bool) {
         return multiSig.hasOwner(owner);
     }
 
     // getSuperOwners returns super owners
     function getSuperOwners()
-      public
-      returns (address[] memory) {
-        return _getOwners(superOwnerMultiSig);
+    public
+    returns (address[] memory) {
+        return _getOwners(superOwnerRole.superOwnerMultiSig);
     }
 
     function getBasicOwners()
-      public
-      returns (address[] memory) {
-        return _getOwners(basicOwnerMultiSig);
+    public
+    returns (address[] memory) {
+        return _getOwners(basicOwnerRole.basicOwnerMultiSig);
     }
 
     function getOperationAdmins()
-      public
-      returns (address[] memory) {
-        return _getOwners(operationAdminMultiSig);
+    public
+    returns (address[] memory) {
+        return _getOwners(operationAdminRole.operationAdminMultiSig);
     }
 
     function getMintingAdmins()
-      public
-      returns (address[] memory) {
-        return _getOwners(mintingAdminMultiSig);
+    public
+    returns (address[] memory) {
+        return _getOwners(mintingAdminRole.mintingAdminMultiSig);
     }
 
     function getRedemptionAdmins()
-      public
-      returns (address[] memory) {
-        return _getOwners(redemptionAdminMultiSig);
+    public
+    returns (address[] memory) {
+        return _getOwners(redemptionAdminRole.redemptionAdminMultiSig);
     }
 
     function _getOwners(IMultiSigWallet multiSig)
-      internal
-      returns (address[] memory) {
+    internal
+    returns (address[] memory) {
         return multiSig.getOwners();
     }
 
-    function addAsset(Asset memory _asset)
-      public
-      onlyMintingAdmin()
-      returns (uint256) {
-        pendingAssets.push(_asset);
+    function addAsset(MPVState.Asset memory _asset)
+    public
+    onlyMintingAdmin()
+    returns (uint256) {
+        state.pendingAssets.push(_asset);
 
-        if (pendingAssetsTransactionId == 0) {
+        if (state.pendingAssetsTransactionId == 0) {
             bytes memory data = abi.encodeWithSelector(
                 this._addAssets.selector
             );
 
-            uint256 transactionId = mintingAdminMultiSig.mpvSubmitTransaction(address(this), 0, data);
-            pendingAssetsTransactionId = transactionId;
+            uint256 transactionId = mintingAdminRole.mintingAdminMultiSig.mpvSubmitTransaction(address(this), 0, data);
+            state.pendingAssetsTransactionId = transactionId;
             return transactionId;
         } else {
-            mintingAdminMultiSig.revokeAllConfirmations(pendingAssetsTransactionId);
-            return pendingAssetsTransactionId;
+            mintingAdminRole.mintingAdminMultiSig.revokeAllConfirmations(state.pendingAssetsTransactionId);
+            return state.pendingAssetsTransactionId;
         }
     }
 
-    function addAssets(Asset[] memory _assets)
-      public
-      onlyMintingAdmin()
-      returns (uint256) {
+    function addAssets(MPVState.Asset[] memory _assets)
+    public
+    onlyMintingAdmin()
+    returns (uint256) {
         for (uint256 i = 0; i < _assets.length; i++) {
             addAsset(_assets[i]);
         }
 
-        return pendingAssetsTransactionId;
+        return state.pendingAssetsTransactionId;
     }
 
     function _addAssets()
     onlyMintingAdminMultiSig()
     public {
-        enlistPendingAssets(pendingAssets);
-        pendingAssetsTransactionId = 0;
-        delete pendingAssets;
+        enlistPendingAssets(state.pendingAssets);
+        state.pendingAssetsTransactionId = 0;
+        delete state.pendingAssets;
     }
 
-    function _enlistPendingAsset(Asset memory _asset)
-      internal {
+    function _enlistPendingAsset(MPVState.Asset memory _asset)
+    internal {
         Assets.Asset memory asset;
         asset.id = _asset.id;
         asset.valuation = _asset.valuation;
@@ -699,97 +686,117 @@ contract MasterPropertyValue is Initializable, Pausable {
         asset.tokens = _asset.tokens;
         asset.status = Assets.Status.ENLISTED;
         asset.timestamp = now;
-        assets.add(asset);
+        state.assets.add(asset);
         emit LogAddAsset(asset.id);
     }
 
     // addAssets adds a list of assets
-    function enlistPendingAssets(Asset[] memory _assets)
-      internal {
+    function enlistPendingAssets(MPVState.Asset[] memory _assets)
+    internal {
         for (uint256 i = 0; i < _assets.length; i++) {
             _enlistPendingAsset(_assets[i]);
         }
     }
 
     function removePendingAsset(uint256 assetId)
-      public
-      onlyMintingAdmin()
-      {
-        for (uint256 i = 0; i < pendingAssets.length; i++) {
-            if (pendingAssets[i].id == assetId) {
+    public
+    onlyMintingAdmin()
+    {
+        for (uint256 i = 0; i < state.pendingAssets.length; i++) {
+            if (state.pendingAssets[i].id == assetId) {
                 _removePendingAssetArrayItem(i);
             }
         }
 
-        mintingAdminMultiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+        mintingAdminRole.mintingAdminMultiSig.revokeAllConfirmations(state.pendingAssetsTransactionId);
     }
 
     function _removePendingAssetArrayItem(uint256 index)
     internal {
-        if (index >= pendingAssets.length) return;
+        if (index >= state.pendingAssets.length) return;
 
-        for (uint256 i = index; i<pendingAssets.length-1; i++) {
-            pendingAssets[i] = pendingAssets[i+1];
+        for (uint256 i = index; i < state.pendingAssets.length-1; i++) {
+            state.pendingAssets[i] = state.pendingAssets[i+1];
         }
 
-        delete pendingAssets[pendingAssets.length-1];
-        pendingAssets.length--;
+        delete state.pendingAssets[state.pendingAssets.length-1];
+        state.pendingAssets.length--;
     }
 
     // getAsset returns asset
     function getAsset(uint256 id)
-      public
-      returns (Assets.Asset memory) {
-        return assets.get(id);
+    public
+    returns (Assets.Asset memory) {
+        return state.assets.get(id);
     }
 
     function pendingAssetsCount()
-      public
-      view
-      returns (uint256) {
-        return pendingAssets.length;
+    public
+    view
+    returns (uint256) {
+        return state.pendingAssets.length;
     }
 
     function pauseContract()
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             this._pause.selector
         );
 
-        transactionId = _submitTransaction(superOwnerMultiSig, data);
+        transactionId = _submitTransaction(superOwnerRole.superOwnerMultiSig, data);
     }
 
     function _pause()
-        public
-        onlySuperOwnerMultiSig()
+    public
+    onlySuperOwnerMultiSig()
     {
         super.pause();
     }
 
     function unpauseContract()
-      public
-      onlySuperOwner()
-      returns(uint256 transactionId) {
+    public
+    onlySuperOwner()
+    returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             this._unpause.selector
         );
 
-        transactionId = _submitTransaction(superOwnerMultiSig, data);
+        transactionId = _submitTransaction(superOwnerRole.superOwnerMultiSig, data);
     }
 
     function _unpause()
-        public
-        onlySuperOwnerMultiSig()
+    public
+    onlySuperOwnerMultiSig()
     {
         super.unpause();
     }
 
     function _submitTransaction(IMultiSigWallet multiSig, bytes memory data)
-        public
-        returns (uint256 transactionId)
+    public
+    returns (uint256 transactionId)
     {
         transactionId = multiSig.mpvSubmitTransaction(address(this), 0, data);
+    }
+
+    function dailyTransferLimit() public view returns(uint256) {
+        return state.dailyTransferLimit;
+    }
+
+    function superOwnerActionThresholdPercent() public view returns(uint256) {
+        return state.superOwnerActionThresholdPercent;
+    }
+
+    function redemptionFee() public view returns(uint256) {
+        return state.redemptionFee;
+    }
+
+    function pendingAssets() public view returns(MPVState.Asset[] memory) {
+        return state.pendingAssets;
+    }
+
+    function pendingAssetsTransactionId() public view returns(uint256) {
+        return state.pendingAssetsTransactionId;
     }
 }

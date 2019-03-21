@@ -4,6 +4,13 @@ require('chai').should()
 
 const MPV = artifacts.require('MasterPropertyValue')
 const Assets = artifacts.require('Assets')
+const MPVState = artifacts.require('MPVState')
+const SuperOwnerRole = artifacts.require('SuperOwnerRole')
+const BasicOwnerRole = artifacts.require('BasicOwnerRole')
+const OperationAdminRole = artifacts.require('OperationAdminRole')
+const MintingAdminRole = artifacts.require('MintingAdminRole')
+const RedemptionAdminRole = artifacts.require('RedemptionAdminRole')
+
 const SuperOwnerMultiSigWallet = artifacts.require('SuperOwnerMultiSigWallet')
 const BasicOwnerMultiSigWallet = artifacts.require('BasicOwnerMultiSigWallet')
 const OperationAdminMultiSigWallet = artifacts.require('OperationAdminMultiSigWallet')
@@ -13,6 +20,13 @@ const Whitelist = artifacts.require('Whitelist')
 
 contract('MPV', accounts => {
   let mpv = null
+  let mpvState = null
+  let superOwnerRole = null
+  let basicOwnerRole = null
+  let operationAdminRole = null
+  let mintingAdminRole = null
+  let redemptionAdminRole = null
+
   let assets = null
   let superOwnerMultiSig = null
   let basicOwnerMultiSig = null
@@ -23,6 +37,13 @@ contract('MPV', accounts => {
 
   before(async () => {
     assets = await Assets.new()
+    mpvState = await MPVState.new()
+    superOwnerRole = await SuperOwnerRole.new()
+    basicOwnerRole = await BasicOwnerRole.new()
+    operationAdminRole = await OperationAdminRole.new()
+    mintingAdminRole = await MintingAdminRole.new()
+    redemptionAdminRole = await RedemptionAdminRole.new()
+
     superOwnerMultiSig = await SuperOwnerMultiSigWallet.new([accounts[0]], 1)
     basicOwnerMultiSig = await BasicOwnerMultiSigWallet.new([accounts[0]], 1)
     operationAdminMultiSig = await OperationAdminMultiSigWallet.new([accounts[0]], 1)
@@ -33,6 +54,12 @@ contract('MPV', accounts => {
 
     await MPV.link({
       Assets: assets.address,
+      MPVState: mpvState.address,
+      SuperOwnerRole: superOwnerRole.address,
+      BasicOwnerRole: basicOwnerRole.address,
+      OperationAdminRole: operationAdminRole.address,
+      MintingAdminRole: mintingAdminRole.address,
+      RedemptionAdminRole: redemptionAdminRole.address
     })
 
     const mintingReceiverWalletAddress = '0x0000000000000000000000000000000000000000'
