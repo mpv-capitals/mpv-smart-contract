@@ -65,6 +65,10 @@ contract('MPV', accounts => {
     const mintingReceiverWalletAddress = '0x0000000000000000000000000000000000000000'
 
     mpv = await MPV.new()
+
+    const receipt = await web3.eth.getTransactionReceipt(mpv.transactionHash)
+    console.log(JSON.stringify(receipt, null, 2))
+
     mpv.initialize(
       superOwnerMultiSig.address,
       basicOwnerMultiSig.address,
