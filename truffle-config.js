@@ -68,6 +68,8 @@ module.exports = {
     development: {
       provider: createProvider('ws://localhost:8545'),
       network_id: '*', // eslint-disable-line camelcase
+      gas: 7712383,
+      gasPrice: 20000000000,
     },
     kovan: {
       provider: createProvider('https://kovan.infura.io'),

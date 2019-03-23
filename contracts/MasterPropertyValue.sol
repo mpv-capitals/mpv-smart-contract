@@ -32,23 +32,33 @@ contract MasterPropertyValue is Initializable, Pausable {
     MintingAdminRole.State private mintingAdminRole;
     RedemptionAdminRole.State private redemptionAdminRole;
 
-    event LogSuperOwnerAdded(address superOwner);
-    event LogSuperOwnerRemoved(address superOwner);
-
-    event LogBasicOwnerAdded(address basicOwner);
-    event LogBasicOwnerRemoved(address basicOwner);
-
-    event LogOperationAdminAdded(address operationAdmin);
-    event LogOperationAdminRemoved(address operationAdmin);
-
-    event LogMintingAdminAdded(address mintingAdmin);
-    event LogMintingAdminRemoved(address mintingAdmin);
-
-    event LogRedemptionAdminAdded(address redemptionAdmin);
-    event LogRedemptionAdminRemoved(address redemptionAdmin);
+    event LogOwnerAdded(Roles role, address superOwner);
+    event LogOwnerRemoved(Roles role, address superOwner);
 
     event LogAddAsset(uint256 assetId);
     event LogRemoveAsset(uint256 assetId);
+
+    enum Roles {
+        SuperOwner,
+        BasicOwner,
+        OperationAdmin,
+        MintingAdmin,
+        RedemptionAdmin
+    }
+
+    enum Actions {
+        setSuperOwnerActionThresholdPercent,
+        setRedemptionFee,
+        setRedemptionFeeReceiverWallet,
+        setSuperOwnerActionCountdown,
+        setBasicOwnerActionCountdown,
+        setWhitelistRemovalActionCountdown,
+        setMintingActionCountdown,
+        setBurningActionCountdown,
+        setMintingReceiverWallet,
+        addOwner,
+        removeOwner
+    }
 
     function initialize(
         IMultiSigWallet _superOwnerMultiSig,
@@ -91,457 +101,271 @@ contract MasterPropertyValue is Initializable, Pausable {
         state.redemptionFee = 1000;
     }
 
-    modifier onlySuperOwnerMultiSig() {
-        require(msg.sender == address(superOwnerRole.superOwnerMultiSig));
+    modifier onlyRole(Roles role) {
+        if (role == Roles.SuperOwner) {
+            require(_isOwner(superOwnerRole.superOwnerMultiSig, msg.sender));
+        } else if (role == Roles.BasicOwner) {
+            require(_isOwner(basicOwnerRole.basicOwnerMultiSig, msg.sender));
+        } else if (role == Roles.OperationAdmin) {
+            //
+        } else if (role == Roles.MintingAdmin) {
+            require(_isOwner(operationAdminRole.operationAdminMultiSig, msg.sender));
+        } else if (role == Roles.RedemptionAdmin) {
+            //
+        } else {
+            revert("invalid role");
+        }
         _;
     }
 
-    modifier onlySuperOwner() {
-        require(_isOwner(superOwnerRole.superOwnerMultiSig, msg.sender));
+    modifier onlyMultiSig(Roles role) {
+        require(_isMultiSig(role));
         _;
     }
 
-    modifier onlyBasicOwner() {
-        require(_isOwner(basicOwnerRole.basicOwnerMultiSig, msg.sender));
-        _;
+    function _isMultiSig(Roles role) internal returns(bool) {
+        if (role == Roles.SuperOwner) {
+            return msg.sender == address(superOwnerRole.superOwnerMultiSig);
+        } else if (role == Roles.BasicOwner) {
+            return msg.sender == address(basicOwnerRole.basicOwnerMultiSig);
+        } else if (role == Roles.MintingAdmin) {
+            return msg.sender == address(mintingAdminRole.mintingAdminMultiSig);
+        }
+        return false;
     }
 
-    modifier onlyBasicOwnerMultiSig() {
-        require(msg.sender == address(basicOwnerRole.basicOwnerMultiSig));
-        _;
-    }
-
-    modifier onlyMintingAdmin() {
-        require(_isOwner(operationAdminRole.operationAdminMultiSig, msg.sender));
-        _;
-    }
-
-    modifier onlyMintingAdminMultiSig() {
-        require(msg.sender == address(mintingAdminRole.mintingAdminMultiSig));
-        _;
-    }
-
-    function setRedemptionFee(uint256 newRedemptionFee)
+    function performAction(
+        Actions action,
+        Roles role,
+        uint256[] memory argsUint256,
+        address[] memory argsAddress
+    )
     public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.setRedemptionFee(
-            this._setRedemptionFee.selector,
-            newRedemptionFee
-        );
-    }
-
-    function _setRedemptionFee(uint256 newRedemptionFee)
-    public
-    onlySuperOwnerMultiSig()
+    returns (uint256)
     {
-        state.redemptionFee = newRedemptionFee;
+        if (action == Actions.setSuperOwnerActionThresholdPercent) {
+            return superOwnerRole.setSuperOwnerActionThresholdPercent(
+                this._callback.selector,
+                uint256(Actions.setSuperOwnerActionThresholdPercent),
+
+                argsUint256[0] // newThreshold
+            );
+        } else if (action == Actions.setRedemptionFee) {
+            return superOwnerRole.setRedemptionFee(
+                this._callback.selector,
+                uint256(Actions.setRedemptionFee),
+                argsUint256[0] // newRedemptionFee
+            );
+        } else if (action == Actions.setRedemptionFeeReceiverWallet) {
+            return superOwnerRole.setRedemptionFeeReceiverWallet(
+                this._callback.selector,
+                uint256(Actions.setRedemptionFeeReceiverWallet),
+                argsAddress[0] // newRedemptionFeeReceiverWallet
+            );
+        } else if (action == Actions.setSuperOwnerActionCountdown) {
+                return superOwnerRole.setSuperOwnerActionCountdown(
+                    this._callback.selector,
+                    uint256(Actions.setSuperOwnerActionCountdown),
+                    argsUint256[0] // newCountdown
+                );
+        } else if (action == Actions.setBasicOwnerActionCountdown) {
+            return superOwnerRole.setBasicOwnerActionCountdown(
+                this._callback.selector,
+                uint256(Actions.setBasicOwnerActionCountdown),
+                argsUint256[0] // newCountdown
+            );
+        } else if (action == Actions.setWhitelistRemovalActionCountdown) {
+            return superOwnerRole.setWhitelistRemovalActionCountdown(
+                this._callback.selector,
+                uint256(Actions.setWhitelistRemovalActionCountdown),
+                argsUint256[0] // newCountdown
+            );
+        } else if (action == Actions.setMintingActionCountdown) {
+                return superOwnerRole.setMintingActionCountdown(
+                    this._callback.selector,
+                    uint256(Actions.setMintingActionCountdown),
+                    argsUint256[0] // newCountdown
+                );
+        } else if (action == Actions.setBurningActionCountdown) {
+                return superOwnerRole.setBurningActionCountdown(
+                    this._callback.selector,
+                    uint256(Actions.setBurningActionCountdown),
+                    argsUint256[0] // newCountdown
+                );
+        } else if (action == Actions.setMintingReceiverWallet) {
+                return superOwnerRole.setMintingReceiverWallet(
+                    this._callback.selector,
+                    uint256(Actions.setMintingReceiverWallet),
+                    argsAddress[0] // newMintingReceiverWallet
+                );
+        } else if (action == Actions.addOwner) {
+            if (role == Roles.SuperOwner) {
+                return superOwnerRole.addSuperOwner(
+                    this._addOwner.selector,
+                    argsAddress[0] // newSuperOwner
+                );
+            } else if (role == Roles.BasicOwner) {
+                return superOwnerRole.addBasicOwner(
+                    this._addOwner.selector,
+                    argsAddress[0] // newBasicOwner
+                );
+            } else if (role == Roles.OperationAdmin) {
+                return basicOwnerRole.addOperationAdmin(
+                    this._addOwner.selector,
+                    argsAddress[0] // newOperationAdmin
+                );
+            } else if (role == Roles.MintingAdmin) {
+                return basicOwnerRole.addMintingAdmin(
+                    this._addOwner.selector,
+                    argsAddress[0] // newMintingAdmin
+                );
+            } else if (role == Roles.RedemptionAdmin) {
+                return basicOwnerRole.addRedemptionAdmin(
+                    this._addOwner.selector,
+                    argsAddress[0] // newRedemptionAdmin
+                );
+            }
+        } else if (action == Actions.removeOwner) {
+            if (role == Roles.SuperOwner) {
+                return superOwnerRole.removeSuperOwner(
+                    this._removeOwner.selector,
+                    argsAddress[0] // basicOwner
+                );
+            } else if (role == Roles.BasicOwner) {
+                return superOwnerRole.removeBasicOwner(
+                    this._removeOwner.selector,
+                    argsAddress[0] // basicOwner
+                );
+            } else if (role == Roles.OperationAdmin) {
+                return basicOwnerRole.removeOperationAdmin(
+                    this._removeOwner.selector,
+                    argsAddress[0] // operationAdmin
+                );
+            } else if (role == Roles.MintingAdmin) {
+                return basicOwnerRole.removeMintingAdmin(
+                    this._removeOwner.selector,
+                    argsAddress[0] // mintingAdmin
+                );
+            } else if (role == Roles.RedemptionAdmin) {
+                return basicOwnerRole.removeRedemptionAdmin(
+                    this._removeOwner.selector,
+                    argsAddress[0] // redemptionAdmin
+                );
+            }
+        }
+
+       return 0;
     }
 
-    function setRedemptionFeeReceiverWallet(
-        address newRedemptionFeeReceiverWallet
+    function _callback(
+        Actions action,
+        uint256 argUint256
     )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.setRedemptionFeeReceiverWallet(
-            this._setRedemptionFeeReceiverWallet.selector,
-            newRedemptionFeeReceiverWallet
-        );
+    onlyMultiSig(Roles.SuperOwner)
+    public {
+        if (action == Actions.setSuperOwnerActionThresholdPercent) {
+            state.superOwnerActionThresholdPercent = argUint256; // newThreshold
+            _updateSuperOwnerRequirement();
+        } else if (action == Actions.setRedemptionFee) {
+            state.redemptionFee = argUint256; // newRedemptionFee;
+        } else if (action == Actions.setRedemptionFeeReceiverWallet) {
+            state.redemptionFeeReceiverWallet = address(argUint256); //newRedemptionFeeReceiverWallet;
+        } else if (action == Actions.setSuperOwnerActionCountdown) {
+            state.superOwnerActionCountdown = argUint256; // newCountdown
+        } else if (action == Actions.setBasicOwnerActionCountdown) {
+            state.basicOwnerActionCountdown = argUint256; // newCountdown
+        } else if (action == Actions.setWhitelistRemovalActionCountdown) {
+            //state.whitelistRemovalActionCountdown = newCountdown;
+        } else if (action == Actions.setMintingActionCountdown) {
+            state.mintingActionCountdown = argUint256; // newCountdown
+        } else if (action == Actions.setBurningActionCountdown) {
+            state.burningActionCountdown = argUint256; // newCountdown;
+        } else if (action == Actions.setMintingReceiverWallet) {
+            state.mintingReceiverWallet = address(argUint256); // newMintingReceiverWallet;
+        }
     }
 
-    function _setRedemptionFeeReceiverWallet(
-        address newRedemptionFeeReceiverWallet
+    function _addOwner(
+        Roles authRole,
+        Roles role,
+        address owner
     )
     public
-    onlySuperOwnerMultiSig()
+    onlyMultiSig(authRole)
     {
-        state.redemptionFeeReceiverWallet = newRedemptionFeeReceiverWallet;
+        if (role == Roles.SuperOwner) {
+            superOwnerRole.superOwnerMultiSig.addOwner(owner);
+            _updateSuperOwnerRequirement();
+        } else if (role == Roles.BasicOwner) {
+            basicOwnerRole.basicOwnerMultiSig.addOwner(owner);
+            _updateBasicOwnerRequirement();
+        } else if (role == Roles.OperationAdmin) {
+            operationAdminRole.operationAdminMultiSig.addOwner(owner);
+            _updateOperationAdminRequirement();
+        } else if (role == Roles.MintingAdmin) {
+            mintingAdminRole.mintingAdminMultiSig.addOwner(owner);
+            _updateMintingAdminRequirement();
+        } else if (role == Roles.RedemptionAdmin) {
+            redemptionAdminRole.redemptionAdminMultiSig.addOwner(owner);
+            _updateRedemptionAdminRequirement();
+        }
+        emit LogOwnerAdded(role, owner);
     }
 
-    function setSuperOwnerActionCountdown(
-        uint256 newCountdown
+    function _removeOwner(
+        Roles authRole,
+        Roles role,
+        address owner
     )
     public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.setSuperOwnerActionCountdown(
-            this._setSuperOwnerActionCountdown.selector,
-            newCountdown
-        );
-    }
-
-    function _setSuperOwnerActionCountdown(
-        uint256 newCountdown
-    )
-    public
-    onlySuperOwnerMultiSig()
+    onlyMultiSig(authRole)
     {
-        state.superOwnerActionCountdown = newCountdown;
-    }
-
-    function setBasicOwnerActionCountdown(
-        uint256 newCountdown
-    )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.setBasicOwnerActionCountdown(
-            this._setBasicOwnerActionCountdown.selector,
-            newCountdown
-        );
-    }
-
-    function _setBasicOwnerActionCountdown(
-        uint256 newCountdown
-    )
-    public
-    onlySuperOwnerMultiSig()
-    {
-        state.basicOwnerActionCountdown = newCountdown;
-    }
-
-    function setWhitelistRemovalActionCountdown(
-        uint256 newCountdown
-    )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.setWhitelistRemovalActionCountdown(
-            this._setWhitelistRemovalActionCountdown.selector,
-            newCountdown
-        );
-    }
-
-    function _setWhitelistRemovalActionCountdown(
-        uint256 newCountdown
-    )
-    public
-    onlySuperOwnerMultiSig()
-    {
-        state.whitelistRemovalActionCountdown = newCountdown;
-    }
-
-    function setMintingActionCountdown(
-        uint256 newCountdown
-    )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.setMintingActionCountdown(
-            this._setMintingActionCountdown.selector,
-            newCountdown
-        );
-    }
-
-    function _setMintingActionCountdown(
-        uint256 newCountdown
-    )
-    public
-    onlySuperOwnerMultiSig()
-    {
-        state.mintingActionCountdown = newCountdown;
-    }
-
-    function setBurningActionCountdown(
-        uint256 newCountdown
-    )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.setBurningActionCountdown(
-            this._setBurningActionCountdown.selector,
-            newCountdown
-        );
-    }
-
-    function _setBurningActionCountdown(
-        uint256 newCountdown
-    )
-    public
-    onlySuperOwnerMultiSig()
-    {
-        state.burningActionCountdown = newCountdown;
-    }
-
-    function setMintingReceiverWallet(
-        address newMintingReceiverWallet
-    )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.setMintingReceiverWallet(
-            this._setMintingReceiverWallet.selector,
-            newMintingReceiverWallet
-        );
-    }
-
-    function _setMintingReceiverWallet(
-        address newMintingReceiverWallet
-    )
-    public
-    onlySuperOwnerMultiSig()
-    {
-        state.mintingReceiverWallet = newMintingReceiverWallet;
-    }
-
-    function addSuperOwner(
-        address newSuperOwner
-    )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.addSuperOwner(
-            this._addSuperOwner.selector,
-            newSuperOwner
-        );
-    }
-
-    function _addSuperOwner(
-        address newSuperOwner
-    )
-    public
-    onlySuperOwnerMultiSig()
-    {
-        superOwnerRole.superOwnerMultiSig.addOwner(newSuperOwner);
-        _updateSuperOwnerRequirement();
-        emit LogSuperOwnerAdded(newSuperOwner);
-    }
-
-    function removeSuperOwner(
-        address superOwner
-    )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.removeSuperOwner(
-            this._removeSuperOwner.selector,
-            superOwner
-        );
-    }
-
-    function _removeSuperOwner(
-        address superOwner
-    )
-    public
-    onlySuperOwnerMultiSig()
-    {
-        superOwnerRole.superOwnerMultiSig.removeOwner(superOwner);
-        _updateSuperOwnerRequirement();
-        emit LogSuperOwnerRemoved(superOwner);
-    }
-
-    function addBasicOwner(
-        address newBasicOwner
-    )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.removeSuperOwner(
-            this._addBasicOwner.selector,
-            newBasicOwner
-        );
-    }
-
-    function _addBasicOwner(
-        address newBasicOwner
-    )
-    public
-    onlySuperOwnerMultiSig()
-    {
-        basicOwnerRole.basicOwnerMultiSig.addOwner(newBasicOwner);
-        _updateBasicOwnerRequirement();
-        emit LogBasicOwnerAdded(newBasicOwner);
-    }
-
-    function removeBasicOwner(
-        address basicOwner
-    )
-    public
-    onlySuperOwner()
-    returns(uint256 transactionId) {
-        return superOwnerRole.removeSuperOwner(
-            this._removeBasicOwner.selector,
-            basicOwner
-        );
-    }
-
-    function _removeBasicOwner(
-        address basicOwner
-    )
-    public
-    onlySuperOwnerMultiSig()
-    {
-        basicOwnerRole.basicOwnerMultiSig.removeOwner(basicOwner);
-        _updateBasicOwnerRequirement();
-        emit LogBasicOwnerRemoved(basicOwner);
-    }
-
-    function addOperationAdmin(
-        address newOperationAdmin
-    )
-    public
-    onlyBasicOwner()
-    returns(uint256 transactionId) {
-        return basicOwnerRole.addOperationAdmin(
-            this._addOperationAdmin.selector,
-            newOperationAdmin
-        );
-    }
-
-    function _addOperationAdmin(
-        address newOperationAdmin
-    )
-    public
-    onlyBasicOwnerMultiSig()
-    {
-        operationAdminRole.operationAdminMultiSig.addOwner(newOperationAdmin);
-        _updateOperationAdminRequirement();
-        emit LogOperationAdminAdded(newOperationAdmin);
-    }
-
-    function removeOperationAdmin(
-        address operationAdmin
-    )
-    public
-    onlyBasicOwner()
-    returns(uint256 transactionId) {
-        return basicOwnerRole.removeOperationAdmin(
-            this._removeOperationAdmin.selector,
-            operationAdmin
-        );
-    }
-
-    function _removeOperationAdmin(
-        address operationAdmin
-    )
-    public
-    onlyBasicOwnerMultiSig()
-    {
-        operationAdminRole.operationAdminMultiSig.removeOwner(operationAdmin);
-        _updateOperationAdminRequirement();
-        emit LogOperationAdminRemoved(operationAdmin);
-    }
-
-    function addMintingAdmin(
-        address newMintingAdmin
-    )
-    public
-    onlyBasicOwner()
-    returns(uint256 transactionId) {
-        return basicOwnerRole.addMintingAdmin(
-            this._addMintingAdmin.selector,
-            newMintingAdmin
-        );
-    }
-
-    function _addMintingAdmin(
-        address newMintingAdmin
-    )
-    public
-    onlyBasicOwnerMultiSig()
-    {
-        mintingAdminRole.mintingAdminMultiSig.addOwner(newMintingAdmin);
-        _updateMintingAdminRequirement();
-        emit LogMintingAdminAdded(newMintingAdmin);
-    }
-
-    function removeMintingAdmin(
-        address mintingAdmin
-    )
-    public
-    onlyBasicOwner()
-    returns(uint256 transactionId) {
-        return basicOwnerRole.removeMintingAdmin(
-            this._removeMintingAdmin.selector,
-            mintingAdmin
-        );
-    }
-
-    function _removeMintingAdmin(
-        address mintingAdmin
-    )
-    public
-    onlyBasicOwnerMultiSig()
-    {
-        mintingAdminRole.mintingAdminMultiSig.removeOwner(mintingAdmin);
-        _updateMintingAdminRequirement();
-        emit LogMintingAdminRemoved(mintingAdmin);
-    }
-
-    function addRedemptionAdmin(
-        address newRedemptionAdmin
-    )
-    public
-    onlyBasicOwner()
-    returns(uint256 transactionId) {
-        return basicOwnerRole.addRedemptionAdmin(
-            this._addRedemptionAdmin.selector,
-            newRedemptionAdmin
-        );
-    }
-
-    function _addRedemptionAdmin(
-        address newRedemptionAdmin
-    )
-    public
-    onlyBasicOwnerMultiSig()
-    {
-        redemptionAdminRole.redemptionAdminMultiSig.addOwner(newRedemptionAdmin);
-        _updateRedemptionAdminRequirement();
-        emit LogRedemptionAdminAdded(newRedemptionAdmin);
-    }
-
-    function removeRedemptionAdmin(
-        address redemptionAdmin
-    )
-    public
-    onlyBasicOwner()
-    returns(uint256 transactionId) {
-        return basicOwnerRole.removeRedemptionAdmin(
-            this._removeRedemptionAdmin.selector,
-            redemptionAdmin
-        );
-    }
-
-    function _removeRedemptionAdmin(
-        address redemptionAdmin
-    )
-    public
-    onlyBasicOwnerMultiSig()
-    {
-        redemptionAdminRole.redemptionAdminMultiSig.removeOwner(redemptionAdmin);
-        _updateRedemptionAdminRequirement();
-        emit LogRedemptionAdminRemoved(redemptionAdmin);
+        if (role == Roles.SuperOwner) {
+            superOwnerRole.superOwnerMultiSig.removeOwner(owner);
+            _updateSuperOwnerRequirement();
+        } else if (role == Roles.BasicOwner) {
+            basicOwnerRole.basicOwnerMultiSig.removeOwner(owner);
+            _updateBasicOwnerRequirement();
+        } else if (role == Roles.OperationAdmin) {
+            operationAdminRole.operationAdminMultiSig.removeOwner(owner);
+            _updateOperationAdminRequirement();
+        } else if (role == Roles.MintingAdmin) {
+            mintingAdminRole.mintingAdminMultiSig.removeOwner(owner);
+            _updateMintingAdminRequirement();
+        } else if (role == Roles.RedemptionAdmin) {
+            redemptionAdminRole.redemptionAdminMultiSig.removeOwner(owner);
+            _updateRedemptionAdminRequirement();
+        }
+        emit LogOwnerAdded(role, owner);
     }
 
     function _updateSuperOwnerRequirement()
     internal
-    onlySuperOwnerMultiSig() {
+    onlyMultiSig(Roles.SuperOwner) {
         _updateRequirement(superOwnerRole.superOwnerMultiSig, state.superOwnerActionThresholdPercent);
     }
 
     function _updateBasicOwnerRequirement()
     internal
-    onlySuperOwnerMultiSig() {
+    onlyMultiSig(Roles.SuperOwner) {
         _updateRequirement(basicOwnerRole.basicOwnerMultiSig, state.basicOwnerActionThresholdPercent);
     }
 
     function _updateOperationAdminRequirement()
     internal
-    onlyBasicOwnerMultiSig() {
+    onlyMultiSig(Roles.BasicOwner) {
         _updateRequirement(operationAdminRole.operationAdminMultiSig, state.operationAdminActionThresholdPercent);
     }
 
     function _updateMintingAdminRequirement()
     internal
-    onlyBasicOwnerMultiSig() {
+    onlyMultiSig(Roles.BasicOwner) {
         _updateRequirement(mintingAdminRole.mintingAdminMultiSig, state.mintingAdminActionThresholdPercent);
     }
 
     function _updateRedemptionAdminRequirement()
     internal
-    onlyBasicOwnerMultiSig() {
+    onlyMultiSig(Roles.BasicOwner) {
         _updateRequirement(redemptionAdminRole.redemptionAdminMultiSig, state.redemptionAdminActionThresholdPercent);
     }
 
@@ -565,34 +389,23 @@ contract MasterPropertyValue is Initializable, Pausable {
         multiSig.changeRequirement(votesRequired);
     }
 
-    function isSuperOwner(address superOwner)
-    public
-    returns (bool) {
-        return _isOwner(superOwnerRole.superOwnerMultiSig, superOwner);
-    }
+    function isOwner(Roles role, address owner)
+        public
+        returns (bool)
+    {
+        if (role == Roles.SuperOwner) {
+            return _isOwner(superOwnerRole.superOwnerMultiSig, owner);
+        } else if (role == Roles.BasicOwner) {
+            return _isOwner(basicOwnerRole.basicOwnerMultiSig, owner);
+        }  else if (role == Roles.OperationAdmin) {
+            return _isOwner(operationAdminRole.operationAdminMultiSig, owner);
+        } else if (role == Roles.MintingAdmin) {
+            return _isOwner(mintingAdminRole.mintingAdminMultiSig, owner);
+        } else if (role == Roles.RedemptionAdmin) {
+            return _isOwner(redemptionAdminRole.redemptionAdminMultiSig, owner);
+        }
 
-    function isBasicOwner(address basicOwner)
-    public
-    returns (bool) {
-        return _isOwner(basicOwnerRole.basicOwnerMultiSig, basicOwner);
-    }
-
-    function isOperationAdmin(address operationAdmin)
-    public
-    returns (bool) {
-        return _isOwner(operationAdminRole.operationAdminMultiSig, operationAdmin);
-    }
-
-    function isMintingAdmin(address mintingAdmin)
-    public
-    returns (bool) {
-        return _isOwner(mintingAdminRole.mintingAdminMultiSig, mintingAdmin);
-    }
-
-    function isRedemptionAdmin(address redemptionAdmin)
-    public
-    returns (bool) {
-        return _isOwner(redemptionAdminRole.redemptionAdminMultiSig, redemptionAdmin);
+        return false;
     }
 
     function _isOwner(IMultiSigWallet multiSig, address owner)
@@ -601,35 +414,21 @@ contract MasterPropertyValue is Initializable, Pausable {
         return multiSig.hasOwner(owner);
     }
 
-    // getSuperOwners returns super owners
-    function getSuperOwners()
+    function getOwners(Roles role)
     public
-    returns (address[] memory) {
-        return _getOwners(superOwnerRole.superOwnerMultiSig);
-    }
-
-    function getBasicOwners()
-    public
-    returns (address[] memory) {
-        return _getOwners(basicOwnerRole.basicOwnerMultiSig);
-    }
-
-    function getOperationAdmins()
-    public
-    returns (address[] memory) {
-        return _getOwners(operationAdminRole.operationAdminMultiSig);
-    }
-
-    function getMintingAdmins()
-    public
-    returns (address[] memory) {
-        return _getOwners(mintingAdminRole.mintingAdminMultiSig);
-    }
-
-    function getRedemptionAdmins()
-    public
-    returns (address[] memory) {
-        return _getOwners(redemptionAdminRole.redemptionAdminMultiSig);
+    returns (address[] memory owners)
+    {
+        if (role == Roles.SuperOwner) {
+            return _getOwners(superOwnerRole.superOwnerMultiSig);
+        } else if (role == Roles.BasicOwner) {
+            return _getOwners(basicOwnerRole.basicOwnerMultiSig);
+        } else if (role == Roles.OperationAdmin) {
+            return _getOwners(operationAdminRole.operationAdminMultiSig);
+        } else if (role == Roles.MintingAdmin) {
+            return _getOwners(mintingAdminRole.mintingAdminMultiSig);
+        } else if (role == Roles.RedemptionAdmin) {
+            return _getOwners(redemptionAdminRole.redemptionAdminMultiSig);
+        }
     }
 
     function _getOwners(IMultiSigWallet multiSig)
@@ -640,11 +439,10 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function addAsset(MPVState.Asset memory _asset)
     public
-    onlyMintingAdmin()
+    onlyRole(Roles.MintingAdmin)
     returns (uint256) {
-        state.pendingAssets.push(_asset);
-
-        if (state.pendingAssetsTransactionId == 0) {
+        if (!(state.pendingAssets.length > 0 || state.pendingAssetsTransactionId != 0)) {
+            state.pendingAssets.push(_asset);
             bytes memory data = abi.encodeWithSelector(
                 this._addAssets.selector
             );
@@ -653,6 +451,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             state.pendingAssetsTransactionId = transactionId;
             return transactionId;
         } else {
+            state.pendingAssets.push(_asset);
             mintingAdminRole.mintingAdminMultiSig.revokeAllConfirmations(state.pendingAssetsTransactionId);
             return state.pendingAssetsTransactionId;
         }
@@ -660,7 +459,7 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function addAssets(MPVState.Asset[] memory _assets)
     public
-    onlyMintingAdmin()
+    onlyRole(Roles.MintingAdmin)
     returns (uint256) {
         for (uint256 i = 0; i < _assets.length; i++) {
             addAsset(_assets[i]);
@@ -670,7 +469,7 @@ contract MasterPropertyValue is Initializable, Pausable {
     }
 
     function _addAssets()
-    onlyMintingAdminMultiSig()
+    onlyMultiSig(Roles.MintingAdmin)
     public {
         enlistPendingAssets(state.pendingAssets);
         state.pendingAssetsTransactionId = 0;
@@ -700,7 +499,7 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function removePendingAsset(uint256 assetId)
     public
-    onlyMintingAdmin()
+    onlyRole(Roles.MintingAdmin)
     {
         for (uint256 i = 0; i < state.pendingAssets.length; i++) {
             if (state.pendingAssets[i].id == assetId) {
@@ -739,7 +538,7 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function pauseContract()
     public
-    onlySuperOwner()
+    onlyRole(Roles.SuperOwner)
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             this._pause.selector
@@ -750,14 +549,14 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function _pause()
     public
-    onlySuperOwnerMultiSig()
+    onlyMultiSig(Roles.SuperOwner)
     {
         super.pause();
     }
 
     function unpauseContract()
     public
-    onlySuperOwner()
+    onlyRole(Roles.SuperOwner)
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             this._unpause.selector
@@ -768,7 +567,7 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function _unpause()
     public
-    onlySuperOwnerMultiSig()
+    onlyMultiSig(Roles.SuperOwner)
     {
         super.unpause();
     }
@@ -790,6 +589,10 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function redemptionFee() public view returns(uint256) {
         return state.redemptionFee;
+    }
+
+    function redemptionFeeReceiverWallet() public view returns(address) {
+        return state.redemptionFeeReceiverWallet;
     }
 
     function pendingAssets() public view returns(MPVState.Asset[] memory) {

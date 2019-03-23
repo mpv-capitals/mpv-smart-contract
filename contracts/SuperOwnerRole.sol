@@ -22,6 +22,14 @@ library SuperOwnerRole {
     event LogAddAsset(uint256 assetId);
     event LogRemoveAsset(uint256 assetId);
 
+    enum Roles {
+        SuperOwner,
+        BasicOwner,
+        OperationAdmin,
+        MintingAdmin,
+        RedemptionAdmin
+    }
+
     struct State {
         IMultiSigWallet superOwnerMultiSig;
     }
@@ -31,9 +39,27 @@ library SuperOwnerRole {
         _;
     }
 
+    function setSuperOwnerActionThresholdPercent(
+        State storage state,
+        bytes4 selector,
+        uint256 action,
+        uint256 newThreshold
+    )
+    public
+    onlySuperOwner(state)
+    returns(uint256 transactionId) {
+        return _submitTransactionWithUint256Data(
+            state.superOwnerMultiSig,
+            selector,
+            action,
+            newThreshold
+        );
+    }
+
     function setRedemptionFee(
         State storage state,
         bytes4 selector,
+        uint256 action,
         uint256 newRedemptionFee
     )
     public
@@ -42,6 +68,7 @@ library SuperOwnerRole {
         return _submitTransactionWithUint256Data(
             state.superOwnerMultiSig,
             selector,
+            action,
             newRedemptionFee
         );
     }
@@ -49,6 +76,7 @@ library SuperOwnerRole {
     function setRedemptionFeeReceiverWallet(
         State storage state,
         bytes4 selector,
+        uint256 action,
         address newRedemptionFeeReceiverWallet
     )
     public
@@ -57,6 +85,7 @@ library SuperOwnerRole {
         return _submitTransactionWithAddressData(
             state.superOwnerMultiSig,
             selector,
+            action,
             newRedemptionFeeReceiverWallet
         );
     }
@@ -64,6 +93,7 @@ library SuperOwnerRole {
     function setSuperOwnerActionCountdown(
         State storage state,
         bytes4 selector,
+        uint256 action,
         uint256 newCountdown
     )
     public
@@ -72,6 +102,7 @@ library SuperOwnerRole {
         return _submitTransactionWithUint256Data(
             state.superOwnerMultiSig,
             selector,
+            action,
             newCountdown
         );
     }
@@ -79,6 +110,7 @@ library SuperOwnerRole {
     function setBasicOwnerActionCountdown(
         State storage state,
         bytes4 selector,
+        uint256 action,
         uint256 newCountdown
     )
     public
@@ -87,6 +119,7 @@ library SuperOwnerRole {
         return _submitTransactionWithUint256Data(
             state.superOwnerMultiSig,
             selector,
+            action,
             newCountdown
         );
     }
@@ -94,6 +127,7 @@ library SuperOwnerRole {
     function setWhitelistRemovalActionCountdown(
         State storage state,
         bytes4 selector,
+        uint256 action,
         uint256 newCountdown
     )
     public
@@ -102,6 +136,7 @@ library SuperOwnerRole {
         return _submitTransactionWithUint256Data(
             state.superOwnerMultiSig,
             selector,
+            action,
             newCountdown
         );
     }
@@ -109,6 +144,7 @@ library SuperOwnerRole {
     function setMintingActionCountdown(
         State storage state,
         bytes4 selector,
+        uint256 action,
         uint256 newCountdown
     )
     public
@@ -117,6 +153,7 @@ library SuperOwnerRole {
         return _submitTransactionWithUint256Data(
             state.superOwnerMultiSig,
             selector,
+            action,
             newCountdown
         );
     }
@@ -124,6 +161,7 @@ library SuperOwnerRole {
     function setBurningActionCountdown(
         State storage state,
         bytes4 selector,
+        uint256 action,
         uint256 newCountdown
     )
     public
@@ -132,6 +170,7 @@ library SuperOwnerRole {
         return _submitTransactionWithUint256Data(
             state.superOwnerMultiSig,
             selector,
+            action,
             newCountdown
         );
     }
@@ -139,6 +178,7 @@ library SuperOwnerRole {
     function setMintingReceiverWallet(
         State storage state,
         bytes4 selector,
+        uint256 action,
         address newMintingReceiverWallet
     )
     public
@@ -147,6 +187,7 @@ library SuperOwnerRole {
         return _submitTransactionWithAddressData(
             state.superOwnerMultiSig,
             selector,
+            action,
             newMintingReceiverWallet
         );
     }
@@ -161,6 +202,8 @@ library SuperOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.SuperOwner,
+            Roles.SuperOwner,
             newSuperOwner
         );
 
@@ -181,6 +224,8 @@ library SuperOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.SuperOwner,
+            Roles.SuperOwner,
             superOwner
         );
 
@@ -201,6 +246,8 @@ library SuperOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.SuperOwner,
+            Roles.BasicOwner,
             newBasicOwner
         );
 
@@ -221,6 +268,8 @@ library SuperOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.SuperOwner,
+            Roles.BasicOwner,
             basicOwner
         );
 
@@ -244,10 +293,12 @@ library SuperOwnerRole {
     function _submitTransactionWithAddressData(
         IMultiSigWallet multiSig,
         bytes4 selector,
+        uint256 action,
         address addr
     ) public returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            action,
             addr
         );
 
@@ -257,10 +308,12 @@ library SuperOwnerRole {
     function _submitTransactionWithUint256Data(
         IMultiSigWallet multiSig,
         bytes4 selector,
+        uint256 action,
         uint256 value
     ) public returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            action,
             value
         );
 

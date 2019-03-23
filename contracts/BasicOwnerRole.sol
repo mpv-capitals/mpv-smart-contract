@@ -13,6 +13,14 @@ library BasicOwnerRole {
     event LogAddRedemptionAdmin(uint256 transactionId, address redemptionAdmin);
     event LogRemoveRedemptionAdmin(uint256 transactionId, address redemptionAdmin);
 
+    enum Roles {
+        SuperOwner,
+        BasicOwner,
+        OperationAdmin,
+        MintingAdmin,
+        RedemptionAdmin
+    }
+
     struct State {
         IMultiSigWallet basicOwnerMultiSig;
     }
@@ -37,6 +45,8 @@ library BasicOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.BasicOwner,
+            Roles.OperationAdmin,
             newOperationAdmin
         );
 
@@ -57,6 +67,8 @@ library BasicOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.BasicOwner,
+            Roles.OperationAdmin,
             operationAdmin
         );
 
@@ -77,6 +89,8 @@ library BasicOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.BasicOwner,
+            Roles.MintingAdmin,
             newMintingAdmin
         );
 
@@ -97,6 +111,8 @@ library BasicOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.BasicOwner,
+            Roles.MintingAdmin,
             mintingAdmin
         );
 
@@ -117,6 +133,8 @@ library BasicOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.BasicOwner,
+            Roles.RedemptionAdmin,
             newRedemptionAdmin
         );
 
@@ -137,6 +155,8 @@ library BasicOwnerRole {
     returns(uint256 transactionId) {
         bytes memory data = abi.encodeWithSelector(
             selector,
+            Roles.BasicOwner,
+            Roles.RedemptionAdmin,
             redemptionAdmin
         );
 
