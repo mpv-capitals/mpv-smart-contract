@@ -33,8 +33,6 @@ contract MasterPropertyValue is Initializable, Pausable {
     MintingAdminRole.State private mintingAdminRole;
     RedemptionAdminRole.State private redemptionAdminRole;
 
-    MPVToken public mpvToken;
-
     event LogOwnerAdded(Roles role, address superOwner);
     event LogOwnerRemoved(Roles role, address superOwner);
 
@@ -63,6 +61,12 @@ contract MasterPropertyValue is Initializable, Pausable {
         removeOwner
     }
 
+    struct ActionArgs {
+        Roles role;
+        uint256[] uint256Args;
+        address[] addressArgs;
+    }
+
     function initialize(
         MPVToken _mpvToken,
         IMultiSigWallet _superOwnerMultiSig,
@@ -74,7 +78,7 @@ contract MasterPropertyValue is Initializable, Pausable {
         address _mintingReceiverWallet,
         uint _dailyTransferLimit
     ) public initializer {
-        mpvToken = _mpvToken;
+        state.mpvToken = _mpvToken;
 
         superOwnerRole.superOwnerMultiSig = _superOwnerMultiSig;
         basicOwnerRole.basicOwnerMultiSig = _basicOwnerMultiSig;
@@ -106,7 +110,7 @@ contract MasterPropertyValue is Initializable, Pausable {
         // 1000 = 0.1 * (10 ** 4)
         state.redemptionFee = 1000;
 
-        mpvToken.setMPV(address(this));
+        state.mpvToken.setMPV(address(this));
     }
 
     modifier onlyRole(Roles role) {
@@ -147,11 +151,9 @@ contract MasterPropertyValue is Initializable, Pausable {
         return false;
     }
 
-    function performAction(
+    function invoke(
         Actions action,
-        Roles role,
-        uint256[] memory argsUint256,
-        address[] memory argsAddress
+        ActionArgs memory actionArgs
     )
     public
     returns (uint256)
@@ -161,108 +163,108 @@ contract MasterPropertyValue is Initializable, Pausable {
                 this._callback.selector,
                 uint256(Actions.setSuperOwnerActionThresholdPercent),
 
-                argsUint256[0] // newThreshold
+                actionArgs.uint256Args[0] // newThreshold
             );
         } else if (action == Actions.setRedemptionFee) {
             return superOwnerRole.setRedemptionFee(
                 this._callback.selector,
                 uint256(Actions.setRedemptionFee),
-                argsUint256[0] // newRedemptionFee
+                actionArgs.uint256Args[0] // newRedemptionFee
             );
         } else if (action == Actions.setRedemptionFeeReceiverWallet) {
             return superOwnerRole.setRedemptionFeeReceiverWallet(
                 this._callback.selector,
                 uint256(Actions.setRedemptionFeeReceiverWallet),
-                argsAddress[0] // newRedemptionFeeReceiverWallet
+                actionArgs.addressArgs[0] // newRedemptionFeeReceiverWallet
             );
         } else if (action == Actions.setSuperOwnerActionCountdown) {
                 return superOwnerRole.setSuperOwnerActionCountdown(
                     this._callback.selector,
                     uint256(Actions.setSuperOwnerActionCountdown),
-                    argsUint256[0] // newCountdown
+                    actionArgs.uint256Args[0] // newCountdown
                 );
         } else if (action == Actions.setBasicOwnerActionCountdown) {
             return superOwnerRole.setBasicOwnerActionCountdown(
                 this._callback.selector,
                 uint256(Actions.setBasicOwnerActionCountdown),
-                argsUint256[0] // newCountdown
+                actionArgs.uint256Args[0] // newCountdown
             );
         } else if (action == Actions.setWhitelistRemovalActionCountdown) {
             return superOwnerRole.setWhitelistRemovalActionCountdown(
                 this._callback.selector,
                 uint256(Actions.setWhitelistRemovalActionCountdown),
-                argsUint256[0] // newCountdown
+                actionArgs.uint256Args[0] // newCountdown
             );
         } else if (action == Actions.setMintingActionCountdown) {
                 return superOwnerRole.setMintingActionCountdown(
                     this._callback.selector,
                     uint256(Actions.setMintingActionCountdown),
-                    argsUint256[0] // newCountdown
+                    actionArgs.uint256Args[0] // newCountdown
                 );
         } else if (action == Actions.setBurningActionCountdown) {
                 return superOwnerRole.setBurningActionCountdown(
                     this._callback.selector,
                     uint256(Actions.setBurningActionCountdown),
-                    argsUint256[0] // newCountdown
+                    actionArgs.uint256Args[0] // newCountdown
                 );
         } else if (action == Actions.setMintingReceiverWallet) {
                 return superOwnerRole.setMintingReceiverWallet(
                     this._callback.selector,
                     uint256(Actions.setMintingReceiverWallet),
-                    argsAddress[0] // newMintingReceiverWallet
+                    actionArgs.addressArgs[0] // newMintingReceiverWallet
                 );
         } else if (action == Actions.addOwner) {
-            if (role == Roles.SuperOwner) {
+            if (actionArgs.role == Roles.SuperOwner) {
                 return superOwnerRole.addSuperOwner(
                     this._addOwner.selector,
-                    argsAddress[0] // newSuperOwner
+                    actionArgs.addressArgs[0] // newSuperOwner
                 );
-            } else if (role == Roles.BasicOwner) {
+            } else if (actionArgs.role == Roles.BasicOwner) {
                 return superOwnerRole.addBasicOwner(
                     this._addOwner.selector,
-                    argsAddress[0] // newBasicOwner
+                    actionArgs.addressArgs[0] // newBasicOwner
                 );
-            } else if (role == Roles.OperationAdmin) {
+            } else if (actionArgs.role == Roles.OperationAdmin) {
                 return basicOwnerRole.addOperationAdmin(
                     this._addOwner.selector,
-                    argsAddress[0] // newOperationAdmin
+                    actionArgs.addressArgs[0] // newOperationAdmin
                 );
-            } else if (role == Roles.MintingAdmin) {
+            } else if (actionArgs.role == Roles.MintingAdmin) {
                 return basicOwnerRole.addMintingAdmin(
                     this._addOwner.selector,
-                    argsAddress[0] // newMintingAdmin
+                    actionArgs.addressArgs[0] // newMintingAdmin
                 );
-            } else if (role == Roles.RedemptionAdmin) {
+            } else if (actionArgs.role == Roles.RedemptionAdmin) {
                 return basicOwnerRole.addRedemptionAdmin(
                     this._addOwner.selector,
-                    argsAddress[0] // newRedemptionAdmin
+                    actionArgs.addressArgs[0] // newRedemptionAdmin
                 );
             }
         } else if (action == Actions.removeOwner) {
-            if (role == Roles.SuperOwner) {
+            if (actionArgs.role == Roles.SuperOwner) {
                 return superOwnerRole.removeSuperOwner(
                     this._removeOwner.selector,
-                    argsAddress[0] // basicOwner
+                    actionArgs.addressArgs[0] // basicOwner
                 );
-            } else if (role == Roles.BasicOwner) {
+            } else if (actionArgs.role == Roles.BasicOwner) {
                 return superOwnerRole.removeBasicOwner(
                     this._removeOwner.selector,
-                    argsAddress[0] // basicOwner
+                    actionArgs.addressArgs[0] // basicOwner
                 );
-            } else if (role == Roles.OperationAdmin) {
+            } else if (actionArgs.role == Roles.OperationAdmin) {
                 return basicOwnerRole.removeOperationAdmin(
                     this._removeOwner.selector,
-                    argsAddress[0] // operationAdmin
+                    actionArgs.addressArgs[0] // operationAdmin
                 );
-            } else if (role == Roles.MintingAdmin) {
+            } else if (actionArgs.role == Roles.MintingAdmin) {
                 return basicOwnerRole.removeMintingAdmin(
                     this._removeOwner.selector,
-                    argsAddress[0] // mintingAdmin
+                    actionArgs.addressArgs[0] // mintingAdmin
                 );
-            } else if (role == Roles.RedemptionAdmin) {
+            } else if (actionArgs.role == Roles.RedemptionAdmin) {
                 return basicOwnerRole.removeRedemptionAdmin(
                     this._removeOwner.selector,
-                    argsAddress[0] // redemptionAdmin
+                    actionArgs.addressArgs[0] // redemptionAdmin
                 );
             }
         }
@@ -272,84 +274,84 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function _callback(
         Actions action,
-        uint256 argUint256
+        uint256 arg
     )
     onlyMultiSig(Roles.SuperOwner)
     public {
         if (action == Actions.setSuperOwnerActionThresholdPercent) {
-            state.superOwnerActionThresholdPercent = argUint256; // newThreshold
+            state.superOwnerActionThresholdPercent = arg; // newThreshold
             _updateSuperOwnerRequirement();
         } else if (action == Actions.setRedemptionFee) {
-            state.redemptionFee = argUint256; // newRedemptionFee;
+            state.redemptionFee = arg; // newRedemptionFee;
         } else if (action == Actions.setRedemptionFeeReceiverWallet) {
-            state.redemptionFeeReceiverWallet = address(argUint256); //newRedemptionFeeReceiverWallet;
+            state.redemptionFeeReceiverWallet = address(arg); //newRedemptionFeeReceiverWallet;
         } else if (action == Actions.setSuperOwnerActionCountdown) {
-            state.superOwnerActionCountdownLength = argUint256; // newCountdown
+            state.superOwnerActionCountdownLength = arg; // newCountdown
         } else if (action == Actions.setBasicOwnerActionCountdown) {
-            state.basicOwnerActionCountdownLength = argUint256; // newCountdown
+            state.basicOwnerActionCountdownLength = arg; // newCountdown
         } else if (action == Actions.setWhitelistRemovalActionCountdown) {
-            state.whitelistRemovalActionCountdownLength = argUint256; // newCountdown;
+            state.whitelistRemovalActionCountdownLength = arg; // newCountdown;
         } else if (action == Actions.setMintingActionCountdown) {
-            state.mintingActionCountdownLength = argUint256; // newCountdown
+            state.mintingActionCountdownLength = arg; // newCountdown
         } else if (action == Actions.setBurningActionCountdown) {
-            state.burningActionCountdownLength = argUint256; // newCountdown;
+            state.burningActionCountdownLength = arg; // newCountdown;
         } else if (action == Actions.setMintingReceiverWallet) {
-            state.mintingReceiverWallet = address(argUint256); // newMintingReceiverWallet;
+            state.mintingReceiverWallet = address(arg); // newMintingReceiverWallet;
         }
     }
 
     function _addOwner(
         Roles authRole,
-        Roles role,
+        Roles modifyRole,
         address owner
     )
     public
     onlyMultiSig(authRole)
     {
-        if (role == Roles.SuperOwner) {
+        if (modifyRole == Roles.SuperOwner) {
             superOwnerRole.superOwnerMultiSig.addOwner(owner);
             _updateSuperOwnerRequirement();
-        } else if (role == Roles.BasicOwner) {
+        } else if (modifyRole == Roles.BasicOwner) {
             basicOwnerRole.basicOwnerMultiSig.addOwner(owner);
             _updateBasicOwnerRequirement();
-        } else if (role == Roles.OperationAdmin) {
+        } else if (modifyRole == Roles.OperationAdmin) {
             operationAdminRole.operationAdminMultiSig.addOwner(owner);
             _updateOperationAdminRequirement();
-        } else if (role == Roles.MintingAdmin) {
+        } else if (modifyRole == Roles.MintingAdmin) {
             mintingAdminRole.mintingAdminMultiSig.addOwner(owner);
             _updateMintingAdminRequirement();
-        } else if (role == Roles.RedemptionAdmin) {
+        } else if (modifyRole == Roles.RedemptionAdmin) {
             redemptionAdminRole.redemptionAdminMultiSig.addOwner(owner);
             _updateRedemptionAdminRequirement();
         }
-        emit LogOwnerAdded(role, owner);
+        emit LogOwnerAdded(modifyRole, owner);
     }
 
     function _removeOwner(
         Roles authRole,
-        Roles role,
+        Roles modifyRole,
         address owner
     )
     public
     onlyMultiSig(authRole)
     {
-        if (role == Roles.SuperOwner) {
+        if (modifyRole == Roles.SuperOwner) {
             superOwnerRole.superOwnerMultiSig.removeOwner(owner);
             _updateSuperOwnerRequirement();
-        } else if (role == Roles.BasicOwner) {
+        } else if (modifyRole == Roles.BasicOwner) {
             basicOwnerRole.basicOwnerMultiSig.removeOwner(owner);
             _updateBasicOwnerRequirement();
-        } else if (role == Roles.OperationAdmin) {
+        } else if (modifyRole == Roles.OperationAdmin) {
             operationAdminRole.operationAdminMultiSig.removeOwner(owner);
             _updateOperationAdminRequirement();
-        } else if (role == Roles.MintingAdmin) {
+        } else if (modifyRole == Roles.MintingAdmin) {
             mintingAdminRole.mintingAdminMultiSig.removeOwner(owner);
             _updateMintingAdminRequirement();
-        } else if (role == Roles.RedemptionAdmin) {
+        } else if (modifyRole == Roles.RedemptionAdmin) {
             redemptionAdminRole.redemptionAdminMultiSig.removeOwner(owner);
             _updateRedemptionAdminRequirement();
         }
-        emit LogOwnerAdded(role, owner);
+        emit LogOwnerAdded(modifyRole, owner);
     }
 
     function _updateSuperOwnerRequirement()
@@ -505,7 +507,7 @@ contract MasterPropertyValue is Initializable, Pausable {
         asset.status = Assets.Status.ENLISTED;
         asset.timestamp = now;
         state.assets.add(asset);
-        mpvToken.mint(state.mintingReceiverWallet, asset.tokens);
+        state.mpvToken.mint(state.mintingReceiverWallet, asset.tokens);
         emit LogAddAsset(asset.id);
     }
 
