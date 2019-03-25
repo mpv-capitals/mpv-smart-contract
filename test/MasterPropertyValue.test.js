@@ -20,108 +20,113 @@ const MintingAdminMultiSigWallet = artifacts.require('MintingAdminMultiSigWallet
 const RedemptionAdminMultiSigWallet = artifacts.require('RedemptionAdminMultiSigWallet')
 const Whitelist = artifacts.require('Whitelist')
 
-contract('MasterPropertyValue', accounts => {
-  let mpv = null
-  let mpvState = null
-  let mpvToken = null
 
-  let superOwnerRole = null
-  let basicOwnerRole = null
-  let operationAdminRole = null
-  let mintingAdminRole = null
-  let redemptionAdminRole = null
+let mpv = null
+let mpvState = null
+let mpvToken = null
 
-  let assets = null
-  let superOwnerMultiSig = null
-  let basicOwnerMultiSig = null
-  let operationAdminMultiSig = null
-  let mintingAdminMultiSig = null
-  let redemptionAdminMultiSig = null
-  let whitelist = null
+let superOwnerRole = null
+let basicOwnerRole = null
+let operationAdminRole = null
+let mintingAdminRole = null
+let redemptionAdminRole = null
 
-  async function invoke(action, role, uint256Args, addressArgs, options) {
-      const args = {
-        role,
-        uint256Args,
-        addressArgs,
-      }
-      const txId = await mpv.invoke.call(action, args, options)
-      await mpv.invoke(action, args, options)
+let assets = null
+let superOwnerMultiSig = null
+let basicOwnerMultiSig = null
+let operationAdminMultiSig = null
+let mintingAdminMultiSig = null
+let redemptionAdminMultiSig = null
+let whitelist = null
 
-      return txId
-  }
+async function initContracts(accounts) {
+  assets = await Assets.new()
+  mpvState = await MPVState.new()
+  superOwnerRole = await SuperOwnerRole.new()
+  basicOwnerRole = await BasicOwnerRole.new()
+  operationAdminRole = await OperationAdminRole.new()
+  mintingAdminRole = await MintingAdminRole.new()
+  redemptionAdminRole = await RedemptionAdminRole.new()
 
-  before(async () => {
-    assets = await Assets.new()
-    mpvState = await MPVState.new()
-    superOwnerRole = await SuperOwnerRole.new()
-    basicOwnerRole = await BasicOwnerRole.new()
-    operationAdminRole = await OperationAdminRole.new()
-    mintingAdminRole = await MintingAdminRole.new()
-    redemptionAdminRole = await RedemptionAdminRole.new()
+  superOwnerMultiSig = await SuperOwnerMultiSigWallet.new([accounts[0]], 1)
+  basicOwnerMultiSig = await BasicOwnerMultiSigWallet.new([accounts[0]], 1)
+  operationAdminMultiSig = await OperationAdminMultiSigWallet.new([accounts[0]], 1)
+  mintingAdminMultiSig = await MintingAdminMultiSigWallet.new([accounts[0]], 1)
+  redemptionAdminMultiSig = await RedemptionAdminMultiSigWallet.new([accounts[0]], 1)
+  whitelist = await Whitelist.new()
+  await whitelist.initialize(operationAdminMultiSig.address)
 
-    superOwnerMultiSig = await SuperOwnerMultiSigWallet.new([accounts[0]], 1)
-    basicOwnerMultiSig = await BasicOwnerMultiSigWallet.new([accounts[0]], 1)
-    operationAdminMultiSig = await OperationAdminMultiSigWallet.new([accounts[0]], 1)
-    mintingAdminMultiSig = await MintingAdminMultiSigWallet.new([accounts[0]], 1)
-    redemptionAdminMultiSig = await RedemptionAdminMultiSigWallet.new([accounts[0]], 1)
-    whitelist = await Whitelist.new()
-    await whitelist.initialize(operationAdminMultiSig.address)
-
-    await MPV.link({
-      Assets: assets.address,
-      MPVState: mpvState.address,
-      SuperOwnerRole: superOwnerRole.address,
-      BasicOwnerRole: basicOwnerRole.address,
-      OperationAdminRole: operationAdminRole.address,
-      MintingAdminRole: mintingAdminRole.address,
-      RedemptionAdminRole: redemptionAdminRole.address
-    })
-
-    const mintingReceiverWalletAddress = '0x0000000000000000000000000000000000000000'
-
-    mpv = await MPV.new()
-
-    const receipt = await web3.eth.getTransactionReceipt(mpv.transactionHash)
-    console.log(JSON.stringify(receipt, null, 2))
-
-    mpvToken = await MPVToken.new()
-    await mpvToken.initialize('Master Property Value', 'MPV', 4, whitelist.address, mpv.address)
-
-    mpv.initialize(
-      mpvToken.address,
-      superOwnerMultiSig.address,
-      basicOwnerMultiSig.address,
-      operationAdminMultiSig.address,
-      mintingAdminMultiSig.address,
-      redemptionAdminMultiSig.address,
-      whitelist.address,
-      mintingReceiverWalletAddress,
-      1000 * (10 ** 4) // dailyTransferLimit: wei value given token.decimal = 4
-    )
-
-    await superOwnerMultiSig.setMPV(mpv.address, {
-      from: accounts[0],
-    })
-
-    await basicOwnerMultiSig.setMPV(mpv.address, {
-      from: accounts[0],
-    })
-
-    await operationAdminMultiSig.setMPV(mpv.address, {
-      from: accounts[0],
-    })
-
-    await mintingAdminMultiSig.setMPV(mpv.address, {
-      from: accounts[0],
-    })
-
-    await redemptionAdminMultiSig.setMPV(mpv.address, {
-      from: accounts[0],
-    })
+  await MPV.link({
+    Assets: assets.address,
+    MPVState: mpvState.address,
+    SuperOwnerRole: superOwnerRole.address,
+    BasicOwnerRole: basicOwnerRole.address,
+    OperationAdminRole: operationAdminRole.address,
+    MintingAdminRole: mintingAdminRole.address,
+    RedemptionAdminRole: redemptionAdminRole.address
   })
 
-  describe('SuperOwnerMultiSig', () => {
+  const mintingReceiverWalletAddress = '0x0000000000000000000000000000000000000000'
+
+  mpv = await MPV.new()
+
+  const receipt = await web3.eth.getTransactionReceipt(mpv.transactionHash)
+  console.log(JSON.stringify(receipt, null, 2))
+
+  mpvToken = await MPVToken.new()
+  await mpvToken.initialize('Master Property Value', 'MPV', 4, whitelist.address, mpv.address)
+
+  mpv.initialize(
+    mpvToken.address,
+    superOwnerMultiSig.address,
+    basicOwnerMultiSig.address,
+    operationAdminMultiSig.address,
+    mintingAdminMultiSig.address,
+    redemptionAdminMultiSig.address,
+    whitelist.address,
+    mintingReceiverWalletAddress,
+    1000 * (10 ** 4) // dailyTransferLimit: wei value given token.decimal = 4
+  )
+
+  await superOwnerMultiSig.setMPV(mpv.address, {
+    from: accounts[0],
+  })
+
+  await basicOwnerMultiSig.setMPV(mpv.address, {
+    from: accounts[0],
+  })
+
+  await operationAdminMultiSig.setMPV(mpv.address, {
+    from: accounts[0],
+  })
+
+  await mintingAdminMultiSig.setMPV(mpv.address, {
+    from: accounts[0],
+  })
+
+  await redemptionAdminMultiSig.setMPV(mpv.address, {
+    from: accounts[0],
+  })
+}
+
+async function invoke(action, role, uint256Args, addressArgs, options) {
+  const args = {
+    role,
+    uint256Args,
+    addressArgs,
+  }
+  const txId = await mpv.invoke.call(action, args, options)
+  await mpv.invoke(action, args, options)
+
+  return txId
+}
+
+contract('MasterPropertyValue', accounts => {
+  describe('SuperOwner', () => {
+    before(async () => {
+      await initContracts(accounts)
+    })
+
     const defaultSuperOwner = accounts[0]
 
     it('add 2nd super owner', async () => {
@@ -339,7 +344,11 @@ contract('MasterPropertyValue', accounts => {
     })
   })
 
-  describe('BasicOwnerMultiSig', () => {
+  describe('AddOwner(BasicOwner)', () => {
+    before(async () => {
+      await initContracts(accounts)
+    })
+
     const defaultSuperOwner = accounts[0]
 
     it('add 2nd basic owner', async () => {
@@ -390,7 +399,12 @@ contract('MasterPropertyValue', accounts => {
   })
 
   describe('OperationAdminMultiSig', () => {
+    before(async () => {
+      await initContracts(accounts)
+    })
+
     const defaultBasicOwner = accounts[0]
+
     it('add 2nd operation admin', async () => {
       const newAdmin = accounts[2]
 
@@ -439,6 +453,10 @@ contract('MasterPropertyValue', accounts => {
   })
 
   describe('MintingAdminMultiSig', () => {
+    before(async () => {
+      await initContracts(accounts)
+    })
+
     const defaultBasicOwner = accounts[0]
 
     it('add 2nd minting admin', async () => {
@@ -489,6 +507,10 @@ contract('MasterPropertyValue', accounts => {
   })
 
   describe('RedemptionAdminMultiSig', () => {
+    before(async () => {
+      await initContracts(accounts)
+    })
+
     const defaultBasicOwner = accounts[0]
 
     it('add 2nd redemption admin', async () => {
@@ -594,6 +616,10 @@ contract('MasterPropertyValue', accounts => {
   })
 
   describe('Whitelist', () => {
+    before(async () => {
+      await initContracts(accounts)
+    })
+
     const defaultOperationAdmin = accounts[0]
 
     it('add account to whitelist', async () => {
@@ -627,6 +653,10 @@ contract('MasterPropertyValue', accounts => {
 
   // TODO
   describe.skip('Asset', () => {
+    before(async () => {
+      await initContracts(accounts)
+    })
+
     const defaultBasicOwner = accounts[0]
     const defaultMintingAdmin = accounts[0]
     const secondAdmin = accounts[2]
@@ -819,4 +849,6 @@ contract('MasterPropertyValue', accounts => {
       pendingAssetsCount.toNumber().should.equal(0)
     })
   })
+
 })
+
