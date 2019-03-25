@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
+import "./MPVToken.sol";
 import "./IMultiSigWallet.sol";
 import './IWhitelist.sol';
 import "./Assets.sol";
@@ -12,6 +13,8 @@ import "./Pausable.sol";
 contract MasterPropertyValue is Initializable, Pausable {
     using Assets for Assets.State;
     using SafeMath for uint256;
+
+    MPVToken public mpvToken;
 
     IMultiSigWallet public superOwnerMultiSig;
     IMultiSigWallet public basicOwnerMultiSig;
@@ -36,8 +39,9 @@ contract MasterPropertyValue is Initializable, Pausable {
     uint256 public superOwnerActionCountdown;
     uint256 public basicOwnerActionCountdown;
     uint256 public whitelistRemovalActionCountdown;
-    uint256 public mintingActionCountdown;
-    uint256 public burningActionCountdown;
+    uint256 public mintingActionCountdownLength;
+    uint256 public burningActionCountdownLength;
+    uint256 public mintingCountownStart;
 
     address public mintingReceiverWallet;
     uint256 public redemptionFee;
@@ -80,6 +84,7 @@ contract MasterPropertyValue is Initializable, Pausable {
     event LogRemoveAsset(uint256 assetId);
 
     function initialize(
+        MPVToken _mpvToken,
         IMultiSigWallet _superOwnerMultiSig,
         IMultiSigWallet _basicOwnerMultiSig,
         IMultiSigWallet _operationAdminMultiSig,
@@ -89,6 +94,7 @@ contract MasterPropertyValue is Initializable, Pausable {
         address _mintingReceiverWallet,
         uint _dailyTransferLimit
     ) public initializer {
+        mpvToken = _mpvToken;
         superOwnerMultiSig = _superOwnerMultiSig;
         basicOwnerMultiSig = _basicOwnerMultiSig;
         operationAdminMultiSig = _operationAdminMultiSig;
@@ -112,12 +118,17 @@ contract MasterPropertyValue is Initializable, Pausable {
         superOwnerActionCountdown = 48 hours;
         basicOwnerActionCountdown = 48 hours;
         whitelistRemovalActionCountdown = 48 hours;
-        mintingActionCountdown = 48 hours;
-        burningActionCountdown = 48 hours;
+        mintingActionCountdownLength = 48 hours;
+        burningActionCountdownLength = 48 hours;
 
         // NOTE: default is 0.1 tokens
         // 1000 = 0.1 * (10 ** 4)
         redemptionFee = 1000;
+    }
+
+    modifier mintingCountownTerminated() {
+      require(mintingCountownStart == 0);
+      _;
     }
 
     modifier onlyMPV() {
@@ -267,7 +278,7 @@ contract MasterPropertyValue is Initializable, Pausable {
         public
         onlySuperOwnerMultiSig()
     {
-        mintingActionCountdown = newCountdown;
+        mintingActionCountdownLength = newCountdown;
     }
 
     function setBurningActionCountdown(uint256 newCountdown)
@@ -286,7 +297,7 @@ contract MasterPropertyValue is Initializable, Pausable {
         public
         onlySuperOwnerMultiSig()
     {
-        burningActionCountdown = newCountdown;
+        burningActionCountdownLength = newCountdown;
     }
 
     function setMintingReceiverWallet(address newMintingReceiverWallet)
@@ -653,13 +664,14 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function addAsset(Asset memory _asset)
       public
+      mintingCountownTerminated()
       onlyMintingAdmin()
       returns (uint256) {
         pendingAssets.push(_asset);
 
-        if (pendingAssetsTransactionId == 0) {
+        if (pendingAssets.length == 1) {
             bytes memory data = abi.encodeWithSelector(
-                this._addAssets.selector
+                this._startMintingCountdown.selector
             );
 
             uint256 transactionId = mintingAdminMultiSig.mpvSubmitTransaction(address(this), 0, data);
@@ -682,12 +694,10 @@ contract MasterPropertyValue is Initializable, Pausable {
         return pendingAssetsTransactionId;
     }
 
-    function _addAssets()
-    onlyMintingAdminMultiSig()
-    public {
-        enlistPendingAssets(pendingAssets);
-        pendingAssetsTransactionId = 0;
-        delete pendingAssets;
+    function _startMintingCountdown()
+      onlyMintingAdminMultiSig()
+      public {
+      mintingCountownStart = now;
     }
 
     function _enlistPendingAsset(Asset memory _asset)
@@ -700,15 +710,21 @@ contract MasterPropertyValue is Initializable, Pausable {
         asset.status = Assets.Status.ENLISTED;
         asset.timestamp = now;
         assets.add(asset);
+        mpvToken.mint(mintingReceiverWallet, _asset.valuation);
         emit LogAddAsset(asset.id);
     }
 
     // addAssets adds a list of assets
-    function enlistPendingAssets(Asset[] memory _assets)
-      internal {
-        for (uint256 i = 0; i < _assets.length; i++) {
-            _enlistPendingAsset(_assets[i]);
+    function enlistPendingAssets()
+      public
+    {
+        require(now > mintingCountownStart + 48 hours);
+        for (uint256 i = 0; i < pendingAssets.length; i++) {
+            _enlistPendingAsset(pendingAssets[i]);
         }
+        pendingAssetsTransactionId = 0;
+        delete pendingAssets;
+        mintingCountownStart = 0;
     }
 
     function removePendingAsset(uint256 assetId)
