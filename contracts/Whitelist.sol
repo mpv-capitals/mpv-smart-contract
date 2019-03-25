@@ -1,7 +1,7 @@
 pragma solidity >=0.4.21 <0.6.0;
 
 import "zos-lib/contracts/Initializable.sol";
-import "./Roles.sol";
+import "openzeppelin-eth/contracts/access/Roles.sol";
 import "./IMultiSigWallet.sol";
 
 

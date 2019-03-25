@@ -47,6 +47,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     masterPropertyValue = _masterPropertyValue;
   }
 
+  function setMPV(address _masterPropertyValue)
+  MPVAccessOnly(msg.sender)
+  public {
+    masterPropertyValue = MasterPropertyValue(_masterPropertyValue);
+  }
+
   function transfer(address to, uint256 value)
     public
     whitelistedAddress(to)

@@ -13,7 +13,7 @@ build:
 
 .PHONY: start
 start:
-	@ganache-cli --deterministic -a 10 --allowUnlimitedContractSize
+	@ganache-cli --deterministic -a 10 --gasLimit=7712383 --allowUnlimitedContractSize
 
 .PHONY: deploy
 deploy:

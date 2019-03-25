@@ -1,9 +1,18 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
+const { Actions, Roles }  = require('./helpers')
 
 require('chai').should()
 
 const MPV = artifacts.require('MasterPropertyValue')
+const MPVToken = artifacts.require('MPVToken')
 const Assets = artifacts.require('Assets')
+const MPVState = artifacts.require('MPVState')
+const SuperOwnerRole = artifacts.require('SuperOwnerRole')
+const BasicOwnerRole = artifacts.require('BasicOwnerRole')
+const OperationAdminRole = artifacts.require('OperationAdminRole')
+const MintingAdminRole = artifacts.require('MintingAdminRole')
+const RedemptionAdminRole = artifacts.require('RedemptionAdminRole')
+
 const SuperOwnerMultiSigWallet = artifacts.require('SuperOwnerMultiSigWallet')
 const BasicOwnerMultiSigWallet = artifacts.require('BasicOwnerMultiSigWallet')
 const OperationAdminMultiSigWallet = artifacts.require('OperationAdminMultiSigWallet')
@@ -11,8 +20,17 @@ const MintingAdminMultiSigWallet = artifacts.require('MintingAdminMultiSigWallet
 const RedemptionAdminMultiSigWallet = artifacts.require('RedemptionAdminMultiSigWallet')
 const Whitelist = artifacts.require('Whitelist')
 
-contract('MPV', accounts => {
+contract('MasterPropertyValue', accounts => {
   let mpv = null
+  let mpvState = null
+  let mpvToken= null
+
+  let superOwnerRole = null
+  let basicOwnerRole = null
+  let operationAdminRole = null
+  let mintingAdminRole = null
+  let redemptionAdminRole = null
+
   let assets = null
   let superOwnerMultiSig = null
   let basicOwnerMultiSig = null
@@ -23,6 +41,13 @@ contract('MPV', accounts => {
 
   before(async () => {
     assets = await Assets.new()
+    mpvState = await MPVState.new()
+    superOwnerRole = await SuperOwnerRole.new()
+    basicOwnerRole = await BasicOwnerRole.new()
+    operationAdminRole = await OperationAdminRole.new()
+    mintingAdminRole = await MintingAdminRole.new()
+    redemptionAdminRole = await RedemptionAdminRole.new()
+
     superOwnerMultiSig = await SuperOwnerMultiSigWallet.new([accounts[0]], 1)
     basicOwnerMultiSig = await BasicOwnerMultiSigWallet.new([accounts[0]], 1)
     operationAdminMultiSig = await OperationAdminMultiSigWallet.new([accounts[0]], 1)
@@ -33,12 +58,26 @@ contract('MPV', accounts => {
 
     await MPV.link({
       Assets: assets.address,
+      MPVState: mpvState.address,
+      SuperOwnerRole: superOwnerRole.address,
+      BasicOwnerRole: basicOwnerRole.address,
+      OperationAdminRole: operationAdminRole.address,
+      MintingAdminRole: mintingAdminRole.address,
+      RedemptionAdminRole: redemptionAdminRole.address
     })
 
     const mintingReceiverWalletAddress = '0x0000000000000000000000000000000000000000'
 
     mpv = await MPV.new()
+
+    const receipt = await web3.eth.getTransactionReceipt(mpv.transactionHash)
+    console.log(JSON.stringify(receipt, null, 2))
+
+    mpvToken = await MPVToken.new()
+    await mpvToken.initialize('Master Property Value', 'MPV', 4, whitelist.address, mpv.address)
+
     mpv.initialize(
+      mpvToken.address,
       superOwnerMultiSig.address,
       basicOwnerMultiSig.address,
       operationAdminMultiSig.address,
@@ -75,10 +114,20 @@ contract('MPV', accounts => {
 
     it('add 2nd super owner', async () => {
       const newOwner = accounts[2]
-      const txId = await mpv.addSuperOwner.call(newOwner, {
+      const txId = await mpv.performAction.call(
+        Actions.addOwner,
+        Roles.SuperOwner,
+        [],
+        [newOwner],
+      {
         from: defaultSuperOwner,
       })
-      await mpv.addSuperOwner(newOwner, {
+      await mpv.performAction(
+        Actions.addOwner,
+        Roles.SuperOwner,
+        [],
+        [newOwner],
+        {
         from: defaultSuperOwner,
       })
 
@@ -96,76 +145,67 @@ contract('MPV', accounts => {
 
       const required = await superOwnerMultiSig.required.call()
       required.toString().should.equal('1')
-    })
 
-    it('verify account is 2nd super owner', async () => {
       const isConfirmed = await superOwnerMultiSig.isConfirmed.call('0')
       isConfirmed.should.equal(true)
 
       const owner = accounts[2]
       const owners = await superOwnerMultiSig.getOwners.call()
       owners.length.should.equal(2)
-      const res = await mpv.isSuperOwner.call(owner)
+      const res = await mpv.isOwner.call(Roles.SuperOwner, owner)
       res.should.equal(true)
     })
 
-    it('add 3rd super owner', async () => {
-      const newOwner = accounts[3]
-      const txId = await mpv.addSuperOwner.call(newOwner, {
-        from: defaultSuperOwner,
-      })
-      await mpv.addSuperOwner(newOwner, {
-        from: defaultSuperOwner,
-      })
+    it('add 3rd super owner and require 100% of confirmations', async () => {
+      let count = await mpv.getOwners.call(Roles.SuperOwner)
+      count.length.should.equal(2)
 
-      await superOwnerMultiSig.confirmTransaction(txId, {
-        from: defaultSuperOwner,
-      })
-    })
-
-    it('add 4th super owner', async () => {
-      const newOwner = accounts[4]
-      const txId = await mpv.addSuperOwner.call(newOwner, {
-        from: defaultSuperOwner,
-      })
-      await mpv.addSuperOwner(newOwner, {
-        from: defaultSuperOwner,
-      })
-
-      await superOwnerMultiSig.confirmTransaction(txId, {
-        from: defaultSuperOwner,
-      })
-    })
-
-    it('add 5th super owner', async () => {
-      const newOwner = accounts[5]
-      const txId = await mpv.addSuperOwner.call(newOwner, {
-        from: defaultSuperOwner,
-      })
-      await mpv.addSuperOwner(newOwner, {
-        from: defaultSuperOwner,
-      })
-
-      await superOwnerMultiSig.confirmTransaction(txId, {
-        from: defaultSuperOwner,
-      })
-    })
-
-    it('add 6th super owner but require 40% of confirmations', async () => {
-      let count = await mpv.getSuperOwners.call()
-      count.length.should.equal(5)
-
-      const threshold = await mpv.superOwnerActionThresholdPercent.call()
+      let threshold = await mpv.superOwnerActionThresholdPercent.call()
       threshold.toString().should.equal('40')
+
+      let txId = await mpv.performAction.call(
+        Actions.setSuperOwnerActionThresholdPercent,
+        Roles.SuperOwner,
+        [100],
+        [],
+      {
+        from: defaultSuperOwner,
+      })
+      await mpv.performAction(
+        Actions.setSuperOwnerActionThresholdPercent,
+        Roles.SuperOwner,
+        [100],
+        [],
+      {
+        from: defaultSuperOwner,
+      })
+
+      await superOwnerMultiSig.confirmTransaction(txId, {
+        from: defaultSuperOwner,
+      })
+
+      threshold = await mpv.superOwnerActionThresholdPercent.call()
+      threshold.toString().should.equal('100')
 
       let required = await superOwnerMultiSig.required.call()
       required.toString().should.equal('2')
 
-      const newOwner = accounts[6]
-      const txId = await mpv.addSuperOwner.call(newOwner, {
+      const newOwner = accounts[3]
+
+      txId = await mpv.performAction.call(
+        Actions.addOwner,
+        Roles.SuperOwner,
+        [],
+        [newOwner],
+      {
         from: defaultSuperOwner,
       })
-      await mpv.addSuperOwner(newOwner, {
+      await mpv.performAction(
+        Actions.addOwner,
+        Roles.SuperOwner,
+        [],
+        [newOwner],
+      {
         from: defaultSuperOwner,
       })
 
@@ -176,7 +216,7 @@ contract('MPV', accounts => {
         from: defaultSuperOwner,
       })
 
-      let isOwner = await mpv.isSuperOwner.call(newOwner)
+      let isOwner = await mpv.isOwner.call(Roles.SuperOwner, newOwner)
       isOwner.should.equal(false)
 
       const notASuperOwner = accounts[1]
@@ -189,25 +229,36 @@ contract('MPV', accounts => {
       })
 
       required = await superOwnerMultiSig.required.call()
-      required.toString().should.equal('2')
+      required.toString().should.equal('3')
 
-      isOwner = await mpv.isSuperOwner.call(newOwner)
+      isOwner = await mpv.isOwner.call(Roles.SuperOwner, newOwner)
       isOwner.should.equal(true)
 
-      count = await mpv.getSuperOwners.call()
-      count.length.should.equal(6)
+      count = await mpv.getOwners.call(Roles.SuperOwner)
+      count.length.should.equal(3)
     })
 
-    it('remove 5th super owner', async () => {
-      const owner = accounts[5]
+    it('remove 2nd and 3rd super owner', async () => {
+      const owner = accounts[3]
 
-      let isOwner = await mpv.isSuperOwner.call(owner)
+      let isOwner = await mpv.isOwner.call(Roles.SuperOwner, owner)
       isOwner.should.equal(true)
 
-      const txId = await mpv.removeSuperOwner.call(owner, {
+      // remove 3rd owner
+      let txId = await mpv.performAction.call(
+        Actions.removeOwner,
+        Roles.SuperOwner,
+        [],
+        [owner],
+      {
         from: defaultSuperOwner,
       })
-      await mpv.removeSuperOwner(owner, {
+      await mpv.performAction(
+        Actions.removeOwner,
+        Roles.SuperOwner,
+        [],
+        [owner],
+      {
         from: defaultSuperOwner,
       })
 
@@ -219,26 +270,34 @@ contract('MPV', accounts => {
         from: accounts[2],
       })
 
-      isOwner = await mpv.isSuperOwner.call(owner)
+      await superOwnerMultiSig.confirmTransaction(txId, {
+        from: owner,
+      })
+
+      isOwner = await mpv.isOwner.call(Roles.SuperOwner, owner)
       isOwner.should.equal(false)
 
-      const count = await mpv.getSuperOwners.call()
-      count.length.should.equal(5)
+      const count = await mpv.getOwners.call(Roles.SuperOwner)
+      count.length.should.equal(2)
 
-      const required = await superOwnerMultiSig.required.call()
+      let required = await superOwnerMultiSig.required.call()
       required.toString().should.equal('2')
-    })
 
-    it('remove 6th super owner', async () => {
-      const owner = accounts[6]
-
-      let isOwner = await mpv.isSuperOwner.call(owner)
-      isOwner.should.equal(true)
-
-      const txId = await mpv.removeSuperOwner.call(owner, {
+      // remove 2nd owner
+      txId = await mpv.performAction.call(
+        Actions.removeOwner,
+        Roles.SuperOwner,
+        [],
+        [accounts[2]],
+      {
         from: defaultSuperOwner,
       })
-      await mpv.removeSuperOwner(owner, {
+      await mpv.performAction(
+        Actions.removeOwner,
+        Roles.SuperOwner,
+        [],
+        [accounts[2]],
+      {
         from: defaultSuperOwner,
       })
 
@@ -250,13 +309,7 @@ contract('MPV', accounts => {
         from: accounts[2],
       })
 
-      isOwner = await mpv.isSuperOwner.call(owner)
-      isOwner.should.equal(false)
-
-      const count = await mpv.getSuperOwners.call()
-      count.length.should.equal(4)
-
-      const required = await superOwnerMultiSig.required.call()
+      required = await superOwnerMultiSig.required.call()
       required.toString().should.equal('1')
     })
 
@@ -271,10 +324,20 @@ contract('MPV', accounts => {
 
       const newRedemptionFee = 0.5 * (10 ** 4)
 
-      const txId = await mpv.setRedemptionFee.call(newRedemptionFee, {
+      const txId = await mpv.performAction.call(
+        Actions.setRedemptionFee,
+        Roles.SuperOwner,
+        [newRedemptionFee],
+        [],
+      {
         from: defaultSuperOwner,
       })
-      await mpv.setRedemptionFee(newRedemptionFee, {
+      await mpv.performAction(
+        Actions.setRedemptionFee,
+        Roles.SuperOwner,
+        [newRedemptionFee],
+        [],
+      {
         from: defaultSuperOwner,
       })
 
@@ -286,6 +349,38 @@ contract('MPV', accounts => {
 
       updatedRedemptionFee.toNumber().should.equal(newRedemptionFee)
     })
+
+    it('set redemption fee receiver wallet', async () => {
+      const currentWallet = await mpv.redemptionFeeReceiverWallet.call()
+      currentWallet.should.equal('0x0000000000000000000000000000000000000000')
+
+      const newWallet = '0x1111111111111111111111111111111111111111'
+
+      const txId = await mpv.performAction.call(
+        Actions.setRedemptionFeeReceiverWallet,
+        Roles.SuperOwner,
+        [],
+        [newWallet],
+      {
+        from: defaultSuperOwner,
+      })
+      await mpv.performAction(
+        Actions.setRedemptionFeeReceiverWallet,
+        Roles.SuperOwner,
+        [],
+        [newWallet],
+      {
+        from: defaultSuperOwner,
+      })
+
+      await superOwnerMultiSig.confirmTransaction(txId, {
+        from: defaultSuperOwner,
+      })
+
+      const updatedWallet = await mpv.redemptionFeeReceiverWallet.call()
+
+      updatedWallet.should.equal(newWallet)
+    })
   })
 
   describe('BasicOwnerMultiSig', () => {
@@ -294,13 +389,23 @@ contract('MPV', accounts => {
     it('add 2nd basic owner', async () => {
       const newOwner = accounts[2]
 
-      let isOwner = await mpv.isBasicOwner.call(newOwner)
+      let isOwner = await mpv.isOwner.call(Roles.BasicOwner, newOwner)
       isOwner.should.equal(false)
 
-      const txId = await mpv.addBasicOwner.call(newOwner, {
+      const txId = await mpv.performAction.call(
+        Actions.addOwner,
+        Roles.BasicOwner,
+        [],
+        [newOwner],
+      {
         from: defaultSuperOwner,
       })
-      await mpv.addBasicOwner(newOwner, {
+      await mpv.performAction(
+        Actions.addOwner,
+        Roles.BasicOwner,
+        [],
+        [newOwner],
+        {
         from: defaultSuperOwner,
       })
 
@@ -308,20 +413,30 @@ contract('MPV', accounts => {
         from: defaultSuperOwner,
       })
 
-      isOwner = await mpv.isBasicOwner.call(newOwner)
+      isOwner = await mpv.isOwner.call(Roles.BasicOwner, newOwner)
       isOwner.should.equal(true)
     })
 
     it('remove 2nd basic owner', async () => {
       const owner = accounts[2]
 
-      let isOwner = await mpv.isBasicOwner.call(owner)
+      let isOwner = await mpv.isOwner.call(Roles.BasicOwner, owner)
       isOwner.should.equal(true)
 
-      const txId = await mpv.removeBasicOwner.call(owner, {
+      const txId = await mpv.performAction.call(
+        Actions.removeOwner,
+        Roles.BasicOwner,
+        [],
+        [owner],
+      {
         from: defaultSuperOwner,
       })
-      await mpv.removeBasicOwner(owner, {
+      await mpv.performAction(
+        Actions.removeOwner,
+        Roles.BasicOwner,
+        [],
+        [owner],
+        {
         from: defaultSuperOwner,
       })
 
@@ -329,7 +444,7 @@ contract('MPV', accounts => {
         from: defaultSuperOwner,
       })
 
-      isOwner = await mpv.isBasicOwner.call(owner)
+      isOwner = await mpv.isOwner.call(Roles.BasicOwner, owner)
       isOwner.should.equal(false)
     })
   })
@@ -339,13 +454,23 @@ contract('MPV', accounts => {
     it('add 2nd operation admin', async () => {
       const newAdmin = accounts[2]
 
-      let isAdmin = await mpv.isOperationAdmin.call(newAdmin)
+      let isAdmin = await mpv.isOwner.call(Roles.OperationAdmin, newAdmin)
       isAdmin.should.equal(false)
 
-      const txId = await mpv.addOperationAdmin.call(newAdmin, {
+      const txId = await mpv.performAction.call(
+        Actions.addOwner,
+        Roles.OperationAdmin,
+        [],
+        [newAdmin],
+      {
         from: defaultBasicOwner,
       })
-      await mpv.addOperationAdmin(newAdmin, {
+      await mpv.performAction(
+        Actions.addOwner,
+        Roles.OperationAdmin,
+        [],
+        [newAdmin],
+        {
         from: defaultBasicOwner,
       })
 
@@ -353,20 +478,30 @@ contract('MPV', accounts => {
         from: defaultBasicOwner,
       })
 
-      isAdmin = await mpv.isOperationAdmin.call(newAdmin)
+      isAdmin = await mpv.isOwner.call(Roles.OperationAdmin, newAdmin)
       isAdmin.should.equal(true)
     })
 
     it('remove 2nd operation admin', async () => {
       const admin = accounts[2]
 
-      let isAdmin = await mpv.isOperationAdmin.call(admin)
+      let isAdmin = await mpv.isOwner.call(Roles.OperationAdmin, admin)
       isAdmin.should.equal(true)
 
-      const txId = await mpv.removeOperationAdmin.call(admin, {
+      const txId = await mpv.performAction.call(
+        Actions.removeOwner,
+        Roles.OperationAdmin,
+        [],
+        [admin],
+      {
         from: defaultBasicOwner,
       })
-      await mpv.removeOperationAdmin(admin, {
+      await mpv.performAction(
+        Actions.removeOwner,
+        Roles.OperationAdmin,
+        [],
+        [admin],
+        {
         from: defaultBasicOwner,
       })
 
@@ -374,67 +509,101 @@ contract('MPV', accounts => {
         from: defaultBasicOwner,
       })
 
-      isAdmin = await mpv.isOperationAdmin.call(admin)
+      isAdmin = await mpv.isOwner.call(Roles.OperationAdmin, admin)
       isAdmin.should.equal(false)
     })
   })
 
   describe('MintingAdminMultiSig', () => {
+    const defaultBasicOwner = accounts[0]
+
     it('add 2nd minting admin', async () => {
       const newAdmin = accounts[2]
 
-      let isAdmin = await mpv.isMintingAdmin.call(newAdmin)
+      let isAdmin = await mpv.isOwner.call(Roles.MintingAdmin, newAdmin)
       isAdmin.should.equal(false)
 
-      const txId = await mpv.addMintingAdmin.call(newAdmin, {
-        from: accounts[0],
+      const txId = await mpv.performAction.call(
+        Actions.addOwner,
+        Roles.MintingAdmin,
+        [],
+        [newAdmin],
+      {
+        from: defaultBasicOwner,
       })
-      await mpv.addMintingAdmin(newAdmin, {
-        from: accounts[0],
+      await mpv.performAction(
+        Actions.addOwner,
+        Roles.MintingAdmin,
+        [],
+        [newAdmin],
+        {
+        from: defaultBasicOwner,
       })
 
       await basicOwnerMultiSig.confirmTransaction(txId, {
         from: accounts[0],
       })
 
-      isAdmin = await mpv.isMintingAdmin.call(newAdmin)
+      isAdmin = await mpv.isOwner.call(Roles.MintingAdmin, newAdmin)
       isAdmin.should.equal(true)
     })
 
     it('remove 2nd minting admin', async () => {
       const admin = accounts[2]
 
-      let isAdmin = await mpv.isMintingAdmin.call(admin)
+      let isAdmin = await mpv.isOwner.call(Roles.MintingAdmin, admin)
       isAdmin.should.equal(true)
 
-      const txId = await mpv.removeMintingAdmin.call(admin, {
-        from: accounts[0],
+      const txId = await mpv.performAction.call(
+        Actions.removeOwner,
+        Roles.MintingAdmin,
+        [],
+        [admin],
+      {
+        from: defaultBasicOwner,
       })
-      await mpv.removeMintingAdmin(admin, {
-        from: accounts[0],
+      await mpv.performAction(
+        Actions.removeOwner,
+        Roles.MintingAdmin,
+        [],
+        [admin],
+        {
+        from: defaultBasicOwner,
       })
 
       await basicOwnerMultiSig.confirmTransaction(txId, {
         from: accounts[0],
       })
 
-      isAdmin = await mpv.isMintingAdmin.call(admin)
+      isAdmin = await mpv.isOwner.call(Roles.MintingAdmin, admin)
       isAdmin.should.equal(false)
     })
   })
 
   describe('RedemptionAdminMultiSig', () => {
+    const defaultBasicOwner = accounts[0]
+
     it('add 2nd redemption admin', async () => {
       const newAdmin = accounts[2]
 
-      let isAdmin = await mpv.isRedemptionAdmin.call(newAdmin)
+      let isAdmin = await mpv.isOwner.call(Roles.RedemptionAdmin, newAdmin)
       isAdmin.should.equal(false)
 
-      const txId = await mpv.addRedemptionAdmin.call(newAdmin, {
-        from: accounts[0],
+      const txId = await mpv.performAction.call(
+        Actions.addOwner,
+        Roles.RedemptionAdmin,
+        [],
+        [newAdmin],
+      {
+        from: defaultBasicOwner,
       })
-      await mpv.addRedemptionAdmin(newAdmin, {
-        from: accounts[0],
+      await mpv.performAction(
+        Actions.addOwner,
+        Roles.RedemptionAdmin,
+        [],
+        [newAdmin],
+        {
+        from: defaultBasicOwner,
       })
 
       const notABasicOwner = accounts[1]
@@ -446,28 +615,38 @@ contract('MPV', accounts => {
         from: accounts[0],
       })
 
-      isAdmin = await mpv.isRedemptionAdmin.call(newAdmin)
+      isAdmin = await mpv.isOwner.call(Roles.RedemptionAdmin, newAdmin)
       isAdmin.should.equal(true)
     })
 
     it('remove 2nd redemption admin', async () => {
       const admin = accounts[2]
 
-      let isAdmin = await mpv.isRedemptionAdmin.call(admin)
+      let isAdmin = await mpv.isOwner.call(Roles.RedemptionAdmin, admin)
       isAdmin.should.equal(true)
 
-      const txId = await mpv.removeRedemptionAdmin.call(admin, {
-        from: accounts[0],
+      const txId = await mpv.performAction.call(
+        Actions.removeOwner,
+        Roles.RedemptionAdmin,
+        [],
+        [admin],
+      {
+        from: defaultBasicOwner,
       })
-      await mpv.removeRedemptionAdmin(admin, {
-        from: accounts[0],
+      await mpv.performAction(
+        Actions.removeOwner,
+        Roles.RedemptionAdmin,
+        [],
+        [admin],
+        {
+        from: defaultBasicOwner,
       })
 
       await basicOwnerMultiSig.confirmTransaction(txId, {
         from: accounts[0],
       })
 
-      isAdmin = await mpv.isRedemptionAdmin.call(admin)
+      isAdmin = await mpv.isOwner.call(Roles.RedemptionAdmin, admin)
       isAdmin.should.equal(false)
     })
   })
@@ -554,20 +733,31 @@ contract('MPV', accounts => {
     })
   })
 
-  describe('Asset', () => {
+  // TODO
+  describe.skip('Asset', () => {
     const defaultBasicOwner = accounts[0]
     const defaultMintingAdmin = accounts[0]
     const secondAdmin = accounts[2]
 
     before(async () => {
-      let admins = await mpv.getMintingAdmins.call()
+      let admins = await mpv.getOwners.call(Roles.MintingAdmin)
       admins.length.should.equal(1)
 
-      let txId = await mpv.addMintingAdmin.call(secondAdmin, {
-        from: defaultBasicOwner
+      const txId = await mpv.performAction.call(
+        Actions.addOwner,
+        Roles.MintingAdmin,
+        [],
+        [secondAdmin],
+      {
+        from: defaultBasicOwner,
       })
-      await mpv.addMintingAdmin(secondAdmin, {
-        from: defaultBasicOwner
+      await mpv.performAction(
+        Actions.addOwner,
+        Roles.MintingAdmin,
+        [],
+        [secondAdmin],
+        {
+        from: defaultBasicOwner,
       })
 
       await basicOwnerMultiSig.confirmTransaction(txId, {
@@ -579,7 +769,7 @@ contract('MPV', accounts => {
       })
       required.toNumber().should.equal(2)
 
-      admins = await mpv.getMintingAdmins.call()
+      admins = await mpv.getOwners.call(Roles.MintingAdmin)
       admins.length.should.equal(2)
     })
 
