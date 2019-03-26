@@ -104,11 +104,6 @@ contract MasterPropertyValue is Initializable, Pausable {
         _;
     }
 
-    modifier mintingCountownTerminated() {
-        require(state.mintingCountownStart == 0);
-        _;
-    }
-
     function initialize(
         MPVToken _mpvToken,
         IMultiSigWallet _superOwnerMultiSig,
@@ -311,7 +306,7 @@ contract MasterPropertyValue is Initializable, Pausable {
     {
         if (action == Actions.setSuperOwnerActionThresholdPercent) {
             state.superOwnerActionThresholdPercent = arg; // newThreshold
-            _updateSuperOwnerRequirement();
+            _updateRequirement(Roles.SuperOwner, Roles.SuperOwner);
         } else if (action == Actions.setRedemptionFee) {
             state.redemptionFee = arg; // newRedemptionFee;
         } else if (action == Actions.setRedemptionFeeReceiverWallet) {
@@ -347,19 +342,19 @@ contract MasterPropertyValue is Initializable, Pausable {
     {
         if (modifyRole == Roles.SuperOwner) {
             superOwnerRole.superOwnerMultiSig.addOwner(owner);
-            _updateSuperOwnerRequirement();
+            _updateRequirement(Roles.SuperOwner, Roles.SuperOwner);
         } else if (modifyRole == Roles.BasicOwner) {
             basicOwnerRole.basicOwnerMultiSig.addOwner(owner);
-            _updateBasicOwnerRequirement();
+            _updateRequirement(Roles.BasicOwner, Roles.SuperOwner);
         } else if (modifyRole == Roles.OperationAdmin) {
             operationAdminRole.operationAdminMultiSig.addOwner(owner);
-            _updateOperationAdminRequirement();
+            _updateRequirement(Roles.OperationAdmin, Roles.BasicOwner);
         } else if (modifyRole == Roles.MintingAdmin) {
             mintingAdminRole.mintingAdminMultiSig.addOwner(owner);
-            _updateMintingAdminRequirement();
+            _updateRequirement(Roles.MintingAdmin, Roles.BasicOwner);
         } else if (modifyRole == Roles.RedemptionAdmin) {
             redemptionAdminRole.redemptionAdminMultiSig.addOwner(owner);
-            _updateRedemptionAdminRequirement();
+            _updateRequirement(Roles.RedemptionAdmin, Roles.BasicOwner);
         }
         emit LogOwnerAdded(modifyRole, owner);
     }
@@ -374,19 +369,19 @@ contract MasterPropertyValue is Initializable, Pausable {
     {
         if (modifyRole == Roles.SuperOwner) {
             superOwnerRole.superOwnerMultiSig.removeOwner(owner);
-            _updateSuperOwnerRequirement();
+            _updateRequirement(Roles.SuperOwner, Roles.SuperOwner);
         } else if (modifyRole == Roles.BasicOwner) {
             basicOwnerRole.basicOwnerMultiSig.removeOwner(owner);
-            _updateBasicOwnerRequirement();
+            _updateRequirement(Roles.BasicOwner, Roles.SuperOwner);
         } else if (modifyRole == Roles.OperationAdmin) {
             operationAdminRole.operationAdminMultiSig.removeOwner(owner);
-            _updateOperationAdminRequirement();
+            _updateRequirement(Roles.OperationAdmin, Roles.BasicOwner);
         } else if (modifyRole == Roles.MintingAdmin) {
             mintingAdminRole.mintingAdminMultiSig.removeOwner(owner);
-            _updateMintingAdminRequirement();
+            _updateRequirement(Roles.MintingAdmin, Roles.BasicOwner);
         } else if (modifyRole == Roles.RedemptionAdmin) {
             redemptionAdminRole.redemptionAdminMultiSig.removeOwner(owner);
-            _updateRedemptionAdminRequirement();
+            _updateRequirement(Roles.RedemptionAdmin, Roles.BasicOwner);
         }
         emit LogOwnerAdded(modifyRole, owner);
     }
@@ -424,8 +419,9 @@ contract MasterPropertyValue is Initializable, Pausable {
     function _addPendingAsset(MPVState.Asset memory _asset)
     internal
     onlyRole(Roles.MintingAdmin)
-    mintingCountownTerminated()
     returns (uint256) {
+        // minting countdown terminated
+        require(state.mintingCountownStart == 0);
         if (!(state.pendingAssets.length > 0 || state.pendingAssetsTransactionId != 0)) {
             state.pendingAssets.push(_asset);
             bytes memory data = abi.encodeWithSelector(
@@ -448,7 +444,15 @@ contract MasterPropertyValue is Initializable, Pausable {
     {
         for (uint256 i = 0; i < state.pendingAssets.length; i++) {
             if (state.pendingAssets[i].id == assetId) {
-                _removePendingAssetArrayItem(i);
+
+                if (i >= state.pendingAssets.length) continue;
+                // remove pending asset array item
+                for (uint256 j = i; j < state.pendingAssets.length-1; j++) {
+                    state.pendingAssets[j] = state.pendingAssets[j+1];
+                }
+                delete state.pendingAssets[state.pendingAssets.length-1];
+                state.pendingAssets.length--;
+
             }
         }
 
@@ -483,6 +487,10 @@ contract MasterPropertyValue is Initializable, Pausable {
         transactionId = multiSig.mpvSubmitTransaction(address(this), 0, data);
     }
 
+    function dailyTransferLimit() public view returns(uint256) {
+        return state.dailyTransferLimit;
+    }
+
     function getOwners(
         Roles role
     )
@@ -499,10 +507,6 @@ contract MasterPropertyValue is Initializable, Pausable {
         } else if (role == Roles.RedemptionAdmin) {
             return _getOwners(redemptionAdminRole.redemptionAdminMultiSig);
         }
-    }
-
-    function dailyTransferLimit() public view returns(uint256) {
-        return state.dailyTransferLimit;
     }
 
     function superOwnerActionThresholdPercent() public view returns(uint256) {
@@ -529,55 +533,29 @@ contract MasterPropertyValue is Initializable, Pausable {
         return state.mintingCountownStart;
     }
 
-    function _isMultiSig(Roles role) internal returns(bool) {
-    }
-
-    function _removePendingAssetArrayItem(uint256 index)
-    internal {
-        if (index >= state.pendingAssets.length) return;
-
-        for (uint256 i = index; i < state.pendingAssets.length-1; i++) {
-            state.pendingAssets[i] = state.pendingAssets[i+1];
+    function _updateRequirement(
+        Roles role,
+        Roles multisigRole
+    )
+    internal
+    onlyMultiSig(multisigRole) {
+        if (role == Roles.SuperOwner) {
+            _updateMultisigRequirement(superOwnerRole.superOwnerMultiSig, state.superOwnerActionThresholdPercent);
+        } else if (role == Roles.BasicOwner) {
+            _updateMultisigRequirement(basicOwnerRole.basicOwnerMultiSig, state.basicOwnerActionThresholdPercent);
+        } else if (role == Roles.OperationAdmin) {
+            _updateMultisigRequirement(operationAdminRole.operationAdminMultiSig, state.operationAdminActionThresholdPercent);
+        } else if (role == Roles.MintingAdmin) {
+            _updateMultisigRequirement(mintingAdminRole.mintingAdminMultiSig, state.mintingAdminActionThresholdPercent);
+        } else if (role == Roles.RedemptionAdmin) {
+            _updateMultisigRequirement(redemptionAdminRole.redemptionAdminMultiSig, state.redemptionAdminActionThresholdPercent);
         }
-
-        delete state.pendingAssets[state.pendingAssets.length-1];
-        state.pendingAssets.length--;
-    }
-
-    function _updateSuperOwnerRequirement()
-    internal
-    onlyMultiSig(Roles.SuperOwner) {
-        _updateRequirement(superOwnerRole.superOwnerMultiSig, state.superOwnerActionThresholdPercent);
-    }
-
-    function _updateBasicOwnerRequirement()
-    internal
-    onlyMultiSig(Roles.SuperOwner) {
-        _updateRequirement(basicOwnerRole.basicOwnerMultiSig, state.basicOwnerActionThresholdPercent);
-    }
-
-    function _updateOperationAdminRequirement()
-    internal
-    onlyMultiSig(Roles.BasicOwner) {
-        _updateRequirement(operationAdminRole.operationAdminMultiSig, state.operationAdminActionThresholdPercent);
-    }
-
-    function _updateMintingAdminRequirement()
-    internal
-    onlyMultiSig(Roles.BasicOwner) {
-        _updateRequirement(mintingAdminRole.mintingAdminMultiSig, state.mintingAdminActionThresholdPercent);
-    }
-
-    function _updateRedemptionAdminRequirement()
-    internal
-    onlyMultiSig(Roles.BasicOwner) {
-        _updateRequirement(redemptionAdminRole.redemptionAdminMultiSig, state.redemptionAdminActionThresholdPercent);
     }
 
     // updateRequirements updates the requirement property in the multsig.
     // The value is calculate post addition/removal of owner and based on
     // the threshold value for that multisig set by MPV.
-    function _updateRequirement(
+    function _updateMultisigRequirement(
         IMultiSigWallet multiSig,
         uint256 threshold
     )
@@ -606,13 +584,6 @@ contract MasterPropertyValue is Initializable, Pausable {
         return multiSig.getOwners();
     }
 
-    function _resetPendingAssets()
-    internal {
-        state.pendingAssetsTransactionId = 0;
-        delete state.pendingAssets;
-        state.mintingCountownStart = 0;
-    }
-
     function _enlistPendingAsset(MPVState.Asset memory _asset)
     internal {
         Assets.Asset memory asset;
@@ -632,7 +603,10 @@ contract MasterPropertyValue is Initializable, Pausable {
             _enlistPendingAsset(_assets[i]);
         }
 
-        _resetPendingAssets();
+        // reset pending assets
+        state.pendingAssetsTransactionId = 0;
+        delete state.pendingAssets;
+        state.mintingCountownStart = 0;
     }
 
 }
