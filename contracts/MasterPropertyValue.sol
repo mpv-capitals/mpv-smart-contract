@@ -58,7 +58,8 @@ contract MasterPropertyValue is Initializable, Pausable {
         setBurningActionCountdown,
         setMintingReceiverWallet,
         addOwner,
-        removeOwner
+        removeOwner,
+        pauseContract
     }
 
     struct ActionArgs {
@@ -256,6 +257,12 @@ contract MasterPropertyValue is Initializable, Pausable {
                     actionArgs.addressArgs[0] // redemptionAdmin
                 );
             }
+        } else if (action == Actions.pauseContract) {
+            return superOwnerRole.pauseContract(
+                this._callback.selector,
+                uint256(Actions.pauseContract),
+                actionArgs.uint256Args[0] // pause boolean
+            );
         }
 
         return 0;
@@ -287,6 +294,12 @@ contract MasterPropertyValue is Initializable, Pausable {
             state.burningActionCountdownLength = arg; // newCountdown;
         } else if (action == Actions.setMintingReceiverWallet) {
             state.mintingReceiverWallet = address(arg); // newMintingReceiverWallet;
+        } else if (action == Actions.pauseContract) {
+            if (arg == 1) {
+                super.pause();
+            } else {
+                super.unpause();
+            }
         }
     }
 
@@ -441,43 +454,6 @@ contract MasterPropertyValue is Initializable, Pausable {
         transactionId = multiSig.mpvSubmitTransaction(address(this), 0, data);
     }
 
-    /*
-    function pauseContract()
-    public
-    onlyRole(Roles.SuperOwner)
-    returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
-            this._pause.selector
-        );
-
-        transactionId = _submitTransaction(superOwnerRole.superOwnerMultiSig, data);
-    }
-
-    function _pause()
-    public
-    onlyMultiSig(Roles.SuperOwner)
-    {
-        super.pause();
-    }
-
-    function unpauseContract()
-    public
-    onlyRole(Roles.SuperOwner)
-    returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
-            this._unpause.selector
-        );
-
-        transactionId = _submitTransaction(superOwnerRole.superOwnerMultiSig, data);
-    }
-
-    function _unpause()
-    public
-    onlyMultiSig(Roles.SuperOwner)
-    {
-        super.unpause();
-    }
-    */
     function getOwners(
         Roles role
     )

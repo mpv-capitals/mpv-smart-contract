@@ -319,4 +319,21 @@ library SuperOwnerRole {
 
         return _submitTransaction(multiSig, data);
     }
+
+    function pauseContract(
+        State storage state,
+        bytes4 selector,
+        uint256 action,
+        uint256 paused
+    )
+    public
+    onlySuperOwner(state)
+    returns(uint256 transactionId) {
+        return _submitTransactionWithUint256Data(
+            state.superOwnerMultiSig,
+            selector,
+            action,
+            paused
+        );
+    }
 }

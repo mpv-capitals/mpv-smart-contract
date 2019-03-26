@@ -34,3 +34,5 @@ test:
 .PHONY: lint
 lint:
 	@npm run lint:fix
+	@solhint contracts/*.sol
+	#@npm run lint:sol

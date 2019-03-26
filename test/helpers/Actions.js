@@ -14,4 +14,5 @@ module.exports = {
   setMintingReceiverWallet: iota(),
   addOwner: iota(),
   removeOwner: iota(),
+  pauseContract: iota(),
 }

@@ -566,17 +566,25 @@ contract('MasterPropertyValue', accounts => {
     })
   })
 
-  it('Pausable', async () => {
+  describe('Pausable', async () => {
+    before(async () => {
+      await initContracts(accounts)
+    })
+
+    const defaultSuperOwner = accounts[0]
+
     it('super owner should pause contract', async () => {
       let paused = await mpv.paused.call()
       paused.should.equal(false)
 
-      const txId = await mpv.pauseContract.call({
-        from: accounts[0],
-      })
-      await mpv.pauseContract({
-        from: accounts[0],
-      })
+      const txId = await invoke(
+        Actions.pauseContract,
+        Roles.SuperOwner,
+        [1], // 1 = pause
+        [],
+        {
+          from: defaultSuperOwner,
+        })
 
       const notASuperOwner = accounts[1]
       await shouldFail(superOwnerMultiSig.confirmTransaction(txId, {
@@ -595,12 +603,14 @@ contract('MasterPropertyValue', accounts => {
       let paused = await mpv.paused.call()
       paused.should.equal(true)
 
-      const txId = await mpv.unpauseContract.call({
-        from: accounts[0],
-      })
-      await mpv.unpauseContract({
-        from: accounts[0],
-      })
+      const txId = await invoke(
+        Actions.pauseContract,
+        Roles.SuperOwner,
+        [0], // 0 = unpause
+        [],
+        {
+          from: defaultSuperOwner,
+        })
 
       const notASuperOwner = accounts[1]
       await shouldFail(superOwnerMultiSig.confirmTransaction(txId, {
