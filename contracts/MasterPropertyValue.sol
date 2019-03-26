@@ -59,13 +59,17 @@ contract MasterPropertyValue is Initializable, Pausable {
         setMintingReceiverWallet,
         addOwner,
         removeOwner,
-        pauseContract
+        pauseContract,
+        addPendingAsset,
+        removePendingAsset,
+        updatePendingAssetsStatus
     }
 
     struct ActionArgs {
         Roles role;
         uint256[] uint256Args;
         address[] addressArgs;
+        bytes32[] bytes32Args;
     }
 
     modifier onlyRole(Roles role) {
@@ -234,7 +238,7 @@ contract MasterPropertyValue is Initializable, Pausable {
             if (actionArgs.role == Roles.SuperOwner) {
                 return superOwnerRole.removeSuperOwner(
                     this._removeOwner.selector,
-                    actionArgs.addressArgs[0] // basicOwner
+                    actionArgs.addressArgs[0] // superOwner
                 );
             } else if (actionArgs.role == Roles.BasicOwner) {
                 return superOwnerRole.removeBasicOwner(
@@ -263,8 +267,23 @@ contract MasterPropertyValue is Initializable, Pausable {
                 uint256(Actions.pauseContract),
                 actionArgs.uint256Args[0] // pause boolean
             );
+        } else if (action == Actions.addPendingAsset) {
+            MPVState.Asset memory asset;
+            asset.id = actionArgs.uint256Args[0];
+            asset.notarizationId = actionArgs.bytes32Args[0];
+            asset.tokens = actionArgs.uint256Args[1];
+
+            return _addPendingAsset(asset);
+        } else if (action == Actions.removePendingAsset) {
+            _removePendingAsset(actionArgs.uint256Args[0]);
+            return 0;
+        } else if (action == Actions.updatePendingAssetsStatus) {
+            require(now >= state.mintingCountownStart + state.mintingActionCountdownLength);
+            _enlistPendingAssets(state.pendingAssets);
+            return 0;
         }
 
+        revert("invalid action");
         return 0;
     }
 
@@ -376,19 +395,19 @@ contract MasterPropertyValue is Initializable, Pausable {
         return false;
     }
 
-    function addAssets(MPVState.Asset[] memory _assets)
+    function addPendingAssets(MPVState.Asset[] memory _assets)
     public
     onlyRole(Roles.MintingAdmin)
     returns (uint256) {
         for (uint256 i = 0; i < _assets.length; i++) {
-            addAsset(_assets[i]);
+            _addPendingAsset(_assets[i]);
         }
 
         return state.pendingAssetsTransactionId;
     }
 
-    function addAsset(MPVState.Asset memory _asset)
-    public
+    function _addPendingAsset(MPVState.Asset memory _asset)
+    internal
     onlyRole(Roles.MintingAdmin)
     mintingCountownTerminated()
     returns (uint256) {
@@ -408,8 +427,8 @@ contract MasterPropertyValue is Initializable, Pausable {
         }
     }
 
-    function removePendingAsset(uint256 assetId)
-    public
+    function _removePendingAsset(uint256 assetId)
+    internal
     onlyRole(Roles.MintingAdmin)
     {
         for (uint256 i = 0; i < state.pendingAssets.length; i++) {
@@ -440,11 +459,6 @@ contract MasterPropertyValue is Initializable, Pausable {
     onlyMultiSig(Roles.MintingAdmin)
     {
         state.mintingCountownStart = now;
-    }
-
-    function updatePendingAssetStatus() public {
-        require(now >= state.mintingCountownStart + state.mintingActionCountdownLength);
-        _enlistPendingAssets(state.pendingAssets);
     }
 
     function _submitTransaction(IMultiSigWallet multiSig, bytes memory data)

@@ -15,4 +15,7 @@ module.exports = {
   addOwner: iota(),
   removeOwner: iota(),
   pauseContract: iota(),
+  addPendingAsset: iota(),
+  removePendingAsset: iota(),
+  updatePendingAssetsStatus: iota(),
 }

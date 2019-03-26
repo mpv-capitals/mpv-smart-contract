@@ -110,16 +110,28 @@ async function initContracts (accounts) {
   })
 }
 
-async function invoke (action, role, uint256Args, addressArgs, options) {
+async function invoke (action, role, uint256Args, addressArgs, bytes32Args, options) {
   const args = {
     role,
     uint256Args,
     addressArgs,
+    bytes32Args
   }
   const txId = await mpv.invoke.call(action, args, options)
   await mpv.invoke(action, args, options)
 
   return txId
+}
+
+async function addAsset(asset, options) {
+  return invoke(
+    Actions.addPendingAsset,
+    Roles.MintingAdmin,
+    [asset.id, asset.tokens],
+    [],
+    [asset.notarizationId],
+    options
+  )
 }
 
 contract('MasterPropertyValue', accounts => {
@@ -137,6 +149,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.SuperOwner,
         [],
         [newOwner],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -178,6 +191,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.SuperOwner,
         [100],
         [],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -199,6 +213,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.SuperOwner,
         [],
         [newOwner],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -244,6 +259,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.SuperOwner,
         [],
         [owner],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -275,6 +291,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.SuperOwner,
         [],
         [accounts[2]],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -307,6 +324,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.SuperOwner,
         [newRedemptionFee],
         [],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -331,6 +349,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.SuperOwner,
         [],
         [newWallet],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -363,6 +382,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.BasicOwner,
         [],
         [newOwner],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -386,6 +406,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.BasicOwner,
         [],
         [owner],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -417,6 +438,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.OperationAdmin,
         [],
         [newAdmin],
+        [],
         {
           from: defaultBasicOwner,
         })
@@ -440,6 +462,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.OperationAdmin,
         [],
         [admin],
+        [],
         {
           from: defaultBasicOwner,
         })
@@ -471,6 +494,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.MintingAdmin,
         [],
         [newAdmin],
+        [],
         {
           from: defaultBasicOwner,
         })
@@ -494,6 +518,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.MintingAdmin,
         [],
         [admin],
+        [],
         {
           from: defaultBasicOwner,
         })
@@ -525,6 +550,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.RedemptionAdmin,
         [],
         [newAdmin],
+        [],
         {
           from: defaultBasicOwner,
         })
@@ -553,6 +579,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.RedemptionAdmin,
         [],
         [admin],
+        [],
         {
           from: defaultBasicOwner,
         })
@@ -582,6 +609,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.SuperOwner,
         [1], // 1 = pause
         [],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -607,6 +635,7 @@ contract('MasterPropertyValue', accounts => {
         Actions.pauseContract,
         Roles.SuperOwner,
         [0], // 0 = unpause
+        [],
         [],
         {
           from: defaultSuperOwner,
@@ -677,6 +706,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.SuperOwner,
         [1],
         [],
+        [],
         {
           from: defaultSuperOwner,
         })
@@ -693,6 +723,7 @@ contract('MasterPropertyValue', accounts => {
         Roles.MintingAdmin,
         [],
         [secondMintingAdmin],
+        [],
         {
           from: defaultBasicOwner,
         })
@@ -732,10 +763,7 @@ contract('MasterPropertyValue', accounts => {
       })
       pendingAssetsCount.toNumber().should.equal(0)
 
-      const txId = await mpv.addAsset.call(asset, {
-        from: defaultMintingAdmin,
-      })
-      await mpv.addAsset(asset, {
+      const txId = await addAsset(asset, {
         from: defaultMintingAdmin,
       })
 
@@ -757,15 +785,21 @@ contract('MasterPropertyValue', accounts => {
 
       asset.id = 2
       // countdown started; can't add new assets
-      await shouldFail(mpv.addAsset(asset, {
+      await shouldFail(addAsset(asset, {
         from: defaultMintingAdmin,
       }))
 
       await mine(60)
 
-      await mpv.updatePendingAssetStatus({
-        from: accounts[0],
-      })
+      await invoke(
+        Actions.updatePendingAssetsStatus,
+        Roles.MintingAdmin,
+        [],
+        [],
+        [],
+        {
+          from: accounts[0]
+        })
 
       pendingAssetsCount = await mpv.pendingAssetsCount.call({
         from: accounts[0],
@@ -783,10 +817,7 @@ contract('MasterPropertyValue', accounts => {
         tokens: 100,
       }
 
-      const txId = await mpv.addAsset.call(asset, {
-        from: defaultMintingAdmin,
-      })
-      await mpv.addAsset(asset, {
+      const txId = await addAsset(asset, {
         from: defaultMintingAdmin,
       })
 
@@ -806,7 +837,7 @@ contract('MasterPropertyValue', accounts => {
         tokens: 100,
       }
 
-      await mpv.addAsset(secondAsset, {
+      await addAsset(secondAsset, {
         from: defaultMintingAdmin,
       })
 
@@ -830,10 +861,10 @@ contract('MasterPropertyValue', accounts => {
         tokens: 100,
       }]
 
-      const txId = await mpv.addAssets.call(assets, {
+      const txId = await mpv.addPendingAssets.call(assets, {
         from: defaultMintingAdmin,
       })
-      await mpv.addAssets(assets, {
+      await mpv.addPendingAssets(assets, {
         from: defaultMintingAdmin,
       })
 
@@ -848,9 +879,15 @@ contract('MasterPropertyValue', accounts => {
       confirmationCount.toNumber().should.equal(1)
 
       const assetId = 2
-      await mpv.removePendingAsset(assetId, {
-        from: defaultMintingAdmin,
-      })
+      await invoke(
+        Actions.removePendingAsset,
+        Roles.MintingAdmin,
+        [assetId],
+        [],
+        [],
+        {
+          from: defaultMintingAdmin
+        })
 
       pendingAssetsCount = await mpv.pendingAssetsCount.call({
         from: accounts[0],
@@ -870,9 +907,15 @@ contract('MasterPropertyValue', accounts => {
 
       await mine(60)
 
-      await mpv.updatePendingAssetStatus({
-        from: accounts[0],
-      })
+      await invoke(
+        Actions.updatePendingAssetsStatus,
+        Roles.MintingAdmin,
+        [],
+        [],
+        [],
+        {
+          from: accounts[0]
+        })
 
       pendingAssetsCount = await mpv.pendingAssetsCount.call({
         from: accounts[0],
