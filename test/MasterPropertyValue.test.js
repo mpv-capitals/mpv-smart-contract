@@ -115,7 +115,7 @@ async function invoke (action, role, uint256Args, addressArgs, bytes32Args, opti
     role,
     uint256Args,
     addressArgs,
-    bytes32Args
+    bytes32Args,
   }
   const txId = await mpv.invoke.call(action, args, options)
   await mpv.invoke(action, args, options)
@@ -123,7 +123,7 @@ async function invoke (action, role, uint256Args, addressArgs, bytes32Args, opti
   return txId
 }
 
-async function addAsset(asset, options) {
+async function addAsset (asset, options) {
   return invoke(
     Actions.addPendingAsset,
     Roles.MintingAdmin,
@@ -798,7 +798,7 @@ contract('MasterPropertyValue', accounts => {
         [],
         [],
         {
-          from: accounts[0]
+          from: accounts[0],
         })
 
       pendingAssetsCount = await mpv.pendingAssetsCount.call({
@@ -886,7 +886,7 @@ contract('MasterPropertyValue', accounts => {
         [],
         [],
         {
-          from: defaultMintingAdmin
+          from: defaultMintingAdmin,
         })
 
       pendingAssetsCount = await mpv.pendingAssetsCount.call({
@@ -914,13 +914,71 @@ contract('MasterPropertyValue', accounts => {
         [],
         [],
         {
-          from: accounts[0]
+          from: accounts[0],
         })
 
       pendingAssetsCount = await mpv.pendingAssetsCount.call({
         from: accounts[0],
       })
       pendingAssetsCount.toNumber().should.equal(0)
+    })
+
+    it('cancel minting', async () => {
+      let asset = {
+        id: 10,
+        notarizationId: '0xabcd',
+        tokens: 100,
+      }
+
+      const txId = await addAsset(asset, {
+        from: defaultMintingAdmin,
+      })
+
+      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+        from: accounts[0],
+      })
+      pendingAssetsCount.toNumber().should.equal(1)
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: defaultMintingAdmin,
+      })
+
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: secondMintingAdmin,
+      })
+
+      let confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
+      confirmationCount.toNumber().should.equal(2)
+
+      let countdownStart = await mpv.mintingCountownStart.call()
+      countdownStart.toString().should.not.equal('0')
+
+      const notABasicOwner = accounts[3]
+      await shouldFail(invoke(
+        Actions.cancelMinting,
+        Roles.BasicOwner,
+        [],
+        [],
+        [],
+        {
+          from: notABasicOwner,
+        }))
+
+      await invoke(
+        Actions.cancelMinting,
+        Roles.BasicOwner,
+        [],
+        [],
+        [],
+        {
+          from: defaultBasicOwner,
+        })
+
+      countdownStart = await mpv.mintingCountownStart.call()
+      countdownStart.toString().should.equal('0')
+
+      confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
+      confirmationCount.toNumber().should.equal(0)
     })
   })
 })

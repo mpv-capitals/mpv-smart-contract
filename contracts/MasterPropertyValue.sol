@@ -62,7 +62,8 @@ contract MasterPropertyValue is Initializable, Pausable {
         pauseContract,
         addPendingAsset,
         removePendingAsset,
-        updatePendingAssetsStatus
+        updatePendingAssetsStatus,
+        cancelMinting
     }
 
     struct ActionArgs {
@@ -90,7 +91,16 @@ contract MasterPropertyValue is Initializable, Pausable {
     }
 
     modifier onlyMultiSig(Roles role) {
-        require(_isMultiSig(role));
+        if (role == Roles.SuperOwner) {
+            require(msg.sender == address(superOwnerRole.superOwnerMultiSig));
+        } else if (role == Roles.BasicOwner) {
+            require(msg.sender == address(basicOwnerRole.basicOwnerMultiSig));
+        } else if (role == Roles.MintingAdmin) {
+            require(msg.sender == address(mintingAdminRole.mintingAdminMultiSig));
+        } else {
+            revert("invalid role");
+        }
+
         _;
     }
 
@@ -280,6 +290,11 @@ contract MasterPropertyValue is Initializable, Pausable {
         } else if (action == Actions.updatePendingAssetsStatus) {
             require(now >= state.mintingCountownStart + state.mintingActionCountdownLength);
             _enlistPendingAssets(state.pendingAssets);
+            return 0;
+        } else if (action == Actions.cancelMinting) {
+            require(_isOwner(basicOwnerRole.basicOwnerMultiSig, msg.sender));
+            mintingAdminRole.mintingAdminMultiSig.revokeAllConfirmations(state.pendingAssetsTransactionId);
+            state.mintingCountownStart = 0;
             return 0;
         }
 
@@ -515,14 +530,6 @@ contract MasterPropertyValue is Initializable, Pausable {
     }
 
     function _isMultiSig(Roles role) internal returns(bool) {
-        if (role == Roles.SuperOwner) {
-            return msg.sender == address(superOwnerRole.superOwnerMultiSig);
-        } else if (role == Roles.BasicOwner) {
-            return msg.sender == address(basicOwnerRole.basicOwnerMultiSig);
-        } else if (role == Roles.MintingAdmin) {
-            return msg.sender == address(mintingAdminRole.mintingAdminMultiSig);
-        }
-        return false;
     }
 
     function _removePendingAssetArrayItem(uint256 index)

@@ -18,4 +18,5 @@ module.exports = {
   addPendingAsset: iota(),
   removePendingAsset: iota(),
   updatePendingAssetsStatus: iota(),
+  cancelMinting: iota(),
 }
