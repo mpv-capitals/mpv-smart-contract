@@ -9,8 +9,7 @@ import "./MPVToken.sol";
 library MPVState {
     struct Asset {
         uint256 id;
-        uint256 valuation;
-        bytes32 fingerprint;
+        bytes32 notarizationId;
         uint256 tokens;
     }
     struct State {

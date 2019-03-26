@@ -13,5 +13,5 @@ module.exports = {
   setBurningActionCountdown: iota(),
   setMintingReceiverWallet: iota(),
   addOwner: iota(),
-  removeOwner: iota()
+  removeOwner: iota(),
 }

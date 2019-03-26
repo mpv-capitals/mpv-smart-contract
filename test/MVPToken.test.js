@@ -13,7 +13,7 @@ contract('MPVToken', accounts => {
 
   beforeEach(async () => {
     masterPropertyValue = await MasterPropertyValueMock.new()
-    await masterPropertyValue.mock_setPaused(false);
+    await masterPropertyValue.mock_setPaused(false)
     const multiSig = await OperationAdminMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
     whitelist = await Whitelist.new()
     await whitelist.initialize(multiSig.address)
@@ -40,7 +40,7 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if MasterPropertyValue is paused', async () => {
-      await masterPropertyValue.mock_setPaused(true);
+      await masterPropertyValue.mock_setPaused(true)
       await shouldFail(token.transfer(accounts[1], 30))
     })
 
@@ -54,7 +54,7 @@ contract('MPVToken', accounts => {
     beforeEach(async () => {
       await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
       await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
-      await token.approve(accounts[0], 10000 * MULTIPLIER, {from: accounts[1]})
+      await token.approve(accounts[0], 10000 * MULTIPLIER, { from: accounts[1] })
       await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
     })
 
@@ -89,7 +89,7 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if called by address other than the mintingAdmin', async () => {
-      await shouldFail(token.mint(accounts[0], 500, { from: accounts[0]}))
+      await shouldFail(token.mint(accounts[0], 500, { from: accounts[0] }))
     })
 
     it('reverts if minting tokens to a non-whitelisted address', async () => {
@@ -113,7 +113,7 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if called by address other than the redemptionAdmin', async () => {
-      await shouldFail(token.burn(accounts[0], 300, { from: accounts[0]}))
+      await shouldFail(token.burn(accounts[0], 300, { from: accounts[0] }))
     })
   })
 })

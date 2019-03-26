@@ -7,5 +7,5 @@ module.exports = {
   BasicOwner: iota(),
   OperationAdmin: iota(),
   MintingAdmin: iota(),
-  RedemptionAdmin: iota()
+  RedemptionAdmin: iota(),
 }

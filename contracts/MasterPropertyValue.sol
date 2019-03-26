@@ -455,6 +455,7 @@ contract MasterPropertyValue is Initializable, Pausable {
     function addAsset(MPVState.Asset memory _asset)
     public
     onlyRole(Roles.MintingAdmin)
+    mintingCountownTerminated()
     returns (uint256) {
         if (!(state.pendingAssets.length > 0 || state.pendingAssetsTransactionId != 0)) {
             state.pendingAssets.push(_asset);
@@ -489,7 +490,6 @@ contract MasterPropertyValue is Initializable, Pausable {
         state.mintingCountownStart = now;
     }
 
-
     function _resetPendingAssets()
     internal {
         state.pendingAssetsTransactionId = 0;
@@ -501,8 +501,7 @@ contract MasterPropertyValue is Initializable, Pausable {
     internal {
         Assets.Asset memory asset;
         asset.id = _asset.id;
-        asset.valuation = _asset.valuation;
-        asset.fingerprint = _asset.fingerprint;
+        asset.notarizationId = _asset.notarizationId;
         asset.tokens = _asset.tokens;
         asset.status = Assets.Status.ENLISTED;
         asset.timestamp = now;
@@ -511,8 +510,12 @@ contract MasterPropertyValue is Initializable, Pausable {
         emit LogAddAsset(asset.id);
     }
 
-    // addAssets adds a list of assets
-    function enlistPendingAssets(MPVState.Asset[] memory _assets)
+    function updatePendingAssetStatus() public {
+        require(now >= state.mintingCountownStart + state.mintingActionCountdownLength);
+        _enlistPendingAssets(state.pendingAssets);
+    }
+
+    function _enlistPendingAssets(MPVState.Asset[] memory _assets)
     internal {
         for (uint256 i = 0; i < _assets.length; i++) {
             _enlistPendingAsset(_assets[i]);
@@ -560,6 +563,7 @@ contract MasterPropertyValue is Initializable, Pausable {
         return state.pendingAssets.length;
     }
 
+    /*
     function pauseContract()
     public
     onlyRole(Roles.SuperOwner)
@@ -595,6 +599,7 @@ contract MasterPropertyValue is Initializable, Pausable {
     {
         super.unpause();
     }
+    */
 
     function _submitTransaction(IMultiSigWallet multiSig, bytes memory data)
     public
@@ -625,5 +630,9 @@ contract MasterPropertyValue is Initializable, Pausable {
 
     function pendingAssetsTransactionId() public view returns(uint256) {
         return state.pendingAssetsTransactionId;
+    }
+
+    function mintingCountownStart() public view returns(uint256) {
+        return state.mintingCountownStart;
     }
 }
