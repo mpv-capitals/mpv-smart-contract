@@ -1,3 +1,5 @@
+pragma solidity ^0.5.1;
+
 import "../../contracts/MPVToken.sol";
 
 contract MasterPropertyValueMock {

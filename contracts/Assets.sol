@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.5.1;
 pragma experimental ABIEncoderV2;
 
 import "zos-lib/contracts/Initializable.sol";
@@ -13,11 +13,8 @@ library Assets {
         // status is current state asset is in.
         Status status;
 
-        // valuation is value of asset in USD.
-        uint256 valuation;
-
         // fingerprint is the notarized certificate ID or hash.
-        bytes32 fingerprint;
+        bytes32 notarizationId;
 
         // tokens is how many tokens are required to redeem this asset.
         uint256 tokens;

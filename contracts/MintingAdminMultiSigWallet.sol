@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.5.1;
 
 import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
 
@@ -19,9 +19,7 @@ contract MintingAdminMultiSigWallet is BaseMultiSigWallet {
     constructor(address[] memory _owners, uint _required)
         public
         BaseMultiSigWallet(_owners, _required)
-    {
-
-    }
+    { }
 
     function setMPV(address _mpv)
         public

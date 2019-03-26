@@ -1,7 +1,7 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.5.1;
 
 import "./IMultiSigWallet.sol";
-import './IWhitelist.sol';
+import "./IWhitelist.sol";
 import "./Assets.sol";
 import "./MPVToken.sol";
 
@@ -12,6 +12,7 @@ library MPVState {
         bytes32 notarizationId;
         uint256 tokens;
     }
+
     struct State {
         MPVToken mpvToken;
 

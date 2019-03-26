@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.5.1;
 
 
 /**
@@ -11,7 +11,7 @@ contract Pausable {
 
     bool private _paused;
 
-    constructor () internal {
+    constructor() public {
         _paused = false;
     }
 

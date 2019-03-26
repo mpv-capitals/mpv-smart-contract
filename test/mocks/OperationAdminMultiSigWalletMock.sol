@@ -1,3 +1,5 @@
+pragma solidity ^0.5.1;
+
 import '../../contracts/OperationAdminMultiSigWallet.sol';
 
 contract OperationAdminMultiSigWalletMock is OperationAdminMultiSigWallet {

@@ -653,7 +653,6 @@ contract('MasterPropertyValue', accounts => {
   })
 
   describe('Assets', () => {
-
     const defaultSuperOwner = accounts[0]
     const defaultBasicOwner = accounts[0]
     const defaultMintingAdmin = accounts[0]
@@ -755,7 +754,7 @@ contract('MasterPropertyValue', accounts => {
       await mine(60)
 
       await mpv.updatePendingAssetStatus({
-        from: accounts[0]
+        from: accounts[0],
       })
 
       pendingAssetsCount = await mpv.pendingAssetsCount.call({
@@ -862,7 +861,7 @@ contract('MasterPropertyValue', accounts => {
       await mine(60)
 
       await mpv.updatePendingAssetStatus({
-        from: accounts[0]
+        from: accounts[0],
       })
 
       pendingAssetsCount = await mpv.pendingAssetsCount.call({

@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.5.1;
 
 import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
 
@@ -27,9 +27,7 @@ contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
     constructor(address[] memory _owners, uint _required)
         public
         BaseMultiSigWallet(_owners, _required)
-    {
-
-    }
+    { }
 
     function setMPV(address _mpv)
         public
@@ -90,22 +88,22 @@ contract SuperOwnerMultiSigWallet is BaseMultiSigWallet {
     }
 
     function confirmTransaction(uint transactionId)
-        ownerExists(msg.sender)
         public
+        ownerExists(msg.sender)
     {
         super.confirmTransaction(transactionId);
     }
 
     function revokeConfirmation(uint transactionId)
-        ownerExists(msg.sender)
         public
+        ownerExists(msg.sender)
     {
         return super.revokeConfirmation(transactionId);
     }
 
     function executeTransaction(uint transactionId)
-        ownerExists(msg.sender)
         public
+        ownerExists(msg.sender)
     {
         super.executeTransaction(transactionId);
     }

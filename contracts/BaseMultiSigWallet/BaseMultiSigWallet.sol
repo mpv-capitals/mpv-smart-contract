@@ -1,4 +1,4 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.5.1;
 
 
 /// NOTE: This is a modified version of the multisig wallet that has reduced modifiers and relies on the child contracts to implement the access modifiers.

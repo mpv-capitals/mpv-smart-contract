@@ -1,10 +1,10 @@
-pragma solidity >=0.4.21 <0.6.0;
+pragma solidity ^0.5.1;
 pragma experimental ABIEncoderV2;
 
 import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "./IMultiSigWallet.sol";
-import './IWhitelist.sol';
+import "./IWhitelist.sol";
 import "./Assets.sol";
 import "./Pausable.sol";
 import "./MPVState.sol";
@@ -67,6 +67,33 @@ contract MasterPropertyValue is Initializable, Pausable {
         address[] addressArgs;
     }
 
+    modifier onlyRole(Roles role) {
+        if (role == Roles.SuperOwner) {
+            require(_isOwner(superOwnerRole.superOwnerMultiSig, msg.sender));
+        } else if (role == Roles.BasicOwner) {
+            require(_isOwner(basicOwnerRole.basicOwnerMultiSig, msg.sender));
+        } else if (role == Roles.OperationAdmin) {
+            require(_isOwner(operationAdminRole.operationAdminMultiSig, msg.sender));
+        } else if (role == Roles.MintingAdmin) {
+            require(_isOwner(mintingAdminRole.mintingAdminMultiSig, msg.sender));
+        } else if (role == Roles.RedemptionAdmin) {
+            require(_isOwner(redemptionAdminRole.redemptionAdminMultiSig, msg.sender));
+        } else {
+            revert("invalid role");
+        }
+        _;
+    }
+
+    modifier onlyMultiSig(Roles role) {
+        require(_isMultiSig(role));
+        _;
+    }
+
+    modifier mintingCountownTerminated() {
+        require(state.mintingCountownStart == 0);
+        _;
+    }
+
     function initialize(
         MPVToken _mpvToken,
         IMultiSigWallet _superOwnerMultiSig,
@@ -113,44 +140,6 @@ contract MasterPropertyValue is Initializable, Pausable {
         state.mpvToken.setMPV(address(this));
     }
 
-    modifier onlyRole(Roles role) {
-        if (role == Roles.SuperOwner) {
-            require(_isOwner(superOwnerRole.superOwnerMultiSig, msg.sender));
-        } else if (role == Roles.BasicOwner) {
-            require(_isOwner(basicOwnerRole.basicOwnerMultiSig, msg.sender));
-        } else if (role == Roles.OperationAdmin) {
-            //
-        } else if (role == Roles.MintingAdmin) {
-            require(_isOwner(operationAdminRole.operationAdminMultiSig, msg.sender));
-        } else if (role == Roles.RedemptionAdmin) {
-            //
-        } else {
-            revert("invalid role");
-        }
-        _;
-    }
-
-    modifier onlyMultiSig(Roles role) {
-        require(_isMultiSig(role));
-        _;
-    }
-
-    modifier mintingCountownTerminated() {
-        require(state.mintingCountownStart == 0);
-        _;
-    }
-
-    function _isMultiSig(Roles role) internal returns(bool) {
-        if (role == Roles.SuperOwner) {
-            return msg.sender == address(superOwnerRole.superOwnerMultiSig);
-        } else if (role == Roles.BasicOwner) {
-            return msg.sender == address(basicOwnerRole.basicOwnerMultiSig);
-        } else if (role == Roles.MintingAdmin) {
-            return msg.sender == address(mintingAdminRole.mintingAdminMultiSig);
-        }
-        return false;
-    }
-
     function invoke(
         Actions action,
         ActionArgs memory actionArgs
@@ -178,11 +167,11 @@ contract MasterPropertyValue is Initializable, Pausable {
                 actionArgs.addressArgs[0] // newRedemptionFeeReceiverWallet
             );
         } else if (action == Actions.setSuperOwnerActionCountdown) {
-                return superOwnerRole.setSuperOwnerActionCountdown(
-                    this._callback.selector,
-                    uint256(Actions.setSuperOwnerActionCountdown),
-                    actionArgs.uint256Args[0] // newCountdown
-                );
+            return superOwnerRole.setSuperOwnerActionCountdown(
+                this._callback.selector,
+                uint256(Actions.setSuperOwnerActionCountdown),
+                actionArgs.uint256Args[0] // newCountdown
+            );
         } else if (action == Actions.setBasicOwnerActionCountdown) {
             return superOwnerRole.setBasicOwnerActionCountdown(
                 this._callback.selector,
@@ -196,23 +185,23 @@ contract MasterPropertyValue is Initializable, Pausable {
                 actionArgs.uint256Args[0] // newCountdown
             );
         } else if (action == Actions.setMintingActionCountdown) {
-                return superOwnerRole.setMintingActionCountdown(
-                    this._callback.selector,
-                    uint256(Actions.setMintingActionCountdown),
-                    actionArgs.uint256Args[0] // newCountdown
-                );
+            return superOwnerRole.setMintingActionCountdown(
+                this._callback.selector,
+                uint256(Actions.setMintingActionCountdown),
+                actionArgs.uint256Args[0] // newCountdown
+            );
         } else if (action == Actions.setBurningActionCountdown) {
-                return superOwnerRole.setBurningActionCountdown(
-                    this._callback.selector,
-                    uint256(Actions.setBurningActionCountdown),
-                    actionArgs.uint256Args[0] // newCountdown
-                );
+            return superOwnerRole.setBurningActionCountdown(
+                this._callback.selector,
+                uint256(Actions.setBurningActionCountdown),
+                actionArgs.uint256Args[0] // newCountdown
+            );
         } else if (action == Actions.setMintingReceiverWallet) {
-                return superOwnerRole.setMintingReceiverWallet(
-                    this._callback.selector,
-                    uint256(Actions.setMintingReceiverWallet),
-                    actionArgs.addressArgs[0] // newMintingReceiverWallet
-                );
+            return superOwnerRole.setMintingReceiverWallet(
+                this._callback.selector,
+                uint256(Actions.setMintingReceiverWallet),
+                actionArgs.addressArgs[0] // newMintingReceiverWallet
+            );
         } else if (action == Actions.addOwner) {
             if (actionArgs.role == Roles.SuperOwner) {
                 return superOwnerRole.addSuperOwner(
@@ -269,15 +258,16 @@ contract MasterPropertyValue is Initializable, Pausable {
             }
         }
 
-       return 0;
+        return 0;
     }
 
     function _callback(
         Actions action,
         uint256 arg
     )
+    public
     onlyMultiSig(Roles.SuperOwner)
-    public {
+    {
         if (action == Actions.setSuperOwnerActionThresholdPercent) {
             state.superOwnerActionThresholdPercent = arg; // newThreshold
             _updateSuperOwnerRequirement();
@@ -354,6 +344,209 @@ contract MasterPropertyValue is Initializable, Pausable {
         emit LogOwnerAdded(modifyRole, owner);
     }
 
+    function isOwner(Roles role, address owner)
+        public
+        returns (bool)
+    {
+        if (role == Roles.SuperOwner) {
+            return _isOwner(superOwnerRole.superOwnerMultiSig, owner);
+        } else if (role == Roles.BasicOwner) {
+            return _isOwner(basicOwnerRole.basicOwnerMultiSig, owner);
+        }  else if (role == Roles.OperationAdmin) {
+            return _isOwner(operationAdminRole.operationAdminMultiSig, owner);
+        } else if (role == Roles.MintingAdmin) {
+            return _isOwner(mintingAdminRole.mintingAdminMultiSig, owner);
+        } else if (role == Roles.RedemptionAdmin) {
+            return _isOwner(redemptionAdminRole.redemptionAdminMultiSig, owner);
+        }
+
+        return false;
+    }
+
+    function addAssets(MPVState.Asset[] memory _assets)
+    public
+    onlyRole(Roles.MintingAdmin)
+    returns (uint256) {
+        for (uint256 i = 0; i < _assets.length; i++) {
+            addAsset(_assets[i]);
+        }
+
+        return state.pendingAssetsTransactionId;
+    }
+
+    function addAsset(MPVState.Asset memory _asset)
+    public
+    onlyRole(Roles.MintingAdmin)
+    mintingCountownTerminated()
+    returns (uint256) {
+        if (!(state.pendingAssets.length > 0 || state.pendingAssetsTransactionId != 0)) {
+            state.pendingAssets.push(_asset);
+            bytes memory data = abi.encodeWithSelector(
+                this._startMintingCountdown.selector
+            );
+
+            uint256 transactionId = mintingAdminRole.mintingAdminMultiSig.mpvSubmitTransaction(address(this), 0, data);
+            state.pendingAssetsTransactionId = transactionId;
+            return transactionId;
+        } else {
+            state.pendingAssets.push(_asset);
+            mintingAdminRole.mintingAdminMultiSig.revokeAllConfirmations(state.pendingAssetsTransactionId);
+            return state.pendingAssetsTransactionId;
+        }
+    }
+
+    function removePendingAsset(uint256 assetId)
+    public
+    onlyRole(Roles.MintingAdmin)
+    {
+        for (uint256 i = 0; i < state.pendingAssets.length; i++) {
+            if (state.pendingAssets[i].id == assetId) {
+                _removePendingAssetArrayItem(i);
+            }
+        }
+
+        mintingAdminRole.mintingAdminMultiSig.revokeAllConfirmations(state.pendingAssetsTransactionId);
+    }
+
+    // getAsset returns asset
+    function getAsset(uint256 id)
+    public
+    returns (Assets.Asset memory) {
+        return state.assets.get(id);
+    }
+
+    function pendingAssetsCount()
+    public
+    view
+    returns (uint256) {
+        return state.pendingAssets.length;
+    }
+
+    function _startMintingCountdown()
+    public
+    onlyMultiSig(Roles.MintingAdmin)
+    {
+        state.mintingCountownStart = now;
+    }
+
+    function updatePendingAssetStatus() public {
+        require(now >= state.mintingCountownStart + state.mintingActionCountdownLength);
+        _enlistPendingAssets(state.pendingAssets);
+    }
+
+    function _submitTransaction(IMultiSigWallet multiSig, bytes memory data)
+    public
+    returns (uint256 transactionId)
+    {
+        transactionId = multiSig.mpvSubmitTransaction(address(this), 0, data);
+    }
+
+    /*
+    function pauseContract()
+    public
+    onlyRole(Roles.SuperOwner)
+    returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._pause.selector
+        );
+
+        transactionId = _submitTransaction(superOwnerRole.superOwnerMultiSig, data);
+    }
+
+    function _pause()
+    public
+    onlyMultiSig(Roles.SuperOwner)
+    {
+        super.pause();
+    }
+
+    function unpauseContract()
+    public
+    onlyRole(Roles.SuperOwner)
+    returns(uint256 transactionId) {
+        bytes memory data = abi.encodeWithSelector(
+            this._unpause.selector
+        );
+
+        transactionId = _submitTransaction(superOwnerRole.superOwnerMultiSig, data);
+    }
+
+    function _unpause()
+    public
+    onlyMultiSig(Roles.SuperOwner)
+    {
+        super.unpause();
+    }
+    */
+    function getOwners(
+        Roles role
+    )
+    public
+    returns (address[] memory owners) {
+        if (role == Roles.SuperOwner) {
+            return _getOwners(superOwnerRole.superOwnerMultiSig);
+        } else if (role == Roles.BasicOwner) {
+            return _getOwners(basicOwnerRole.basicOwnerMultiSig);
+        } else if (role == Roles.OperationAdmin) {
+            return _getOwners(operationAdminRole.operationAdminMultiSig);
+        } else if (role == Roles.MintingAdmin) {
+            return _getOwners(mintingAdminRole.mintingAdminMultiSig);
+        } else if (role == Roles.RedemptionAdmin) {
+            return _getOwners(redemptionAdminRole.redemptionAdminMultiSig);
+        }
+    }
+
+    function dailyTransferLimit() public view returns(uint256) {
+        return state.dailyTransferLimit;
+    }
+
+    function superOwnerActionThresholdPercent() public view returns(uint256) {
+        return state.superOwnerActionThresholdPercent;
+    }
+
+    function redemptionFee() public view returns(uint256) {
+        return state.redemptionFee;
+    }
+
+    function redemptionFeeReceiverWallet() public view returns(address) {
+        return state.redemptionFeeReceiverWallet;
+    }
+
+    function pendingAssets() public view returns(MPVState.Asset[] memory) {
+        return state.pendingAssets;
+    }
+
+    function pendingAssetsTransactionId() public view returns(uint256) {
+        return state.pendingAssetsTransactionId;
+    }
+
+    function mintingCountownStart() public view returns(uint256) {
+        return state.mintingCountownStart;
+    }
+
+    function _isMultiSig(Roles role) internal returns(bool) {
+        if (role == Roles.SuperOwner) {
+            return msg.sender == address(superOwnerRole.superOwnerMultiSig);
+        } else if (role == Roles.BasicOwner) {
+            return msg.sender == address(basicOwnerRole.basicOwnerMultiSig);
+        } else if (role == Roles.MintingAdmin) {
+            return msg.sender == address(mintingAdminRole.mintingAdminMultiSig);
+        }
+        return false;
+    }
+
+    function _removePendingAssetArrayItem(uint256 index)
+    internal {
+        if (index >= state.pendingAssets.length) return;
+
+        for (uint256 i = index; i < state.pendingAssets.length-1; i++) {
+            state.pendingAssets[i] = state.pendingAssets[i+1];
+        }
+
+        delete state.pendingAssets[state.pendingAssets.length-1];
+        state.pendingAssets.length--;
+    }
+
     function _updateSuperOwnerRequirement()
     internal
     onlyMultiSig(Roles.SuperOwner) {
@@ -404,90 +597,16 @@ contract MasterPropertyValue is Initializable, Pausable {
         multiSig.changeRequirement(votesRequired);
     }
 
-    function isOwner(Roles role, address owner)
-        public
-        returns (bool)
-    {
-        if (role == Roles.SuperOwner) {
-            return _isOwner(superOwnerRole.superOwnerMultiSig, owner);
-        } else if (role == Roles.BasicOwner) {
-            return _isOwner(basicOwnerRole.basicOwnerMultiSig, owner);
-        }  else if (role == Roles.OperationAdmin) {
-            return _isOwner(operationAdminRole.operationAdminMultiSig, owner);
-        } else if (role == Roles.MintingAdmin) {
-            return _isOwner(mintingAdminRole.mintingAdminMultiSig, owner);
-        } else if (role == Roles.RedemptionAdmin) {
-            return _isOwner(redemptionAdminRole.redemptionAdminMultiSig, owner);
-        }
-
-        return false;
-    }
-
     function _isOwner(IMultiSigWallet multiSig, address owner)
     internal
     returns (bool) {
         return multiSig.hasOwner(owner);
     }
 
-    function getOwners(Roles role)
-    public
-    returns (address[] memory owners)
-    {
-        if (role == Roles.SuperOwner) {
-            return _getOwners(superOwnerRole.superOwnerMultiSig);
-        } else if (role == Roles.BasicOwner) {
-            return _getOwners(basicOwnerRole.basicOwnerMultiSig);
-        } else if (role == Roles.OperationAdmin) {
-            return _getOwners(operationAdminRole.operationAdminMultiSig);
-        } else if (role == Roles.MintingAdmin) {
-            return _getOwners(mintingAdminRole.mintingAdminMultiSig);
-        } else if (role == Roles.RedemptionAdmin) {
-            return _getOwners(redemptionAdminRole.redemptionAdminMultiSig);
-        }
-    }
-
     function _getOwners(IMultiSigWallet multiSig)
     internal
     returns (address[] memory) {
         return multiSig.getOwners();
-    }
-
-    function addAsset(MPVState.Asset memory _asset)
-    public
-    onlyRole(Roles.MintingAdmin)
-    mintingCountownTerminated()
-    returns (uint256) {
-        if (!(state.pendingAssets.length > 0 || state.pendingAssetsTransactionId != 0)) {
-            state.pendingAssets.push(_asset);
-            bytes memory data = abi.encodeWithSelector(
-                this._startMintingCountdown.selector
-            );
-
-            uint256 transactionId = mintingAdminRole.mintingAdminMultiSig.mpvSubmitTransaction(address(this), 0, data);
-            state.pendingAssetsTransactionId = transactionId;
-            return transactionId;
-        } else {
-            state.pendingAssets.push(_asset);
-            mintingAdminRole.mintingAdminMultiSig.revokeAllConfirmations(state.pendingAssetsTransactionId);
-            return state.pendingAssetsTransactionId;
-        }
-    }
-
-    function addAssets(MPVState.Asset[] memory _assets)
-    public
-    onlyRole(Roles.MintingAdmin)
-    returns (uint256) {
-        for (uint256 i = 0; i < _assets.length; i++) {
-            addAsset(_assets[i]);
-        }
-
-        return state.pendingAssetsTransactionId;
-    }
-
-    function _startMintingCountdown()
-    onlyMultiSig(Roles.MintingAdmin)
-    public {
-        state.mintingCountownStart = now;
     }
 
     function _resetPendingAssets()
@@ -510,11 +629,6 @@ contract MasterPropertyValue is Initializable, Pausable {
         emit LogAddAsset(asset.id);
     }
 
-    function updatePendingAssetStatus() public {
-        require(now >= state.mintingCountownStart + state.mintingActionCountdownLength);
-        _enlistPendingAssets(state.pendingAssets);
-    }
-
     function _enlistPendingAssets(MPVState.Asset[] memory _assets)
     internal {
         for (uint256 i = 0; i < _assets.length; i++) {
@@ -524,115 +638,4 @@ contract MasterPropertyValue is Initializable, Pausable {
         _resetPendingAssets();
     }
 
-    function removePendingAsset(uint256 assetId)
-    public
-    onlyRole(Roles.MintingAdmin)
-    {
-        for (uint256 i = 0; i < state.pendingAssets.length; i++) {
-            if (state.pendingAssets[i].id == assetId) {
-                _removePendingAssetArrayItem(i);
-            }
-        }
-
-        mintingAdminRole.mintingAdminMultiSig.revokeAllConfirmations(state.pendingAssetsTransactionId);
-    }
-
-    function _removePendingAssetArrayItem(uint256 index)
-    internal {
-        if (index >= state.pendingAssets.length) return;
-
-        for (uint256 i = index; i < state.pendingAssets.length-1; i++) {
-            state.pendingAssets[i] = state.pendingAssets[i+1];
-        }
-
-        delete state.pendingAssets[state.pendingAssets.length-1];
-        state.pendingAssets.length--;
-    }
-
-    // getAsset returns asset
-    function getAsset(uint256 id)
-    public
-    returns (Assets.Asset memory) {
-        return state.assets.get(id);
-    }
-
-    function pendingAssetsCount()
-    public
-    view
-    returns (uint256) {
-        return state.pendingAssets.length;
-    }
-
-    /*
-    function pauseContract()
-    public
-    onlyRole(Roles.SuperOwner)
-    returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
-            this._pause.selector
-        );
-
-        transactionId = _submitTransaction(superOwnerRole.superOwnerMultiSig, data);
-    }
-
-    function _pause()
-    public
-    onlyMultiSig(Roles.SuperOwner)
-    {
-        super.pause();
-    }
-
-    function unpauseContract()
-    public
-    onlyRole(Roles.SuperOwner)
-    returns(uint256 transactionId) {
-        bytes memory data = abi.encodeWithSelector(
-            this._unpause.selector
-        );
-
-        transactionId = _submitTransaction(superOwnerRole.superOwnerMultiSig, data);
-    }
-
-    function _unpause()
-    public
-    onlyMultiSig(Roles.SuperOwner)
-    {
-        super.unpause();
-    }
-    */
-
-    function _submitTransaction(IMultiSigWallet multiSig, bytes memory data)
-    public
-    returns (uint256 transactionId)
-    {
-        transactionId = multiSig.mpvSubmitTransaction(address(this), 0, data);
-    }
-
-    function dailyTransferLimit() public view returns(uint256) {
-        return state.dailyTransferLimit;
-    }
-
-    function superOwnerActionThresholdPercent() public view returns(uint256) {
-        return state.superOwnerActionThresholdPercent;
-    }
-
-    function redemptionFee() public view returns(uint256) {
-        return state.redemptionFee;
-    }
-
-    function redemptionFeeReceiverWallet() public view returns(address) {
-        return state.redemptionFeeReceiverWallet;
-    }
-
-    function pendingAssets() public view returns(MPVState.Asset[] memory) {
-        return state.pendingAssets;
-    }
-
-    function pendingAssetsTransactionId() public view returns(uint256) {
-        return state.pendingAssetsTransactionId;
-    }
-
-    function mintingCountownStart() public view returns(uint256) {
-        return state.mintingCountownStart;
-    }
 }
