@@ -9,7 +9,7 @@ import "./SuperOwnerRole.sol";
 
 
 contract MintingAdminRole is Initializable {
-    IMultiSigWallet public mintingAdminMultiSig;
+    IMultiSigWallet public multiSig;
     uint256 public mintingActionCountdownLength;
     uint256 public mintingCountdownStart;
     uint256 public pendingAssetsTransactionId;
@@ -18,17 +18,17 @@ contract MintingAdminRole is Initializable {
     SuperOwnerRole public superOwnerRole;
 
     modifier onlyMintingAdminMultiSig() {
-        require(address(mintingAdminMultiSig) == msg.sender);
+        require(address(multiSig) == msg.sender);
         _;
     }
 
     function initialize(
-        IMultiSigWallet _mintingAdminMultiSig,
+        IMultiSigWallet _multiSig,
         Assets _assets,
         MPVToken _mpvToken,
         SuperOwnerRole _superOwnerRole
     ) public initializer {
-        mintingAdminMultiSig = _mintingAdminMultiSig;
+        multiSig = _multiSig;
         assets = _assets;
         mpvToken = _mpvToken;
         superOwnerRole = _superOwnerRole;
@@ -44,10 +44,7 @@ contract MintingAdminRole is Initializable {
         mintingActionCountdownLength = newCountdown;
     }
 
-
-    function addPendingAsset(
-        Assets.Asset memory _asset
-    )
+    function addPendingAsset(Assets.Asset memory _asset)
     public
     returns (uint256) {
         // minting countdown terminated
@@ -58,14 +55,24 @@ contract MintingAdminRole is Initializable {
                 this._startMintingCountdown.selector
             );
 
-            uint256 transactionId = mintingAdminMultiSig.addTransaction(address(this), data);
+            uint256 transactionId = multiSig.addTransaction(address(this), data);
             pendingAssetsTransactionId = transactionId;
             return transactionId;
         } else {
             assets.addPendingAsset(_asset);
-            mintingAdminMultiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+            multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
             return pendingAssetsTransactionId;
         }
+    }
+
+    function addPendingAssets(Assets.Asset[] memory _assets)
+    public
+    returns (uint256) {
+        for (uint256 i = 0; i < _assets.length; i++) {
+            addPendingAsset(_assets[i]);
+        }
+
+        return pendingAssetsTransactionId;
     }
 
     function _startMintingCountdown()
@@ -80,6 +87,22 @@ contract MintingAdminRole is Initializable {
     {
         require(now >= mintingCountdownStart + mintingActionCountdownLength);
         _enlistPendingAssets();
+    }
+
+    function removePendingAsset(uint256 assetId)
+    public
+    returns (uint256)
+    {
+        assets.removePendingAsset(assetId);
+
+        multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+        return pendingAssetsTransactionId;
+    }
+
+    function cancelMinting()
+    public {
+        multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+        mintingCountdownStart = 0;
     }
 
     function _enlistPendingAssets()

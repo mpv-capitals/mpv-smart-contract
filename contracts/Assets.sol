@@ -99,5 +99,21 @@ contract Assets is Initializable {
     function resetPendingAssets() public {
         delete pendingAssets;
     }
+
+    function removePendingAsset(uint256 assetId)
+    public
+    {
+        for (uint256 i = 0; i < pendingAssets.length; i++) {
+            if (pendingAssets[i].id == assetId) {
+                if (i >= pendingAssets.length) continue;
+                // remove pending asset array item and shift items
+                for (uint256 j = i; j < pendingAssets.length-1; j++) {
+                    pendingAssets[j] = pendingAssets[j+1];
+                }
+                delete pendingAssets[pendingAssets.length-1];
+                pendingAssets.length--;
+            }
+        }
+    }
 }
 

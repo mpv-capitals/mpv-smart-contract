@@ -8,6 +8,12 @@ contract SuperOwnerRole is Initializable {
     IMultiSigWallet public superOwnerMultiSig;
 
     uint256 public transferLimitChangeCountdownLength;
+    uint256 public superOwnerActionCountdownLength;
+    uint256 public basicOwnerActionCountdownLength;
+    uint256 public whitelistRemovalActionCountdownLength;
+    uint256 public mintingActionCountdownLength;
+    uint256 public burningActionCountdownLength;
+
     address public mintingReceiverWallet;
 
     modifier onlySuperOwnerMultiSig() {
@@ -21,13 +27,13 @@ contract SuperOwnerRole is Initializable {
     ) public initializer {
         superOwnerMultiSig = _superOwnerMultiSig;
         mintingReceiverWallet = _mintingReceiverWallet;
-        transferLimitChangeCountdownLength = 48 hours;
 
-        //superOwnerActionCountdownLength = 48 hours;
-        //basicOwnerActionCountdownLength = 48 hours;
-        //whitelistRemovalActionCountdownLength = 48 hours;
-        //mintingActionCountdownLength = 48 hours;
-        //burningActionCountdownLength = 48 hours;
+        transferLimitChangeCountdownLength = 48 hours;
+        superOwnerActionCountdownLength = 48 hours;
+        basicOwnerActionCountdownLength = 48 hours;
+        whitelistRemovalActionCountdownLength = 48 hours;
+        mintingActionCountdownLength = 48 hours;
+        burningActionCountdownLength = 48 hours;
     }
 
     function setTransferLimitChangeCountdownLength(
@@ -45,7 +51,7 @@ contract SuperOwnerRole is Initializable {
     public
     onlySuperOwnerMultiSig
     {
-        //superOwnerActionCountdown = newCountdown;
+        superOwnerActionCountdownLength = newCountdown;
     }
 
     function setBasicOwnerActionCountdown(
@@ -54,7 +60,7 @@ contract SuperOwnerRole is Initializable {
     public
     onlySuperOwnerMultiSig
     {
-        //basicOwnerActionCountdown = newCountdown;
+        basicOwnerActionCountdownLength = newCountdown;
     }
 
     function setWhitelistRemovalActionCountdown(
@@ -63,7 +69,7 @@ contract SuperOwnerRole is Initializable {
     public
     onlySuperOwnerMultiSig
     {
-        //whitelistRemovalActionCountdown = newCountdown;
+        whitelistRemovalActionCountdownLength = newCountdown;
     }
 
     function setBurningActionCountdown(
@@ -72,7 +78,7 @@ contract SuperOwnerRole is Initializable {
     public
     onlySuperOwnerMultiSig
     {
-        //burningActionCountdown = newCountdown;
+        burningActionCountdownLength = newCountdown;
     }
 
     function setMintingReceiverWallet(

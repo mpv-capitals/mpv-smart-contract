@@ -1,26 +1,25 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
 const { encodeCall } = require('zos-lib')
 const moment = require('moment')
-const { Actions, Roles, mine } = require('./helpers')
+const { mine } = require('./helpers')
 
 require('chai').should()
 
 const MPV = artifacts.require('MasterPropertyValue')
 const MPVToken = artifacts.require('MPVToken')
 const Assets = artifacts.require('Assets')
-const MPVState = artifacts.require('MPVState')
+const Whitelist = artifacts.require('Whitelist')
+const AdministeredMultiSigWallet = artifacts.require('AdministeredMultiSigWallet')
 const SuperOwnerRole = artifacts.require('SuperOwnerRole')
 const BasicOwnerRole = artifacts.require('BasicOwnerRole')
 const OperationAdminRole = artifacts.require('OperationAdminRole')
 const MintingAdminRole = artifacts.require('MintingAdminRole')
 const RedemptionAdminRole = artifacts.require('RedemptionAdminRole')
 
-const Whitelist = artifacts.require('Whitelist')
-const AdministeredMultiSigWallet = artifacts.require('AdministeredMultiSigWallet')
-
 let mpv = null
-let mpvState = null
 let mpvToken = null
+let assets = null
+let whitelist = null
 
 let superOwnerRole = null
 let basicOwnerRole = null
@@ -28,20 +27,17 @@ let operationAdminRole = null
 let mintingAdminRole = null
 let redemptionAdminRole = null
 
-let assets = null
 let superOwnerMultiSig = null
 let basicOwnerMultiSig = null
 let operationAdminMultiSig = null
 let mintingAdminMultiSig = null
 let redemptionAdminMultiSig = null
-let whitelist = null
 
 let mintingReceiverWallet = null
 
 async function initContracts (accounts) {
   assets = await Assets.new()
   await assets.initialize(1000)
-  mpvState = await MPVState.new()
   basicOwnerRole = await BasicOwnerRole.new()
   operationAdminRole = await OperationAdminRole.new()
   mintingAdminRole = await MintingAdminRole.new()
@@ -71,6 +67,11 @@ async function initContracts (accounts) {
   const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4
   await mpvToken.initialize('Master Property Value', 'MPV', 4, whitelist.address, mpv.address, dailyLimit)
 
+  await basicOwnerRole.initialize(
+    basicOwnerMultiSig.address,
+    mintingAdminRole.address
+  )
+
   await mintingAdminRole.initialize(
     mintingAdminMultiSig.address,
     assets.address,
@@ -81,18 +82,16 @@ async function initContracts (accounts) {
   const receipt = await web3.eth.getTransactionReceipt(mpv.transactionHash)
   console.log(JSON.stringify(receipt, null, 2))
 
-
   mpv.initialize(
     mpvToken.address,
     assets.address,
     whitelist.address,
-    superOwnerMultiSig.address,
+
     superOwnerRole.address,
-    basicOwnerMultiSig.address,
-    operationAdminMultiSig.address,
-    mintingAdminMultiSig.address,
+    basicOwnerRole.address,
+    operationAdminRole.address,
     mintingAdminRole.address,
-    redemptionAdminMultiSig.address,
+    redemptionAdminRole.address
   )
 
   await superOwnerMultiSig.setAdmin(superOwnerMultiSig.address, {
@@ -141,7 +140,7 @@ contract('MasterPropertyValue', accounts => {
 
       txId.toString().should.equal('0')
 
-      confirmationCount = await superOwnerMultiSig.getConfirmations.call(txId)
+      const confirmationCount = await superOwnerMultiSig.getConfirmations.call(txId)
       confirmationCount.length.should.equal(1)
 
       const required = await superOwnerMultiSig.required.call()
@@ -150,7 +149,6 @@ contract('MasterPropertyValue', accounts => {
       const isConfirmed = await superOwnerMultiSig.isConfirmed.call(txId)
       isConfirmed.should.equal(true)
 
-      const owner = accounts[2]
       const owners = await superOwnerMultiSig.getOwners.call()
       owners.length.should.equal(2)
     })
@@ -260,9 +258,6 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [newRedemptionFee]
       )
-      txId = await superOwnerMultiSig.submitTransaction.call(assets.address, 0, data, {
-        from: defaultSuperOwner,
-      })
       await superOwnerMultiSig.submitTransaction(assets.address, 0, data, {
         from: defaultSuperOwner,
       })
@@ -283,9 +278,6 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newWallet]
       )
-      txId = await superOwnerMultiSig.submitTransaction.call(assets.address, 0, data, {
-        from: defaultSuperOwner,
-      })
       await superOwnerMultiSig.submitTransaction(assets.address, 0, data, {
         from: defaultSuperOwner,
       })
@@ -306,9 +298,6 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [newLimit]
       )
-      txId = await superOwnerMultiSig.submitTransaction.call(mpvToken.address, 0, data, {
-        from: defaultSuperOwner,
-      })
       await superOwnerMultiSig.submitTransaction(mpvToken.address, 0, data, {
         from: defaultSuperOwner,
       })
@@ -329,9 +318,6 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [newCountdown]
       )
-      const txId = await superOwnerMultiSig.submitTransaction.call(superOwnerRole.address, 0, data, {
-        from: defaultSuperOwner,
-      })
       await superOwnerMultiSig.submitTransaction(superOwnerRole.address, 0, data, {
         from: defaultSuperOwner,
       })
@@ -360,9 +346,6 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newOwner]
       )
-      const txId = await superOwnerMultiSig.submitTransaction.call(basicOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
-      })
       await superOwnerMultiSig.submitTransaction(basicOwnerMultiSig.address, 0, data, {
         from: defaultSuperOwner,
       })
@@ -381,9 +364,6 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [owner]
       )
-      const txId = await superOwnerMultiSig.submitTransaction.call(basicOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
-      })
       await superOwnerMultiSig.submitTransaction(basicOwnerMultiSig.address, 0, data, {
         from: defaultSuperOwner,
       })
@@ -411,9 +391,6 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newAdmin]
       )
-      const txId = await basicOwnerMultiSig.submitTransaction.call(operationAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
-      })
       await basicOwnerMultiSig.submitTransaction(operationAdminMultiSig.address, 0, data, {
         from: defaultBasicOwner,
       })
@@ -433,9 +410,6 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [admin]
       )
-      const txId = await basicOwnerMultiSig.submitTransaction.call(operationAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
-      })
       await basicOwnerMultiSig.submitTransaction(operationAdminMultiSig.address, 0, data, {
         from: defaultBasicOwner,
       })
@@ -463,9 +437,6 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newAdmin]
       )
-      const txId = await basicOwnerMultiSig.submitTransaction.call(mintingAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
-      })
       await basicOwnerMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
         from: defaultBasicOwner,
       })
@@ -485,9 +456,6 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [admin]
       )
-      const txId = await basicOwnerMultiSig.submitTransaction.call(mintingAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
-      })
       await basicOwnerMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
         from: defaultBasicOwner,
       })
@@ -515,9 +483,6 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newAdmin]
       )
-      const txId = await basicOwnerMultiSig.submitTransaction.call(redemptionAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
-      })
       await basicOwnerMultiSig.submitTransaction(redemptionAdminMultiSig.address, 0, data, {
         from: defaultBasicOwner,
       })
@@ -537,9 +502,6 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [admin]
       )
-      const txId = await basicOwnerMultiSig.submitTransaction.call(redemptionAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
-      })
       await basicOwnerMultiSig.submitTransaction(redemptionAdminMultiSig.address, 0, data, {
         from: defaultBasicOwner,
       })
@@ -602,9 +564,6 @@ contract('MasterPropertyValue', accounts => {
         []
       )
 
-      const txId = await superOwnerMultiSig.submitTransaction.call(mpv.address, 0, data, {
-        from: defaultSuperOwner,
-      })
       await superOwnerMultiSig.submitTransaction(mpv.address, 0, data, {
         from: defaultSuperOwner,
       })
@@ -623,9 +582,6 @@ contract('MasterPropertyValue', accounts => {
         []
       )
 
-      const txId = await superOwnerMultiSig.submitTransaction.call(mpv.address, 0, data, {
-        from: defaultSuperOwner,
-      })
       await superOwnerMultiSig.submitTransaction(mpv.address, 0, data, {
         from: defaultSuperOwner,
       })
@@ -651,9 +607,6 @@ contract('MasterPropertyValue', accounts => {
         [1]
       )
 
-      let txId = await superOwnerMultiSig.submitTransaction.call(mintingAdminRole.address, 0, data, {
-        from: defaultSuperOwner,
-      })
       await superOwnerMultiSig.submitTransaction(mintingAdminRole.address, 0, data, {
         from: defaultSuperOwner,
       })
@@ -670,9 +623,6 @@ contract('MasterPropertyValue', accounts => {
         [secondMintingAdmin]
       )
 
-      txId = await basicOwnerMultiSig.submitTransaction.call(mintingAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
-      })
       await basicOwnerMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
         from: defaultBasicOwner,
       })
@@ -682,9 +632,6 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [2]
       )
-      txId = await basicOwnerMultiSig.submitTransaction.call(mintingAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
-      })
       await basicOwnerMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
         from: defaultBasicOwner,
       })
@@ -768,15 +715,26 @@ contract('MasterPropertyValue', accounts => {
       asset.tokens.should.equal('100')
     })
 
-    /*
-    it.skip('reset pending asset votes', async () => {
+    it('reset pending asset votes', async () => {
       const asset = {
         id: 11,
         notarizationId: '0xabcd',
         tokens: 100,
+        status: 0,
+        owner: accounts[0],
+        timestamp: moment().unix(),
+        statusEvents: [],
       }
 
-      const txId = await addAsset(asset, {
+      let pendingAssetsCount = await assets.pendingAssetsCount.call({
+        from: accounts[0],
+      })
+      pendingAssetsCount.toNumber().should.equal(0)
+
+      let txId = await mintingAdminRole.addPendingAsset.call(asset, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminRole.addPendingAsset(asset, {
         from: defaultMintingAdmin,
       })
 
@@ -787,20 +745,27 @@ contract('MasterPropertyValue', accounts => {
       let confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
       confirmationCount.toNumber().should.equal(1)
 
-      let pendingAssetsCount = await mpv.pendingAssetsCount.call()
+      pendingAssetsCount = await assets.pendingAssetsCount.call()
       pendingAssetsCount.toNumber().should.equal(1)
 
       const secondAsset = {
         id: 12,
         notarizationId: '0xabcd',
         tokens: 100,
+        status: 0,
+        owner: accounts[0],
+        timestamp: moment().unix(),
+        statusEvents: [],
       }
 
-      await addAsset(secondAsset, {
+      txId = await mintingAdminRole.addPendingAsset.call(secondAsset, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminRole.addPendingAsset(asset, {
         from: defaultMintingAdmin,
       })
 
-      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+      pendingAssetsCount = await assets.pendingAssetsCount.call({
         from: accounts[0],
       })
       pendingAssetsCount.toNumber().should.equal(2)
@@ -809,25 +774,33 @@ contract('MasterPropertyValue', accounts => {
       confirmationCount.toNumber().should.equal(0)
     })
 
-    it.skip('add multiple pending assets, remove pending asset', async () => {
-      const assets = [{
+    it('add multiple pending assets, remove pending asset', async () => {
+      const list = [{
         id: 2,
         notarizationId: '0xabcd',
         tokens: 100,
+        status: 0,
+        owner: accounts[0],
+        timestamp: moment().unix(),
+        statusEvents: [],
       }, {
         id: 3,
-        notarizationId: '0x1234',
+        notarizationId: '0xabcd',
         tokens: 100,
+        status: 0,
+        owner: accounts[0],
+        timestamp: moment().unix(),
+        statusEvents: [],
       }]
 
-      const txId = await mpv.addPendingAssets.call(assets, {
+      let txId = await mintingAdminRole.addPendingAssets.call(list, {
         from: defaultMintingAdmin,
       })
-      await mpv.addPendingAssets(assets, {
+      await mintingAdminRole.addPendingAssets(list, {
         from: defaultMintingAdmin,
       })
 
-      let pendingAssetsCount = await mpv.pendingAssetsCount.call()
+      let pendingAssetsCount = await assets.pendingAssetsCount.call()
       pendingAssetsCount.toNumber().should.equal(2)
 
       await mintingAdminMultiSig.confirmTransaction(txId, {
@@ -838,17 +811,14 @@ contract('MasterPropertyValue', accounts => {
       confirmationCount.toNumber().should.equal(1)
 
       const assetId = 2
-      await invoke(
-        Actions.removePendingAsset,
-        Roles.MintingAdmin,
-        [assetId],
-        [],
-        [],
-        {
-          from: defaultMintingAdmin,
-        })
+      txId = await mintingAdminRole.removePendingAsset.call(assetId, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminRole.removePendingAsset(assetId, {
+        from: defaultMintingAdmin,
+      })
 
-      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+      pendingAssetsCount = await assets.pendingAssetsCount.call({
         from: accounts[0],
       })
       pendingAssetsCount.toNumber().should.equal(1)
@@ -866,34 +836,35 @@ contract('MasterPropertyValue', accounts => {
 
       await mine(60)
 
-      await invoke(
-        Actions.updatePendingAssetsStatus,
-        Roles.MintingAdmin,
-        [],
-        [],
-        [],
-        {
-          from: accounts[0],
-        })
+      await mintingAdminRole.refreshPendingAssetsStatus({
+        from: defaultMintingAdmin,
+      })
 
-      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+      pendingAssetsCount = await assets.pendingAssetsCount.call({
         from: accounts[0],
       })
       pendingAssetsCount.toNumber().should.equal(0)
     })
 
-    it.skip('cancel minting', async () => {
+    it('cancel minting', async () => {
       const asset = {
         id: 10,
         notarizationId: '0xabcd',
         tokens: 100,
+        status: 0,
+        owner: accounts[0],
+        timestamp: moment().unix(),
+        statusEvents: [],
       }
 
-      const txId = await addAsset(asset, {
+      const txId = await mintingAdminRole.addPendingAsset.call(asset, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminRole.addPendingAsset(asset, {
         from: defaultMintingAdmin,
       })
 
-      pendingAssetsCount = await mpv.pendingAssetsCount.call({
+      const pendingAssetsCount = await assets.pendingAssetsCount.call({
         from: accounts[0],
       })
       pendingAssetsCount.toNumber().should.equal(1)
@@ -909,36 +880,23 @@ contract('MasterPropertyValue', accounts => {
       let confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
       confirmationCount.toNumber().should.equal(2)
 
-      let countdownStart = await mpv.mintingCountownStart.call()
+      let countdownStart = await mintingAdminRole.mintingCountdownStart.call()
       countdownStart.toString().should.not.equal('0')
 
       const notABasicOwner = accounts[3]
-      await shouldFail(invoke(
-        Actions.cancelMinting,
-        Roles.BasicOwner,
-        [],
-        [],
-        [],
-        {
-          from: notABasicOwner,
-        }))
+      await shouldFail(basicOwnerRole.cancelMinting({
+        from: notABasicOwner,
+      }))
 
-      await invoke(
-        Actions.cancelMinting,
-        Roles.BasicOwner,
-        [],
-        [],
-        [],
-        {
-          from: defaultBasicOwner,
-        })
+      await basicOwnerRole.cancelMinting({
+        from: defaultBasicOwner,
+      })
 
-      countdownStart = await mpv.mintingCountownStart.call()
+      countdownStart = await mintingAdminRole.mintingCountdownStart.call()
       countdownStart.toString().should.equal('0')
 
       confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
       confirmationCount.toNumber().should.equal(0)
     })
-    */
   })
 })

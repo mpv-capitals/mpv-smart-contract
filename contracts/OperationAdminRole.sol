@@ -1,8 +1,15 @@
 pragma solidity ^0.5.1;
 
+import "zos-lib/contracts/Initializable.sol";
 import "./IMultiSigWallet.sol";
 
 
-contract OperationAdminRole {
-    IMultiSigWallet operationAdminMultiSig;
+contract OperationAdminRole is Initializable {
+    IMultiSigWallet multiSig;
+
+    function initialize(
+        //IMultiSigWallet _multiSig,
+    ) public initializer {
+        //multiSig = _multiSig;
+    }
 }

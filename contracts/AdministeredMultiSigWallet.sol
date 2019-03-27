@@ -71,8 +71,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     }
 
     function addTransaction(address destination, bytes memory data)
-       public
-        returns (uint transactionId)
+    public
+    returns (uint transactionId)
     {
         return addTransaction(destination, 0, data);
     }
