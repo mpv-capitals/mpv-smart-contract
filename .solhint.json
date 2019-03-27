@@ -8,6 +8,7 @@
     "no-simple-event-func-name": false,
     "two-lines-top-level-separator": false,
     "code-complexity": false,
-    "function-max-lines": false
+    "function-max-lines": false,
+    "not-rely-on-time": false
   }
 }

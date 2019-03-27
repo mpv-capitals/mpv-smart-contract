@@ -14,9 +14,15 @@ contract Whitelist is Initializable {
     Roles.Role private _whitelisteds;
 
     IMultiSigWallet public operationAdminMultiSig;
+    IMultiSigWallet public basicOwnerMultiSig;
 
     modifier onlyOperationAdmin() {
         require(operationAdminMultiSig.hasOwner(msg.sender));
+        _;
+    }
+
+    modifier onlyBasicOwner() {
+        require(basicOwnerMultiSig.hasOwner(msg.sender));
         _;
     }
 
@@ -26,9 +32,11 @@ contract Whitelist is Initializable {
     }
 
     function initialize(
-        address _operationAdminMultiSig
+        address _operationAdminMultiSig,
+        address _basicOwnerMultiSig
     ) public initializer {
         operationAdminMultiSig = IMultiSigWallet(_operationAdminMultiSig);
+        basicOwnerMultiSig = IMultiSigWallet(_basicOwnerMultiSig);
     }
 
     function isWhitelisted(address account) public view returns (bool) {
@@ -39,8 +47,24 @@ contract Whitelist is Initializable {
         _addWhitelisted(account);
     }
 
-    function removeWhitelisted(address account) public onlyOperationAdmin {
+    function addWhitelisteds(address[] memory accounts) public onlyOperationAdmin {
+        for (uint256 i = 0; i < accounts.length; i++) {
+            _addWhitelisted(accounts[i]);
+        }
+    }
+
+    function removeWhitelisted(address account)
+    public
+    onlyBasicOwner {
         _removeWhitelisted(account);
+    }
+
+    function removeWhitelisteds(address[] memory accounts)
+    public
+    onlyBasicOwner {
+        for (uint256 i = 0; i < accounts.length; i++) {
+            _removeWhitelisted(accounts[i]);
+        }
     }
 
     function renounceWhitelisted() public {

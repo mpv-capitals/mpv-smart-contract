@@ -55,7 +55,10 @@ async function initContracts (accounts) {
 
   redemptionAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
   whitelist = await Whitelist.new()
-  await whitelist.initialize(operationAdminMultiSig.address)
+  await whitelist.initialize(
+    operationAdminMultiSig.address,
+    basicOwnerMultiSig.address
+  )
 
   superOwnerRole = await SuperOwnerRole.new()
   await superOwnerRole.initialize(
@@ -371,6 +374,23 @@ contract('MasterPropertyValue', accounts => {
 
       updatedCountdown.toNumber().should.equal(newCountdown)
     })
+
+    it('set burning action countdown', async () => {
+      const newCountdown = 60 * 60 * 24
+
+      const data = encodeCall(
+        'setTransferLimitChangeCountdownLength',
+        ['uint256'],
+        [newCountdown]
+      )
+      await superOwnerMultiSig.submitTransaction(superOwnerRole.address, 0, data, {
+        from: defaultSuperOwner,
+      })
+
+      const updatedCountdown = await superOwnerRole.transferLimitChangeCountdownLength.call()
+
+      updatedCountdown.toNumber().should.equal(newCountdown)
+    })
   })
 
   describe('BasicOwner', () => {
@@ -461,6 +481,75 @@ contract('MasterPropertyValue', accounts => {
 
       isOwner = await operationAdminMultiSig.isOwner.call(admin)
       isOwner.should.equal(false)
+    })
+
+    it('add account to whitelist', async () => {
+      const admin = accounts[2]
+      const data = encodeCall(
+        'addOwner',
+        ['address'],
+        [admin]
+      )
+      await basicOwnerMultiSig.submitTransaction(operationAdminMultiSig.address, 0, data, {
+        from: defaultBasicOwner,
+      })
+
+      const account = accounts[3]
+      let isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(false)
+
+      await whitelist.addWhitelisted(account, {
+        from: admin,
+      })
+
+      isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(true)
+    })
+
+    it('add multiple accounts to whitelist at once', async () => {
+      const admin = accounts[2]
+
+      const whitelisteds = [accounts[4], accounts[5]]
+      let isWhitelisted = await whitelist.isWhitelisted.call(whitelisteds[1])
+      isWhitelisted.should.equal(false)
+
+      await whitelist.addWhitelisteds(whitelisteds, {
+        from: admin,
+      })
+
+      isWhitelisted = await whitelist.isWhitelisted.call(whitelisteds[1])
+      isWhitelisted.should.equal(true)
+    })
+
+    it.skip('remove account from whitelist (delayed)', async () => {
+      const account = accounts[5]
+
+      let isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(true)
+
+      await whitelist.removeWhitelisted(account, {
+        from: accounts[1],
+      })
+
+      mine(60)
+
+      isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(false)
+    })
+
+    it('basic owner remove account from whitelist', async () => {
+      const basicOwner = accounts[0]
+      const account = accounts[4]
+
+      let isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(true)
+
+      await whitelist.removeWhitelisted(account, {
+        from: basicOwner,
+      })
+
+      isWhitelisted = await whitelist.isWhitelisted.call(account)
+      isWhitelisted.should.equal(false)
     })
   })
 
@@ -553,42 +642,6 @@ contract('MasterPropertyValue', accounts => {
 
       isOwner = await redemptionAdminMultiSig.isOwner.call(admin)
       isOwner.should.equal(false)
-    })
-  })
-
-  describe('Whitelist', () => {
-    before(async () => {
-      await initContracts(accounts)
-    })
-
-    const defaultOperationAdmin = accounts[0]
-
-    it('add account to whitelist', async () => {
-      const account = accounts[2]
-
-      let isWhitelisted = await whitelist.isWhitelisted.call(account)
-      isWhitelisted.should.equal(false)
-
-      await whitelist.addWhitelisted(account, {
-        from: defaultOperationAdmin,
-      })
-
-      isWhitelisted = await whitelist.isWhitelisted.call(account)
-      isWhitelisted.should.equal(true)
-    })
-
-    it('instantly remove account from whitelist', async () => {
-      const account = accounts[2]
-
-      let isWhitelisted = await whitelist.isWhitelisted.call(account)
-      isWhitelisted.should.equal(true)
-
-      await whitelist.removeWhitelisted(account, {
-        from: defaultOperationAdmin,
-      })
-
-      isWhitelisted = await whitelist.isWhitelisted.call(account)
-      isWhitelisted.should.equal(false)
     })
   })
 

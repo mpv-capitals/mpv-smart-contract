@@ -5,6 +5,7 @@ const MPVToken = artifacts.require('MPVToken')
 const Whitelist = artifacts.require('Whitelist')
 const MasterPropertyValueMock = artifacts.require('MasterPropertyValueMock')
 const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiSigWalletMock')
+const BasicOwnerMultiSigWalletMock = artifacts.require('BasicOwnerMultiSigWalletMock')
 
 const MULTIPLIER = 10 ** 4
 
@@ -15,8 +16,12 @@ contract('MPVToken', accounts => {
     masterPropertyValue = await MasterPropertyValueMock.new()
     await masterPropertyValue.mock_setPaused(false)
     const multiSig = await OperationAdminMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
+    const basicOwnerMultiSig = await BasicOwnerMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
     whitelist = await Whitelist.new()
-    await whitelist.initialize(multiSig.address)
+    await whitelist.initialize(
+      multiSig.address,
+      basicOwnerMultiSig.address
+    )
     token = await MPVToken.new()
     const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4
     await token.initialize(

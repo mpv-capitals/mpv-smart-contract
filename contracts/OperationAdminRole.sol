@@ -7,9 +7,11 @@ import "./IMultiSigWallet.sol";
 contract OperationAdminRole is Initializable {
     IMultiSigWallet public multiSig;
 
+    /*
     function initialize(
         //IMultiSigWallet _multiSig,
     ) public initializer {
         //multiSig = _multiSig;
     }
+    */
 }

@@ -21,7 +21,7 @@ contract MasterPropertyValue is Initializable, Pausable, MPVAccessControl {
     ) public initializer {
         mpvToken = _mpvToken;
         assets = _assets;
-        IWhitelist _whitelist;
+        whitelist = _whitelist;
 
         mpvToken.setMPV(address(this));
     }

@@ -28,29 +28,29 @@
 // const fs = require('fs');
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
 
-require('dotenv').config();
+require('dotenv').config()
 
-const Web3WsProvider = require('web3-providers-ws');
-const HDWalletProvider = require('truffle-hdwallet-provider');
-const PrivateKeyProvider = require('truffle-privatekey-provider');
+const Web3WsProvider = require('web3-providers-ws')
+const HDWalletProvider = require('truffle-hdwallet-provider')
+const PrivateKeyProvider = require('truffle-privatekey-provider')
 
 function createProvider (url) {
-  let key = null;
-  let provider = null;
+  let key = null
+  let provider = null
 
   if (url.indexOf('localhost') === -1) {
     if (process.env.MNEMONIC) {
-      key = process.env.MNEMONIC;
-      provider = new HDWalletProvider(key, url);
+      key = process.env.MNEMONIC
+      provider = new HDWalletProvider(key, url)
     } else if (process.env.PRIVATE_KEY) {
-      key = process.env.PRIVATE_KEY;
-      provider = new PrivateKeyProvider(key, url);
+      key = process.env.PRIVATE_KEY
+      provider = new PrivateKeyProvider(key, url)
     }
   } else {
-    provider = new Web3WsProvider(url);
+    provider = new Web3WsProvider(url)
   }
 
-  return provider;
+  return provider
 }
 
 module.exports = {
@@ -69,32 +69,32 @@ module.exports = {
       provider: createProvider('ws://localhost:8545'),
       network_id: '*', // eslint-disable-line camelcase
       gas: 7712383,
-      gasPrice: 20000000000,
+      gasPrice: 20000000000
     },
     kovan: {
       provider: createProvider('https://kovan.infura.io'),
       network_id: 42, // eslint-disable-line camelcase
       gas: 4712383,
-      gasPrice: 20000000000,
+      gasPrice: 20000000000
     },
     rinkeby: {
       provider: createProvider('https://rinkeby.infura.io'),
       network_id: 4, // eslint-disable-line camelcase
       gas: 4712383,
-      gasPrice: 20000000000,
+      gasPrice: 20000000000
     },
     ropsten: {
       provider: createProvider('https://ropsten.infura.io'),
       network_id: 3, // eslint-disable-line camelcase
       gas: 4712383,
-      gasPrice: 20000000000,
+      gasPrice: 20000000000
     },
     mainnet: {
       provider: createProvider('https://mainnet.infura.io'),
       network_id: 1, // eslint-disable-line camelcase
       gas: 4500000,
-      gasPrice: 10000000000,
-    },
+      gasPrice: 10000000000
+    }
 
     // Useful for testing. The `development` name is special - truffle uses it by default
     // if it's defined here and no other network is specified at the command line.
@@ -150,9 +150,9 @@ module.exports = {
       // settings: {          // See the solidity docs for advice about optimization and evmVersion
       optimizer: {
         enabled: false,
-        runs: 200,
+        runs: 200
       },
-      evmVersion: 'byzantium',
-    },
-  },
-};
+      evmVersion: 'byzantium'
+    }
+  }
+}
