@@ -85,9 +85,6 @@ async function initContracts (accounts) {
     basicOwnerRole.address
   )
 
-  const receipt = await web3.eth.getTransactionReceipt(mpv.transactionHash)
-  console.log(JSON.stringify(receipt, null, 2))
-
   mpv.initialize(
     mpvToken.address,
     assets.address,
