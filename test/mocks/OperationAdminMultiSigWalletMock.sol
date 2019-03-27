@@ -1,12 +1,12 @@
 pragma solidity ^0.5.1;
 
-import '../../contracts/OperationAdminMultiSigWallet.sol';
+import '../../contracts/AdministeredMultiSigWallet.sol';
 
-contract OperationAdminMultiSigWalletMock is OperationAdminMultiSigWallet {
+contract OperationAdminMultiSigWalletMock is AdministeredMultiSigWallet {
 
   constructor(address[] memory _owners, uint _required)
       public
-      OperationAdminMultiSigWallet(_owners, _required)
+      AdministeredMultiSigWallet(_owners, _required)
   {
 
   }

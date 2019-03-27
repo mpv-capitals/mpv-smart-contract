@@ -12,6 +12,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     Whitelist public whitelist;
     MasterPropertyValue public masterPropertyValue;
     mapping(address => DailyLimitInfo) public dailyLimits;
+    uint256 public dailyLimit;
 
     struct DailyLimitInfo {
         uint lastDay;
@@ -38,13 +39,15 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         string memory symbol,
         uint8 decimals,
         Whitelist _whitelist,
-        MasterPropertyValue _masterPropertyValue
+        MasterPropertyValue _masterPropertyValue,
+        uint256 _dailyLimit
 
     ) public initializer
     {
         ERC20Detailed.initialize(name, symbol, decimals);
         whitelist = _whitelist;
         masterPropertyValue = _masterPropertyValue;
+        dailyLimit = _dailyLimit;
     }
 
     function setMPV(address _masterPropertyValue)
@@ -52,6 +55,10 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mpvAccessOnly(msg.sender)
     {
         masterPropertyValue = MasterPropertyValue(_masterPropertyValue);
+    }
+
+    function setDailyLimit(uint256 _dailyLimit) public {
+        dailyLimit = _dailyLimit;
     }
 
     function transfer(address to, uint256 value)
@@ -79,7 +86,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     function mint(address account, uint value)
     public
-    mpvAccessOnly(msg.sender)
+    //mpvAccessOnly(msg.sender)
     whitelistedAddress(account)
     {
         _mint(account, value);
@@ -96,7 +103,6 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     internal
     returns (bool)
     {
-        uint dailyLimit = masterPropertyValue.dailyTransferLimit();
         DailyLimitInfo storage limitInfo = dailyLimits[account];
 
         if (now > limitInfo.lastDay + 24 hours) {

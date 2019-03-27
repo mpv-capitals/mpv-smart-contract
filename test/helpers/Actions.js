@@ -11,6 +11,7 @@ module.exports = {
   setWhitelistRemovalActionCountdown: iota(),
   setMintingActionCountdown: iota(),
   setBurningActionCountdown: iota(),
+  setTransferLimitCountdown: iota(),
   setMintingReceiverWallet: iota(),
   addOwner: iota(),
   removeOwner: iota(),

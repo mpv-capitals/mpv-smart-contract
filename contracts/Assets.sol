@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "zos-lib/contracts/Initializable.sol";
 
 
-library Assets {
+contract Assets is Initializable {
     // Asset is the structure for an asset.
     struct Asset {
         // id is asset ID.
@@ -45,27 +45,59 @@ library Assets {
         REDEEMED
     }
 
-    // State is library state.
-    struct State {
-        mapping (uint256 => Asset) assets;
+    mapping (uint256 => Asset) public assets;
+
+    uint256 public redemptionFee;
+    address public redemptionFeeReceiverWallet;
+
+    Asset[] public pendingAssets;
+    uint256 public pendingAssetsTransactionId;
+
+    function initialize(
+        uint256 _redemptionFee
+    ) public initializer {
+        redemptionFee = _redemptionFee;
     }
 
-    function add(State storage data, Asset memory asset) public {
-        require(data.assets[asset.id].id == 0);
-        data.assets[asset.id] = asset;
+    function setRedemptionFee(uint256 fee) public {
+        redemptionFee = fee;
     }
 
-    function get(State storage data, uint256 id) public returns (Asset memory) {
-        return data.assets[id];
+    function setRedemptionFeeReceiverWallet(address wallet) public {
+        redemptionFeeReceiverWallet = wallet;
     }
 
-    // addList accepts a list of assets to be added by an owner.
-    function addList(State storage data, Asset[] memory assets) public {
-        require(assets.length > 0);
+    function add(Asset memory asset) public {
+        require(assets[asset.id].id == 0);
+        assets[asset.id] = asset;
+    }
 
-        for (uint256 i = 0; i < assets.length; i++) {
-            add(data, assets[i]);
+    function get(uint256 id) public returns (Asset memory) {
+        return assets[id];
+    }
+
+    function addList(Asset[] memory _assets) public {
+        require(_assets.length > 0);
+
+        for (uint256 i = 0; i < _assets.length; i++) {
+            add(assets[i]);
         }
+    }
+
+    function pendingAssetsCount() public returns (uint256) {
+        return pendingAssets.length;
+    }
+
+    function getPendingAssets() public returns (Asset[] memory) {
+        return pendingAssets;
+    }
+
+    function addPendingAsset(Asset memory _asset) public {
+        pendingAssets.push(_asset);
+    }
+
+    function resetPendingAssets() public {
+        delete pendingAssets;
     }
 }
 

@@ -16,6 +16,8 @@ interface IMultiSigWallet {
         bytes calldata data
     ) external returns (uint transactionId);
 
+    function addTransaction(address destination, bytes calldata data) external returns(uint transactionId);
+
     function revokeConfirmation(uint transactionId) external;
 
     function executeTransaction(uint transactionId) external;
