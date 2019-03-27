@@ -6,6 +6,7 @@ import "./IMultiSigWallet.sol";
 import "./Assets.sol";
 import "./MPVToken.sol";
 import "./SuperOwnerRole.sol";
+import "./BasicOwnerRole.sol";
 
 
 contract MintingAdminRole is Initializable {
@@ -16,9 +17,25 @@ contract MintingAdminRole is Initializable {
     Assets public assets;
     MPVToken public mpvToken;
     SuperOwnerRole public superOwnerRole;
+    BasicOwnerRole public basicOwnerRole;
 
-    modifier onlyMintingAdminMultiSig() {
+    modifier onlyMultiSig() {
         require(address(multiSig) == msg.sender);
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(multiSig.hasOwner(msg.sender));
+        _;
+    }
+
+    modifier onlyBasicOwnerRole() {
+        require(address(basicOwnerRole) == msg.sender);
+        _;
+    }
+
+    modifier onlySuperOwnerMultiSig() {
+        require(address(superOwnerRole.multiSig()) == msg.sender);
         _;
     }
 
@@ -26,12 +43,14 @@ contract MintingAdminRole is Initializable {
         IMultiSigWallet _multiSig,
         Assets _assets,
         MPVToken _mpvToken,
-        SuperOwnerRole _superOwnerRole
+        SuperOwnerRole _superOwnerRole,
+        BasicOwnerRole _basicOwnerRole
     ) public initializer {
         multiSig = _multiSig;
         assets = _assets;
         mpvToken = _mpvToken;
         superOwnerRole = _superOwnerRole;
+        basicOwnerRole = _basicOwnerRole;
         mintingActionCountdownLength = 48 hours;
     }
 
@@ -39,16 +58,20 @@ contract MintingAdminRole is Initializable {
         uint256 newCountdown
     )
     public
-   // onlyMintingAdminMultiSig
+    onlySuperOwnerMultiSig
     {
         mintingActionCountdownLength = newCountdown;
     }
 
     function addPendingAsset(Assets.Asset memory _asset)
     public
+    onlyOwner
     returns (uint256) {
         // minting countdown terminated
         require(mintingCountdownStart == 0);
+
+        // Check if there's a transaction id active of if there's pending assets.
+        // The first check is required in case the transaction id is actually 0.
         if (!(assets.pendingAssetsCount() > 0 || pendingAssetsTransactionId != 0)) {
             assets.addPendingAsset(_asset);
             bytes memory data = abi.encodeWithSelector(
@@ -67,6 +90,7 @@ contract MintingAdminRole is Initializable {
 
     function addPendingAssets(Assets.Asset[] memory _assets)
     public
+    onlyOwner
     returns (uint256) {
         for (uint256 i = 0; i < _assets.length; i++) {
             addPendingAsset(_assets[i]);
@@ -77,7 +101,7 @@ contract MintingAdminRole is Initializable {
 
     function _startMintingCountdown()
     public
-    onlyMintingAdminMultiSig
+    onlyMultiSig
     {
         mintingCountdownStart = now;
     }
@@ -91,6 +115,7 @@ contract MintingAdminRole is Initializable {
 
     function removePendingAsset(uint256 assetId)
     public
+    onlyOwner
     returns (uint256)
     {
         assets.removePendingAsset(assetId);
@@ -100,7 +125,9 @@ contract MintingAdminRole is Initializable {
     }
 
     function cancelMinting()
-    public {
+    public
+    onlyBasicOwnerRole
+    {
         multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
         mintingCountdownStart = 0;
     }

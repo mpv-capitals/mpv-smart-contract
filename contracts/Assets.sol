@@ -54,16 +54,22 @@ contract Assets is Initializable {
     uint256 public pendingAssetsTransactionId;
 
     function initialize(
-        uint256 _redemptionFee
+        uint256 _redemptionFee,
+        address _redemptionFeeReceiverWallet
     ) public initializer {
+        require(_redemptionFeeReceiverWallet != address(0));
         redemptionFee = _redemptionFee;
+        redemptionFeeReceiverWallet = _redemptionFeeReceiverWallet;
     }
 
     function setRedemptionFee(uint256 fee) public {
         redemptionFee = fee;
     }
 
-    function setRedemptionFeeReceiverWallet(address wallet) public {
+    function setRedemptionFeeReceiverWallet(address wallet)
+    // TODO only super owner multisig
+    public {
+        require(wallet != address(0));
         redemptionFeeReceiverWallet = wallet;
     }
 

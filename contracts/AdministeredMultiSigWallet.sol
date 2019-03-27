@@ -5,7 +5,6 @@ import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
 
 contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     address public admin;
-    address public mpv;
 
     modifier onlyAdmin() {
         require(msg.sender == admin);
@@ -31,13 +30,6 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         admin = _admin;
     }
 
-    function setMPV(address _mpv)
-    public
-    onlyAdmin
-    {
-        mpv = _mpv;
-    }
-
     function addOwner(address owner)
     public
     onlyAdmin
@@ -51,6 +43,10 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     onlyAdmin
     validRequirement(owners.length + 1, required)
     {
+        if (owners.length == 1 && isOwner[owner]) {
+            revert("Cannot remove last owner");
+        }
+
         super.removeOwner(owner);
     }
 

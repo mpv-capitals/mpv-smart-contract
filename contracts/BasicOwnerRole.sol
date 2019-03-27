@@ -6,15 +6,15 @@ import "./MintingAdminRole.sol";
 
 
 contract BasicOwnerRole is Initializable {
-    IMultiSigWallet multiSig;
-    MintingAdminRole mintingAdminRole;
+    IMultiSigWallet public multiSig;
+    MintingAdminRole public mintingAdminRole;
 
-    modifier onlyBasicOwnerMultiSig() {
+    modifier onlyMultiSig() {
         require(address(multiSig) == msg.sender);
         _;
     }
 
-    modifier onlyBasicOwner() {
+    modifier onlyOwner() {
         require(multiSig.hasOwner(msg.sender));
         _;
     }
@@ -29,7 +29,7 @@ contract BasicOwnerRole is Initializable {
 
     function cancelMinting()
         public
-        onlyBasicOwner
+        onlyOwner
     {
         mintingAdminRole.cancelMinting();
     }

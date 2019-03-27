@@ -1,7 +1,7 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
 const { encodeCall } = require('zos-lib')
 const moment = require('moment')
-const { mine } = require('./helpers')
+const { Roles, mine } = require('./helpers')
 
 require('chai').should()
 
@@ -34,10 +34,14 @@ let mintingAdminMultiSig = null
 let redemptionAdminMultiSig = null
 
 let mintingReceiverWallet = null
+let redemptionFeeReceiverWallet = null
 
 async function initContracts (accounts) {
+  mintingReceiverWallet = accounts[8]
+  redemptionFeeReceiverWallet = accounts[9]
+
   assets = await Assets.new()
-  await assets.initialize(1000)
+  await assets.initialize(1000, redemptionFeeReceiverWallet)
   basicOwnerRole = await BasicOwnerRole.new()
   operationAdminRole = await OperationAdminRole.new()
   mintingAdminRole = await MintingAdminRole.new()
@@ -53,12 +57,10 @@ async function initContracts (accounts) {
   whitelist = await Whitelist.new()
   await whitelist.initialize(operationAdminMultiSig.address)
 
-  mintingReceiverWallet = accounts[9]
-
   superOwnerRole = await SuperOwnerRole.new()
   await superOwnerRole.initialize(
     superOwnerMultiSig.address,
-    mintingReceiverWallet,
+    mintingReceiverWallet
   )
 
   mpv = await MPV.new()
@@ -76,7 +78,8 @@ async function initContracts (accounts) {
     mintingAdminMultiSig.address,
     assets.address,
     mpvToken.address,
-    superOwnerRole.address
+    superOwnerRole.address,
+    basicOwnerRole.address
   )
 
   const receipt = await web3.eth.getTransactionReceipt(mpv.transactionHash)
@@ -85,14 +88,19 @@ async function initContracts (accounts) {
   mpv.initialize(
     mpvToken.address,
     assets.address,
-    whitelist.address,
-
-    superOwnerRole.address,
-    basicOwnerRole.address,
-    operationAdminRole.address,
-    mintingAdminRole.address,
-    redemptionAdminRole.address
+    whitelist.address
   )
+
+  mpv.addRole(Roles.SuperOwner, superOwnerRole.address)
+  mpv.addRole(Roles.BasicOwner, basicOwnerRole.address)
+  mpv.addRole(Roles.OperationAdmin, operationAdminRole.address)
+  mpv.addRole(Roles.MintingAdmin, mintingAdminRole.address)
+  mpv.addRole(Roles.RedemptionAdmin, redemptionAdminRole.address)
+
+  mpv.renounceRole(Roles.SuperOwner)
+  mpv.renounceRole(Roles.BasicOwner)
+  mpv.renounceRole(Roles.OperationAdmin)
+  mpv.renounceRole(Roles.RedemptionAdmin)
 
   await superOwnerMultiSig.setAdmin(superOwnerMultiSig.address, {
     from: accounts[0],
@@ -137,6 +145,11 @@ contract('MasterPropertyValue', accounts => {
       await superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
         from: defaultSuperOwner,
       })
+
+      const notASuperOwner = accounts[9]
+      await shouldFail(superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
+        from: notASuperOwner,
+      }))
 
       txId.toString().should.equal('0')
 
@@ -188,7 +201,7 @@ contract('MasterPropertyValue', accounts => {
       let isOwner = await superOwnerMultiSig.isOwner.call(newOwner)
       isOwner.should.equal(false)
 
-      const notASuperOwner = accounts[5]
+      const notASuperOwner = accounts[9]
       await shouldFail(superOwnerMultiSig.confirmTransaction(txId, {
         from: notASuperOwner,
       }))
@@ -199,6 +212,11 @@ contract('MasterPropertyValue', accounts => {
 
       isOwner = await superOwnerMultiSig.isOwner.call(newOwner)
       isOwner.should.equal(true)
+
+      // should not be able to confirm transaction again
+      await shouldFail(superOwnerMultiSig.confirmTransaction(txId, {
+        from: accounts[2],
+      }))
     })
 
     it('remove 2nd and 3rd super owner', async () => {
@@ -238,21 +256,32 @@ contract('MasterPropertyValue', accounts => {
       const required = await superOwnerMultiSig.required.call()
       required.toString().should.equal('1')
 
-      const owners = await superOwnerMultiSig.getOwners.call()
+      let owners = await superOwnerMultiSig.getOwners.call()
+      owners.length.should.equal(1)
+
+      data = encodeCall(
+        'removeOwner',
+        ['address'],
+        [defaultSuperOwner]
+      )
+
+      // should not be able to delete sole owner
+      await superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
+        from: defaultSuperOwner,
+      })
+
+      owners = await superOwnerMultiSig.getOwners.call()
       owners.length.should.equal(1)
     })
 
     it('set redemption fee', async () => {
       const currentRedemptionFee = await assets.redemptionFee.call()
-
       currentRedemptionFee.toNumber().should.equal(1000)
 
       const decimalValue = currentRedemptionFee.toNumber() / (10 ** 4)
-
       decimalValue.should.equal(0.1)
 
       const newRedemptionFee = 0.5 * (10 ** 4)
-
       const data = encodeCall(
         'setRedemptionFee',
         ['uint256'],
@@ -263,14 +292,12 @@ contract('MasterPropertyValue', accounts => {
       })
 
       const updatedRedemptionFee = await assets.redemptionFee.call()
-
       updatedRedemptionFee.toNumber().should.equal(newRedemptionFee)
     })
 
     it('set redemption fee receiver wallet', async () => {
-      const currentWallet = await assets.redemptionFeeReceiverWallet.call()
-      currentWallet.should.equal('0x0000000000000000000000000000000000000000')
-
+      const currentWallet = redemptionFeeReceiverWallet
+      currentWallet.should.equal(redemptionFeeReceiverWallet)
       const newWallet = '0x1111111111111111111111111111111111111111'
 
       const data = encodeCall(
@@ -285,6 +312,24 @@ contract('MasterPropertyValue', accounts => {
       const updatedWallet = await assets.redemptionFeeReceiverWallet.call()
 
       updatedWallet.should.equal(newWallet)
+    })
+
+    it('reverts if redemption fee receiver wallet set to empty', async () => {
+      const currentWallet = '0x1111111111111111111111111111111111111111'
+      const newWallet = '0x0000000000000000000000000000000000000000'
+
+      const data = encodeCall(
+        'setRedemptionFeeReceiverWallet',
+        ['address'],
+        [newWallet]
+      )
+
+      superOwnerMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultSuperOwner,
+      })
+
+      const updatedWallet = await assets.redemptionFeeReceiverWallet.call()
+      updatedWallet.should.equal(currentWallet)
     })
 
     it('set token daily limit', async () => {
