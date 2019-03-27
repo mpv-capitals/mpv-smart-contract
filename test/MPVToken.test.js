@@ -14,7 +14,6 @@ contract('MPVToken', accounts => {
 
   beforeEach(async () => {
     masterPropertyValue = await MasterPropertyValueMock.new()
-    await masterPropertyValue.mock_setPaused(false)
     const multiSig = await OperationAdminMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
     const basicOwnerMultiSig = await BasicOwnerMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
     whitelist = await Whitelist.new()
