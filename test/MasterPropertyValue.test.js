@@ -388,6 +388,40 @@ contract('MasterPropertyValue', accounts => {
 
       updatedCountdown.toNumber().should.equal(newCountdown)
     })
+
+    it('set redemption admin whitelist removal action countdown', async () => {
+      const newCountdown = 60 * 60 * 24
+
+      const data = encodeCall(
+        'setWhitelistRemovalActionCountdown',
+        ['uint256'],
+        [newCountdown]
+      )
+      await superOwnerMultiSig.submitTransaction(superOwnerRole.address, 0, data, {
+        from: defaultSuperOwner,
+      })
+
+      const updatedCountdown = await superOwnerRole.whitelistRemovalActionCountdownLength.call()
+
+      updatedCountdown.toNumber().should.equal(newCountdown)
+    })
+
+    it('set countdown length for delayed transfer', async () => {
+      const newCountdown = 60 * 60 * 24
+
+      const data = encodeCall(
+        'setDelayedTransferCountdown',
+        ['uint256'],
+        [newCountdown]
+      )
+      await superOwnerMultiSig.submitTransaction(superOwnerRole.address, 0, data, {
+        from: defaultSuperOwner,
+      })
+
+      const updatedCountdown = await superOwnerRole.delayedTransferCountdownLength.call()
+
+      updatedCountdown.toNumber().should.equal(newCountdown)
+    })
   })
 
   describe('BasicOwner', () => {
