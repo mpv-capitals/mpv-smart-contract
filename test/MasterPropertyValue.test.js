@@ -553,22 +553,6 @@ contract('MasterPropertyValue', accounts => {
       isWhitelisted.should.equal(true)
     })
 
-    it.skip('remove account from whitelist (delayed)', async () => {
-      const account = accounts[5]
-
-      let isWhitelisted = await whitelist.isWhitelisted.call(account)
-      isWhitelisted.should.equal(true)
-
-      await whitelist.removeWhitelisted(account, {
-        from: accounts[1],
-      })
-
-      mine(60)
-
-      isWhitelisted = await whitelist.isWhitelisted.call(account)
-      isWhitelisted.should.equal(false)
-    })
-
     it('basic owner remove account from whitelist', async () => {
       const basicOwner = accounts[0]
       const account = accounts[4]
@@ -576,7 +560,12 @@ contract('MasterPropertyValue', accounts => {
       let isWhitelisted = await whitelist.isWhitelisted.call(account)
       isWhitelisted.should.equal(true)
 
-      await whitelist.removeWhitelisted(account, {
+      const data = encodeCall(
+        'removeWhitelisted',
+        ['address'],
+        [account]
+      )
+      await basicOwnerMultiSig.submitTransaction(whitelist.address, 0, data, {
         from: basicOwner,
       })
 
