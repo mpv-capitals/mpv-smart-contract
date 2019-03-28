@@ -8,6 +8,7 @@ contract SuperOwnerRole is Initializable {
     IMultiSigWallet public multiSig;
 
     uint256 public transferLimitChangeCountdownLength;
+    uint256 public delayedTransferCountdownLength;
     uint256 public superOwnerActionCountdownLength;
     uint256 public basicOwnerActionCountdownLength;
     uint256 public whitelistRemovalActionCountdownLength;
@@ -31,6 +32,7 @@ contract SuperOwnerRole is Initializable {
         mintingReceiverWallet = _mintingReceiverWallet;
 
         transferLimitChangeCountdownLength = 48 hours;
+        delayedTransferCountdownLength = 48 hours;
         superOwnerActionCountdownLength = 48 hours;
         basicOwnerActionCountdownLength = 48 hours;
         whitelistRemovalActionCountdownLength = 48 hours;
@@ -45,6 +47,15 @@ contract SuperOwnerRole is Initializable {
     onlyMultiSig
     {
         transferLimitChangeCountdownLength = newCountdown;
+    }
+
+    function setDelayedTransferCountdown(
+        uint256 newCountdown
+    )
+    public
+    onlyMultiSig
+    {
+        delayedTransferCountdownLength = newCountdown;
     }
 
     function setSuperOwnerActionCountdown(
