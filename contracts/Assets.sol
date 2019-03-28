@@ -2,9 +2,15 @@ pragma solidity ^0.5.1;
 pragma experimental ABIEncoderV2;
 
 import "zos-lib/contracts/Initializable.sol";
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
+import "./MPVToken.sol";
 
 
 contract Assets is Initializable {
+    using SafeMath for uint256;
+
+    event RedemptionRequested(uint256 assetId, address account);
+
     // Asset is the structure for an asset.
     struct Asset {
         // id is asset ID.
@@ -46,6 +52,9 @@ contract Assets is Initializable {
     }
 
     mapping (uint256 => Asset) public assets;
+    mapping (address => uint256) public redemptionTokenLocks;
+
+    MPVToken mpvToken;
 
     uint256 public redemptionFee;
     address public redemptionFeeReceiverWallet;
@@ -55,11 +64,13 @@ contract Assets is Initializable {
 
     function initialize(
         uint256 _redemptionFee,
-        address _redemptionFeeReceiverWallet
+        address _redemptionFeeReceiverWallet,
+        MPVToken _mpvToken
     ) public initializer {
         require(_redemptionFeeReceiverWallet != address(0));
         redemptionFee = _redemptionFee;
         redemptionFeeReceiverWallet = _redemptionFeeReceiverWallet;
+        mpvToken = _mpvToken;
     }
 
     function setRedemptionFee(uint256 fee) public {
@@ -121,5 +132,17 @@ contract Assets is Initializable {
             }
         }
     }
-}
 
+    function requestRedemption(uint256 assetId) public {
+        Asset storage asset = assets[assetId];
+        require(asset.status == Status.ENLISTED);
+        uint256 tokensRequired = asset.tokens.add(redemptionFee);
+
+        require(mpvToken.transferFrom(msg.sender, address(this), asset.tokens));
+        require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
+
+        redemptionTokenLocks[msg.sender] = redemptionTokenLocks[msg.sender].add(asset.tokens);
+        asset.status = Assets.Status.LOCKED;
+        emit RedemptionRequested(assetId, msg.sender);
+    }
+}

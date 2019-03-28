@@ -40,8 +40,9 @@ async function initContracts (accounts) {
   mintingReceiverWallet = accounts[8]
   redemptionFeeReceiverWallet = accounts[9]
 
+  mpvToken = await MPVToken.new()
   assets = await Assets.new()
-  await assets.initialize(1000, redemptionFeeReceiverWallet)
+  await assets.initialize(1000, redemptionFeeReceiverWallet, mpvToken.address)
   basicOwnerRole = await BasicOwnerRole.new()
   operationAdminRole = await OperationAdminRole.new()
   mintingAdminRole = await MintingAdminRole.new()
