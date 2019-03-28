@@ -21,8 +21,8 @@ contract Whitelist is Initializable {
         _;
     }
 
-    modifier onlyBasicOwner() {
-        require(basicOwnerMultiSig.hasOwner(msg.sender));
+    modifier onlyBasicOwnerMultiSig() {
+        require(address(basicOwnerMultiSig) == msg.sender);
         _;
     }
 
@@ -55,13 +55,13 @@ contract Whitelist is Initializable {
 
     function removeWhitelisted(address account)
     public
-    onlyBasicOwner {
+    onlyBasicOwnerMultiSig {
         _removeWhitelisted(account);
     }
 
     function removeWhitelisteds(address[] memory accounts)
     public
-    onlyBasicOwner {
+    onlyBasicOwnerMultiSig {
         for (uint256 i = 0; i < accounts.length; i++) {
             _removeWhitelisted(accounts[i]);
         }
