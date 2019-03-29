@@ -115,7 +115,7 @@ async function initContracts (accounts) {
     from: accounts[0],
   })
 
-  await mintingAdminMultiSig.setRole(mintingAdminRole.address, {
+  await mintingAdminMultiSig.setTransactor(mintingAdminRole.address, {
     from: accounts[0],
   })
 
@@ -123,7 +123,7 @@ async function initContracts (accounts) {
     from: accounts[0],
   })
 
-  await redemptionAdminMultiSig.setRole(redemptionAdminRole.address, {
+  await redemptionAdminMultiSig.setTransactor(assets.address, {
     from: accounts[0],
   })
 

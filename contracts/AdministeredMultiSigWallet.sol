@@ -4,8 +4,14 @@ import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
 
 
 contract AdministeredMultiSigWallet is BaseMultiSigWallet {
+    /// admin is the account or multisig able to submit transaction on
+    /// behalf of this multisig.
     address public admin;
-    address public role;
+
+    /// transactor is a smart contract address able to only add transactions
+    /// to retrieve a transaction id.
+    /// The transactor is not an owner and cannot confirm transactions.
+    address public transactor;
 
     modifier onlyAdmin() {
         require(msg.sender == admin);
@@ -17,8 +23,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         _;
     }
 
-    modifier onlyRole() {
-        require(role == msg.sender);
+    modifier onlyTransactor() {
+        require(transactor == msg.sender);
         _;
     }
 
@@ -36,11 +42,11 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         admin = _admin;
     }
 
-    function setRole(address _role)
+    function setTransactor(address _transactor)
     public
     onlyAdmin
     {
-        role = _role;
+        transactor = _transactor;
     }
 
     function addOwner(address owner)
@@ -81,7 +87,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
 
     function addTransaction(address destination, bytes memory data)
     public
-    onlyRole
+    onlyTransactor
     returns (uint transactionId)
     {
         return addTransaction(destination, 0, data);
