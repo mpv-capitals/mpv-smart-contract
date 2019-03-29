@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "./MPVToken.sol";
+import "./IMultiSigWallet.sol";
 
 
 contract Assets is Initializable {
@@ -48,7 +49,10 @@ contract Assets is Initializable {
         LOCKED,
 
         // Redeemed is when the asset has been redeemed by a user.
-        REDEEMED
+        REDEEMED,
+
+        // Reserved is when the asset is temporarily reserved from redemption.
+        RESERVED
     }
 
     mapping (uint256 => Asset) public assets;
@@ -62,15 +66,24 @@ contract Assets is Initializable {
     Asset[] public pendingAssets;
     uint256 public pendingAssetsTransactionId;
 
+    IMultiSigWallet public basicOwnerMultiSig;
+
+    modifier onlyBasicOwnerMultiSig() {
+        require(address(basicOwnerMultiSig) == msg.sender);
+        _;
+    }
+
     function initialize(
         uint256 _redemptionFee,
         address _redemptionFeeReceiverWallet,
-        MPVToken _mpvToken
+        MPVToken _mpvToken,
+        IMultiSigWallet _basicOwnerMultiSig
     ) public initializer {
         require(_redemptionFeeReceiverWallet != address(0));
         redemptionFee = _redemptionFee;
         redemptionFeeReceiverWallet = _redemptionFeeReceiverWallet;
         mpvToken = _mpvToken;
+        basicOwnerMultiSig = _basicOwnerMultiSig;
     }
 
     function setRedemptionFee(uint256 fee) public {
@@ -137,12 +150,47 @@ contract Assets is Initializable {
         Asset storage asset = assets[assetId];
         require(asset.status == Status.ENLISTED);
         uint256 tokensRequired = asset.tokens.add(redemptionFee);
+        require(mpvToken.balanceOf(msg.sender) >= tokensRequired);
 
         require(mpvToken.transferFrom(msg.sender, address(this), asset.tokens));
-        require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
+        if (redemptionFee > 0) {
+            require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
+        }
 
         redemptionTokenLocks[msg.sender] = redemptionTokenLocks[msg.sender].add(asset.tokens);
         asset.status = Assets.Status.LOCKED;
         emit RedemptionRequested(assetId, msg.sender);
+    }
+
+    function setReserved(uint256[] memory assetIds)
+    public
+    onlyBasicOwnerMultiSig
+    {
+        for (uint256 i = 0; i < assetIds.length; i++) {
+            _setReserved(assetIds[i]);
+        }
+    }
+
+    function _setReserved(uint256 assetId)
+    internal
+    {
+       require(assets[assetId].status == Status.ENLISTED);
+       assets[assetId].status = Status.RESERVED;
+    }
+
+    function setEnlisted(uint256[] memory assetIds)
+    public
+    onlyBasicOwnerMultiSig
+    {
+        for (uint256 i = 0; i < assetIds.length; i++) {
+            _setEnlisted(assetIds[i]);
+        }
+    }
+
+    function _setEnlisted(uint256 assetId)
+    internal
+    {
+       require(assets[assetId].status == Status.RESERVED);
+       assets[assetId].status = Status.ENLISTED;
     }
 }

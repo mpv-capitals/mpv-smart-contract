@@ -6,6 +6,7 @@ const MPVToken = artifacts.require('MPVToken')
 const Assets = artifacts.require('Assets')
 const Whitelist = artifacts.require('Whitelist')
 const MasterPropertyValueMock = artifacts.require('MasterPropertyValueMock')
+const AdministeredMultiSigWallet = artifacts.require('AdministeredMultiSigWallet')
 const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiSigWalletMock')
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -29,8 +30,9 @@ contract('Assets', accounts => {
   })
 
   beforeEach(async () => {
+    const basicOwnerMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
     mpvToken = await initializeToken()
-    assets = await initializeAssets()
+    assets = await initializeAssets(basicOwnerMultiSig.address)
   })
 
   describe('setRedemptionFee()', () => {
@@ -172,9 +174,9 @@ contract('Assets', accounts => {
     return mpvToken
   }
 
-  async function initializeAssets() {
+  async function initializeAssets(basicOwnerMultiSig) {
     const assets = await Assets.new()
-    await assets.initialize(REDEMPTION_FEE, redemptionFeeReceiverWallet, mpvToken.address)
+    await assets.initialize(REDEMPTION_FEE, redemptionFeeReceiverWallet, basicOwnerMultiSig, mpvToken.address)
     await whitelist.addWhitelisted(assets.address)
     return assets
   }

@@ -1,7 +1,7 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
 const { encodeCall } = require('zos-lib')
 const moment = require('moment')
-const { Roles, mine } = require('./helpers')
+const { Roles, Status, mine } = require('./helpers')
 
 require('chai').should()
 
@@ -42,7 +42,6 @@ async function initContracts (accounts) {
 
   mpvToken = await MPVToken.new()
   assets = await Assets.new()
-  await assets.initialize(1000, redemptionFeeReceiverWallet, mpvToken.address)
   basicOwnerRole = await BasicOwnerRole.new()
   operationAdminRole = await OperationAdminRole.new()
   mintingAdminRole = await MintingAdminRole.new()
@@ -76,6 +75,13 @@ async function initContracts (accounts) {
   await basicOwnerRole.initialize(
     basicOwnerMultiSig.address,
     mintingAdminRole.address
+  )
+
+  await assets.initialize(
+    1000,
+    redemptionFeeReceiverWallet,
+    mpvToken.address,
+    basicOwnerMultiSig.address
   )
 
   await mintingAdminRole.initialize(
@@ -1016,6 +1022,106 @@ contract('MasterPropertyValue', accounts => {
 
       confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
       confirmationCount.toNumber().should.equal(0)
+    })
+
+    it('set asset to from enlisted to reserved status', async () => {
+      let newAsset = {
+        id: 1,
+        notarizationId: '0xabcd',
+        tokens: 100,
+        status: 0,
+        owner: accounts[0],
+        timestamp: moment().unix(),
+        statusEvents: [],
+      }
+      const txId = await mintingAdminRole.addPendingAsset.call(newAsset, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminRole.addPendingAsset(newAsset, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: secondMintingAdmin,
+      })
+
+      await mine(60)
+
+      await mintingAdminRole.refreshPendingAssetsStatus({
+        from: defaultMintingAdmin,
+      })
+      let asset = await assets.get.call(1)
+      asset.status.should.equal(Status.ENLISTED.toString())
+
+      let data = encodeCall(
+        'setReserved',
+        ['uint256[]'],
+        [[1]]
+      )
+
+      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicOwner,
+      })
+
+      asset = await assets.get.call(1)
+      asset.status.should.equal(Status.RESERVED.toString())
+    })
+
+    it('set asset from reserved to enlisted status', async () => {
+      let newAsset = {
+        id: 1,
+        notarizationId: '0xabcd',
+        tokens: 100,
+        status: 0,
+        owner: accounts[0],
+        timestamp: moment().unix(),
+        statusEvents: [],
+      }
+      const txId = await mintingAdminRole.addPendingAsset.call(newAsset, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminRole.addPendingAsset(newAsset, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: defaultMintingAdmin,
+      })
+      await mintingAdminMultiSig.confirmTransaction(txId, {
+        from: secondMintingAdmin,
+      })
+
+      await mine(60)
+      await mintingAdminRole.refreshPendingAssetsStatus({
+        from: defaultMintingAdmin,
+      })
+
+      let data = encodeCall(
+        'setReserved',
+        ['uint256[]'],
+        [[1]]
+      )
+
+      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicOwner,
+      })
+
+      let asset = await assets.get.call(1)
+      asset.status.should.equal(Status.RESERVED.toString())
+
+      data = encodeCall(
+        'setEnlisted',
+        ['uint256[]'],
+        [[1]]
+      )
+
+      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicOwner,
+      })
+
+      asset = await assets.get.call(1)
+      asset.status.should.equal(Status.ENLISTED.toString())
     })
   })
 })
