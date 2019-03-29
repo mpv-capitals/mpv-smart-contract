@@ -5,6 +5,8 @@ const { Roles, mine } = require('./helpers')
 
 require('chai').should()
 
+// TODO: refactor tests and use solidity mocks
+
 const MPV = artifacts.require('MasterPropertyValue')
 const MPVToken = artifacts.require('MPVToken')
 const Assets = artifacts.require('Assets')
@@ -42,7 +44,9 @@ async function initContracts (accounts) {
 
   mpvToken = await MPVToken.new()
   assets = await Assets.new()
-  await assets.initialize(1000, redemptionFeeReceiverWallet, mpvToken.address)
+  whitelist = await Whitelist.new()
+
+  superOwnerRole = await SuperOwnerRole.new()
   basicOwnerRole = await BasicOwnerRole.new()
   operationAdminRole = await OperationAdminRole.new()
   mintingAdminRole = await MintingAdminRole.new()
@@ -51,27 +55,35 @@ async function initContracts (accounts) {
   superOwnerMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
   basicOwnerMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
   operationAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
-
   mintingAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
-
   redemptionAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
-  whitelist = await Whitelist.new()
+
+  mpv = await MPV.new()
+
+  await mpvToken.initialize(
+    'Master Property Value',
+    'MPV',
+    4,
+    whitelist.address,
+    mpv.address,
+    1000 * (10 ** 4) // wei value given token.decimal = 4
+  )
+
   await whitelist.initialize(
     operationAdminMultiSig.address,
     basicOwnerMultiSig.address
   )
 
-  superOwnerRole = await SuperOwnerRole.new()
-  await superOwnerRole.initialize(
-    superOwnerMultiSig.address,
-    mintingReceiverWallet
+  await assets.initialize(
+    1000,
+    redemptionFeeReceiverWallet,
+    mpvToken.address,
+    basicOwnerMultiSig.address
   )
 
-  mpv = await MPV.new()
-
-  mpvToken = await MPVToken.new()
-  const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4
-  await mpvToken.initialize('Master Property Value', 'MPV', 4, whitelist.address, mpv.address, dailyLimit)
+  await superOwnerRole.initialize(
+    superOwnerMultiSig.address
+  )
 
   await basicOwnerRole.initialize(
     basicOwnerMultiSig.address,
@@ -83,10 +95,11 @@ async function initContracts (accounts) {
     assets.address,
     mpvToken.address,
     superOwnerRole.address,
-    basicOwnerRole.address
+    basicOwnerRole.address,
+    mintingReceiverWallet
   )
 
-  mpv.initialize(
+  await mpv.initialize(
     mpvToken.address,
     assets.address,
     whitelist.address
@@ -131,6 +144,7 @@ contract('MasterPropertyValue', accounts => {
     })
 
     const defaultSuperOwner = accounts[0]
+    const defaultBasicOwner = accounts[0]
 
     it('add 2nd super owner', async () => {
       const newOwner = accounts[2]
@@ -275,48 +289,8 @@ contract('MasterPropertyValue', accounts => {
       owners.length.should.equal(1)
     })
 
-    it('set redemption fee', async () => {
-      const currentRedemptionFee = await assets.redemptionFee.call()
-      currentRedemptionFee.toNumber().should.equal(1000)
-
-      const decimalValue = currentRedemptionFee.toNumber() / (10 ** 4)
-      decimalValue.should.equal(0.1)
-
-      const newRedemptionFee = 0.5 * (10 ** 4)
-      const data = encodeCall(
-        'setRedemptionFee',
-        ['uint256'],
-        [newRedemptionFee]
-      )
-      await superOwnerMultiSig.submitTransaction(assets.address, 0, data, {
-        from: defaultSuperOwner,
-      })
-
-      const updatedRedemptionFee = await assets.redemptionFee.call()
-      updatedRedemptionFee.toNumber().should.equal(newRedemptionFee)
-    })
-
-    it('set redemption fee receiver wallet', async () => {
-      const currentWallet = redemptionFeeReceiverWallet
-      currentWallet.should.equal(redemptionFeeReceiverWallet)
-      const newWallet = '0x1111111111111111111111111111111111111111'
-
-      const data = encodeCall(
-        'setRedemptionFeeReceiverWallet',
-        ['address'],
-        [newWallet]
-      )
-      await superOwnerMultiSig.submitTransaction(assets.address, 0, data, {
-        from: defaultSuperOwner,
-      })
-
-      const updatedWallet = await assets.redemptionFeeReceiverWallet.call()
-
-      updatedWallet.should.equal(newWallet)
-    })
-
     it('reverts if redemption fee receiver wallet set to empty', async () => {
-      const currentWallet = '0x1111111111111111111111111111111111111111'
+      const currentWallet = await assets.redemptionFeeReceiverWallet.call()
       const newWallet = '0x0000000000000000000000000000000000000000'
 
       const data = encodeCall(
@@ -325,8 +299,8 @@ contract('MasterPropertyValue', accounts => {
         [newWallet]
       )
 
-      superOwnerMultiSig.submitTransaction(assets.address, 0, data, {
-        from: defaultSuperOwner,
+      basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicOwner,
       })
 
       const updatedWallet = await assets.redemptionFeeReceiverWallet.call()
@@ -431,6 +405,7 @@ contract('MasterPropertyValue', accounts => {
     })
 
     const defaultSuperOwner = accounts[0]
+    const defaultBasicOwner = accounts[0]
 
     it('add 2nd basic owner', async () => {
       const newOwner = accounts[2]
@@ -467,6 +442,46 @@ contract('MasterPropertyValue', accounts => {
 
       isOwner = await basicOwnerMultiSig.isOwner.call(owner)
       isOwner.should.equal(false)
+    })
+
+    it('set redemption fee', async () => {
+      const currentRedemptionFee = await assets.redemptionFee.call()
+      currentRedemptionFee.toNumber().should.equal(1000)
+
+      const decimalValue = currentRedemptionFee.toNumber() / (10 ** 4)
+      decimalValue.should.equal(0.1)
+
+      const newRedemptionFee = 0.5 * (10 ** 4)
+      const data = encodeCall(
+        'setRedemptionFee',
+        ['uint256'],
+        [newRedemptionFee]
+      )
+      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicOwner,
+      })
+
+      const updatedRedemptionFee = await assets.redemptionFee.call()
+      updatedRedemptionFee.toNumber().should.equal(newRedemptionFee)
+    })
+
+    it('set redemption fee receiver wallet', async () => {
+      const currentWallet = redemptionFeeReceiverWallet
+      currentWallet.should.equal(redemptionFeeReceiverWallet)
+      const newWallet = '0x1111111111111111111111111111111111111111'
+
+      const data = encodeCall(
+        'setRedemptionFeeReceiverWallet',
+        ['address'],
+        [newWallet]
+      )
+      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicOwner,
+      })
+
+      const updatedWallet = await assets.redemptionFeeReceiverWallet.call()
+
+      updatedWallet.should.equal(newWallet)
     })
   })
 
@@ -818,7 +833,6 @@ contract('MasterPropertyValue', accounts => {
         from: defaultMintingAdmin,
       }))
       */
-
       await mine(60)
 
       await mintingAdminRole.refreshPendingAssetsStatus({
