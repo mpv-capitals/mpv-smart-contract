@@ -115,7 +115,15 @@ async function initContracts (accounts) {
     from: accounts[0],
   })
 
+  await mintingAdminMultiSig.setRole(mintingAdminRole.address, {
+    from: accounts[0],
+  })
+
   await mintingAdminMultiSig.setAdmin(basicOwnerMultiSig.address, {
+    from: accounts[0],
+  })
+
+  await redemptionAdminMultiSig.setRole(redemptionAdminRole.address, {
     from: accounts[0],
   })
 

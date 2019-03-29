@@ -5,6 +5,7 @@ import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
 
 contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     address public admin;
+    address public role;
 
     modifier onlyAdmin() {
         require(msg.sender == admin);
@@ -13,6 +14,11 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
 
     modifier ownerExists(address owner) {
         require(isOwner[owner]);
+        _;
+    }
+
+    modifier onlyRole() {
+        require(role == msg.sender);
         _;
     }
 
@@ -28,6 +34,13 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     onlyAdmin
     {
         admin = _admin;
+    }
+
+    function setRole(address _role)
+    public
+    onlyAdmin
+    {
+        role = _role;
     }
 
     function addOwner(address owner)
@@ -68,6 +81,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
 
     function addTransaction(address destination, bytes memory data)
     public
+    onlyRole
     returns (uint transactionId)
     {
         return addTransaction(destination, 0, data);
