@@ -128,7 +128,15 @@ async function initContracts (accounts) {
     from: accounts[0],
   })
 
+  await mintingAdminMultiSig.setTransactor(mintingAdminRole.address, {
+    from: accounts[0],
+  })
+
   await mintingAdminMultiSig.setAdmin(basicOwnerMultiSig.address, {
+    from: accounts[0],
+  })
+
+  await redemptionAdminMultiSig.setTransactor(assets.address, {
     from: accounts[0],
   })
 

@@ -4,7 +4,20 @@ import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
 
 
 contract AdministeredMultiSigWallet is BaseMultiSigWallet {
+    /// admin is the account or multisig able to submit transaction on
+    /// behalf of this multisig.
     address public admin;
+
+    /// transactor is a smart contract address able to only add transactions
+    /// to retrieve a transaction id and able to revoke all confirmations too.
+    /// The transactor is not an owner and cannot confirm transactions.
+    /// An example for this existing is when the minting admin role contract
+    /// needs to add a multisig transaction to retrieve a trasaction id so that
+    /// minting admin' can begin to vote on it. We require a transaction id in
+    /// in this case immediately rather than requiring the multisig to submit
+    // the transaction because it would require majority vote which is not what
+    /// we want in this case.
+    address public transactor;
 
     modifier onlyAdmin() {
         require(msg.sender == admin);
@@ -13,6 +26,11 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
 
     modifier ownerExists(address owner) {
         require(isOwner[owner]);
+        _;
+    }
+
+    modifier onlyTransactor() {
+        require(transactor == msg.sender);
         _;
     }
 
@@ -28,6 +46,13 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     onlyAdmin
     {
         admin = _admin;
+    }
+
+    function setTransactor(address _transactor)
+    public
+    onlyAdmin
+    {
+        transactor = _transactor;
     }
 
     function addOwner(address owner)
@@ -68,6 +93,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
 
     function addTransaction(address destination, bytes memory data)
     public
+    onlyTransactor
     returns (uint transactionId)
     {
         return addTransaction(destination, 0, data);
@@ -89,6 +115,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
 
     function revokeAllConfirmations(uint256 transactionId)
     public
+    onlyTransactor
     {
         for (uint256 i=0; i < owners.length; i++) {
             confirmations[transactionId][owners[i]] = false;
