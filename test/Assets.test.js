@@ -176,7 +176,13 @@ contract('Assets', accounts => {
 
   async function initializeAssets() {
     const assets = await Assets.new()
-    await assets.initialize(REDEMPTION_FEE, redemptionFeeReceiverWallet, mpvToken.address)
+    await assets.initialize(
+      REDEMPTION_FEE,
+      redemptionFeeReceiverWallet,
+      mpvToken.address,
+      accounts[0], // superOwnerMultiSig
+      accounts[0], // mintingAdminRole
+    )
     await whitelist.addWhitelisted(assets.address)
     return assets
   }

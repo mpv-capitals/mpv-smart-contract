@@ -62,31 +62,53 @@ contract Assets is Initializable {
     Asset[] public pendingAssets;
     uint256 public pendingAssetsTransactionId;
 
+    address public superOwnerMultiSig;
+    address public mintingAdminRole;
+
+    modifier onlySuperOwnerMultiSig() {
+        require(superOwnerMultiSig == msg.sender);
+        _;
+    }
+
+    modifier onlyMintingAdminRole() {
+        require(mintingAdminRole == msg.sender);
+        _;
+    }
+
     function initialize(
         uint256 _redemptionFee,
         address _redemptionFeeReceiverWallet,
-        MPVToken _mpvToken
+        MPVToken _mpvToken,
+        address _superOwnerMultiSig,
+        address _mintingAdminRole
     ) public initializer {
         require(_redemptionFeeReceiverWallet != address(0));
         redemptionFee = _redemptionFee;
         redemptionFeeReceiverWallet = _redemptionFeeReceiverWallet;
         mpvToken = _mpvToken;
+        superOwnerMultiSig = _superOwnerMultiSig;
+        mintingAdminRole = _mintingAdminRole;
     }
 
-    // TODO
-    function setRedemptionFee(uint256 fee) public {
+    function setRedemptionFee(uint256 fee)
+    public
+    onlySuperOwnerMultiSig
+    {
         redemptionFee = fee;
     }
 
     function setRedemptionFeeReceiverWallet(address wallet)
-    // TODO only super owner multisig
-    public {
+    public
+    onlySuperOwnerMultiSig
+    {
         require(wallet != address(0));
         redemptionFeeReceiverWallet = wallet;
     }
 
-    // TODO
-    function add(Asset memory asset) public {
+    function add(Asset memory asset)
+    onlyMintingAdminRole
+    public
+    {
         require(assets[asset.id].id == 0);
         assets[asset.id] = asset;
     }
@@ -95,8 +117,10 @@ contract Assets is Initializable {
         return assets[id];
     }
 
-    // TODO
-    function addList(Asset[] memory _assets) public {
+    function addList(Asset[] memory _assets)
+    public
+    onlyMintingAdminRole
+    {
         require(_assets.length > 0);
 
         for (uint256 i = 0; i < _assets.length; i++) {
@@ -104,26 +128,23 @@ contract Assets is Initializable {
         }
     }
 
-    function pendingAssetsCount() public returns (uint256) {
-        return pendingAssets.length;
-    }
-
-    function getPendingAssets() public returns (Asset[] memory) {
-        return pendingAssets;
-    }
-
-    function addPendingAsset(Asset memory _asset) public {
+    function addPendingAsset(Asset memory _asset)
+    public
+    onlyMintingAdminRole
+    {
         pendingAssets.push(_asset);
     }
 
-    // TODO
-    function resetPendingAssets() public {
+    function resetPendingAssets()
+    public
+    onlyMintingAdminRole
+    {
         delete pendingAssets;
     }
 
-    // TODO
     function removePendingAsset(uint256 assetId)
     public
+    onlyMintingAdminRole
     {
         for (uint256 i = 0; i < pendingAssets.length; i++) {
             if (pendingAssets[i].id == assetId) {
@@ -149,5 +170,13 @@ contract Assets is Initializable {
         redemptionTokenLocks[msg.sender] = redemptionTokenLocks[msg.sender].add(asset.tokens);
         asset.status = Assets.Status.LOCKED;
         emit RedemptionRequested(assetId, msg.sender);
+    }
+
+    function pendingAssetsCount() public returns (uint256) {
+        return pendingAssets.length;
+    }
+
+    function getPendingAssets() public returns (Asset[] memory) {
+        return pendingAssets;
     }
 }
