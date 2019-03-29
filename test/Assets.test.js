@@ -35,7 +35,7 @@ contract('Assets', accounts => {
     redemptionAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
     redemptionAdminRole = await RedemptionAdminRole.new()
     mpvToken = await initializeToken()
-    assets = await initializeAssets()
+    assets = await initializeAssets(basicOwnerMultiSig)
     redemptionAdminRole.initialize(
       redemptionAdminMultiSig.address,
       assets.address
@@ -276,7 +276,7 @@ contract('Assets', accounts => {
     return mpvToken
   }
 
-  async function initializeAssets () {
+  async function initializeAssets(basicOwnerMultiSig) {
     const assets = await Assets.new()
     await assets.initialize(
       REDEMPTION_FEE,
@@ -285,7 +285,6 @@ contract('Assets', accounts => {
       redemptionAdminMultiSig.address,
       basicOwnerMultiSig,
       mpvToken.address
-
     )
     await whitelist.addWhitelisted(assets.address)
     return assets

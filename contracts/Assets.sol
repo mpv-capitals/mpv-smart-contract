@@ -57,7 +57,10 @@ contract Assets is Initializable {
         LOCKED,
 
         // Redeemed is when the asset has been redeemed by a user.
-        REDEEMED
+        REDEEMED,
+
+        // Reserved is when the asset is temporarily reserved from redemption.
+        RESERVED
     }
 
     mapping (uint256 => Asset) public assets;
@@ -166,9 +169,10 @@ contract Assets is Initializable {
     {
         Asset storage asset = assets[assetId];
         require(asset.status == Status.ENLISTED);
-
         require(mpvToken.transferFrom(msg.sender, address(this), asset.tokens));
-        require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
+        if (redemptionFee > 0) {
+            require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
+        }
 
         bytes memory data = abi.encodeWithSelector(
             redemptionAdminRole.startBurningCountdown.selector,
@@ -194,5 +198,37 @@ contract Assets is Initializable {
         asset.status = Status.ENLISTED;
         emit RedemptionCancelled(assetId, msg.sender, tokenLock.amount);
         delete redemptionTokenLocks[assetId];
+    }
+
+    function setReserved(uint256[] memory assetIds)
+    public
+    onlyBasicOwnerMultiSig
+    {
+        for (uint256 i = 0; i < assetIds.length; i++) {
+            _setReserved(assetIds[i]);
+        }
+    }
+
+    function _setReserved(uint256 assetId)
+    internal
+    {
+       require(assets[assetId].status == Status.ENLISTED);
+       assets[assetId].status = Status.RESERVED;
+    }
+
+    function setEnlisted(uint256[] memory assetIds)
+    public
+    onlyBasicOwnerMultiSig
+    {
+        for (uint256 i = 0; i < assetIds.length; i++) {
+            _setEnlisted(assetIds[i]);
+        }
+    }
+
+    function _setEnlisted(uint256 assetId)
+    internal
+    {
+       require(assets[assetId].status == Status.RESERVED);
+       assets[assetId].status = Status.ENLISTED;
     }
 }
