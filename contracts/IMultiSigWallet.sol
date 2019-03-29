@@ -40,4 +40,7 @@ interface IMultiSigWallet {
     ) external returns (bool);
 
     function revokeAllConfirmations(uint transactionId) external;
+
+    function getConfirmationCount(uint transactionId) external view returns (uint count);
+
 }

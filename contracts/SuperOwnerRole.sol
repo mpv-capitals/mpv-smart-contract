@@ -12,7 +12,6 @@ contract SuperOwnerRole is Initializable {
     uint256 public superOwnerActionCountdownLength;
     uint256 public basicOwnerActionCountdownLength;
     uint256 public whitelistRemovalActionCountdownLength;
-    uint256 public mintingActionCountdownLength;
     uint256 public burningActionCountdownLength;
 
     modifier onlyMultiSig() {
@@ -30,8 +29,6 @@ contract SuperOwnerRole is Initializable {
         superOwnerActionCountdownLength = 48 hours;
         basicOwnerActionCountdownLength = 48 hours;
         whitelistRemovalActionCountdownLength = 48 hours;
-        mintingActionCountdownLength = 48 hours;
-        burningActionCountdownLength = 48 hours;
     }
 
     function setTransferLimitChangeCountdownLength(
