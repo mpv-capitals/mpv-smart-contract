@@ -13,10 +13,9 @@ const MULTIPLIER = 10 ** 4
 const REDEMPTION_FEE = 0.1 * MULTIPLIER
 const DAILY_LIMIT = 1000 * MULTIPLIER
 
-
 contract('Assets', accounts => {
   let whitelist, masterPropertyValue // needed for token setup
-  let assets, mpvToken, whitelistedAccts, redemptionFeeReceiverWallet
+  let assets, mpvToken, basicOwnerMultiSig, whitelistedAccts, redemptionFeeReceiverWallet
 
   before(async () => {
     // Basic Setup for functioning MPVToken
@@ -26,6 +25,7 @@ contract('Assets', accounts => {
     whitelistedAccts = [accounts[0], accounts[1], accounts[2]]
     whitelist = await initializeWhitelist(multiSig)
     await whitelist.addWhitelisted(redemptionFeeReceiverWallet)
+    basicOwnerMultiSig = accounts[5]
   })
 
   beforeEach(async () => {
@@ -36,7 +36,9 @@ contract('Assets', accounts => {
   describe('setRedemptionFee()', () => {
     it('properly sets redemptionFee to the given value', async () => {
       (await assets.redemptionFee()).toNumber().should.equal(REDEMPTION_FEE)
-      await assets.setRedemptionFee(500)
+      await assets.setRedemptionFee(500, {
+        from: basicOwnerMultiSig
+      })
       const newFee = (await assets.redemptionFee()).toNumber()
       newFee.should.equal(500)
     })
@@ -46,7 +48,9 @@ contract('Assets', accounts => {
     it('properly sets setRedemptionFeeReceiverWallet to the given value', async () => {
       const defaultAddr = await assets.redemptionFeeReceiverWallet()
       defaultAddr.should.equal(redemptionFeeReceiverWallet)
-      await assets.setRedemptionFeeReceiverWallet(accounts[5])
+      await assets.setRedemptionFeeReceiverWallet(accounts[5], {
+        from: basicOwnerMultiSig
+      })
       const newAddr = await assets.redemptionFeeReceiverWallet()
       newAddr.should.equal(accounts[5])
     })
@@ -61,7 +65,7 @@ contract('Assets', accounts => {
         tokens: 100,
         status: 0,
         owner: accounts[0],
-        timestamp:  now,
+        timestamp: now,
         statusEvents: [],
       }
 
@@ -87,26 +91,26 @@ contract('Assets', accounts => {
         tokens: 100 * MULTIPLIER,
         status: 1,
         owner: accounts[0],
-        timestamp:  now,
+        timestamp: now,
         statusEvents: [],
       }
       await assets.add(newAsset)
       await mintTokens(accounts[0], 200 * MULTIPLIER)
-      await mpvToken.approve(assets.address, 200 * MULTIPLIER, {from: accounts[0]})
+      await mpvToken.approve(assets.address, 200 * MULTIPLIER, { from: accounts[0] })
     })
 
     it('sets the asset status to LOCKED', async () => {
       const enlisted = 1
       const locked = 2
       expect((await assets.assets(1)).status.toNumber()).to.equal(enlisted)
-      await assets.requestRedemption(1, {from: accounts[0]})
+      await assets.requestRedemption(1, { from: accounts[0] })
       expect((await assets.assets(1)).status.toNumber()).to.equal(locked)
     })
 
     it('reverts if the account does not have the proper balance approved', async () => {
       await mintTokens(accounts[1], 100 * MULTIPLIER) // amount doesn't cover fee
-      await mpvToken.approve(assets.address, 100 * MULTIPLIER, {from: accounts[1]})
-      await shouldFail(assets.requestRedemption(1, {from: accounts[1]}))
+      await mpvToken.approve(assets.address, 100 * MULTIPLIER, { from: accounts[1] })
+      await shouldFail(assets.requestRedemption(1, { from: accounts[1] }))
     })
 
     it('reverts it the asset does not have the status ENLISTED', async () => {
@@ -116,18 +120,18 @@ contract('Assets', accounts => {
         tokens: 100 * MULTIPLIER,
         status: 0,
         owner: accounts[0],
-        timestamp:  moment().unix(),
+        timestamp: moment().unix(),
         statusEvents: [],
       }
 
       await assets.add(invalidAsset)
-      await shouldFail(assets.requestRedemption(2, {from: accounts[1]}))
+      await shouldFail(assets.requestRedemption(2, { from: accounts[1] }))
     })
 
     it('transfers the fee and asset token value amount from the account', async () => {
       const totalCost = 1001000
       const previousAcctBalance = (await mpvToken.balanceOf(accounts[0])).toNumber()
-      await assets.requestRedemption(1, {from: accounts[0]})
+      await assets.requestRedemption(1, { from: accounts[0] })
       const newAcctBalance = (await mpvToken.balanceOf(accounts[0])).toNumber()
       expect(previousAcctBalance - newAcctBalance).to.equal(totalCost)
     })
@@ -136,7 +140,7 @@ contract('Assets', accounts => {
       previousAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
       previousLockedTokens = (await assets.redemptionTokenLocks(accounts[0])).toNumber()
 
-      await assets.requestRedemption(1, {from: accounts[0]})
+      await assets.requestRedemption(1, { from: accounts[0] })
 
       newAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
       newLockedTokens = (await assets.redemptionTokenLocks(accounts[0])).toNumber()
@@ -149,17 +153,17 @@ contract('Assets', accounts => {
       const fee = (await assets.redemptionFee()).toNumber()
       const previousTokenBalance = (await mpvToken.balanceOf(redemptionFeeReceiverWallet)).toNumber()
 
-      await assets.requestRedemption(1, {from: accounts[0]})
+      await assets.requestRedemption(1, { from: accounts[0] })
       const newTokenBalance = (await mpvToken.balanceOf(redemptionFeeReceiverWallet)).toNumber()
       expect(newTokenBalance - previousTokenBalance).to.equal(fee)
     })
   })
 
-  async function mintTokens(account, amount) {
+  async function mintTokens (account, amount) {
     await masterPropertyValue.mock_callMint(mpvToken.address, account, amount)
   }
 
-  async function initializeToken() {
+  async function initializeToken () {
     const mpvToken = await MPVToken.new()
     await mpvToken.initialize(
       'Master Property Value',
@@ -172,14 +176,19 @@ contract('Assets', accounts => {
     return mpvToken
   }
 
-  async function initializeAssets() {
+  async function initializeAssets () {
     const assets = await Assets.new()
-    await assets.initialize(REDEMPTION_FEE, redemptionFeeReceiverWallet, mpvToken.address)
+    await assets.initialize(
+      REDEMPTION_FEE,
+      redemptionFeeReceiverWallet,
+      mpvToken.address,
+      basicOwnerMultiSig
+    )
     await whitelist.addWhitelisted(assets.address)
     return assets
   }
 
-  async function initializeWhitelist(multiSig) {
+  async function initializeWhitelist (multiSig) {
     const whitelist = await Whitelist.new()
     await whitelist.initialize(multiSig.address, accounts[5])
     for (acct of whitelistedAccts) {

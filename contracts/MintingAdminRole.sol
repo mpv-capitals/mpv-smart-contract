@@ -18,6 +18,7 @@ contract MintingAdminRole is Initializable {
     MPVToken public mpvToken;
     SuperOwnerRole public superOwnerRole;
     BasicOwnerRole public basicOwnerRole;
+    address public mintingReceiverWallet;
 
     modifier onlyMultiSig() {
         require(address(multiSig) == msg.sender);
@@ -34,6 +35,11 @@ contract MintingAdminRole is Initializable {
         _;
     }
 
+    modifier onlyBasicOwnerMultiSig() {
+        require(address(basicOwnerRole.multiSig()) == msg.sender);
+        _;
+    }
+
     modifier onlySuperOwnerMultiSig() {
         require(address(superOwnerRole.multiSig()) == msg.sender);
         _;
@@ -44,13 +50,15 @@ contract MintingAdminRole is Initializable {
         Assets _assets,
         MPVToken _mpvToken,
         SuperOwnerRole _superOwnerRole,
-        BasicOwnerRole _basicOwnerRole
+        BasicOwnerRole _basicOwnerRole,
+        address _mintingReceiverWallet
     ) public initializer {
         multiSig = _multiSig;
         assets = _assets;
         mpvToken = _mpvToken;
         superOwnerRole = _superOwnerRole;
         basicOwnerRole = _basicOwnerRole;
+        mintingReceiverWallet = _mintingReceiverWallet;
         mintingActionCountdownLength = 48 hours;
     }
 
@@ -149,6 +157,16 @@ contract MintingAdminRole is Initializable {
     internal {
         asset.status = Assets.Status.ENLISTED;
         assets.add(asset);
-        mpvToken.mint(superOwnerRole.mintingReceiverWallet(), asset.tokens);
+        mpvToken.mint(mintingReceiverWallet, asset.tokens);
+    }
+
+    function setMintingReceiverWallet(
+        address newWallet
+    )
+    public
+    onlyBasicOwnerMultiSig
+    {
+        require(newWallet != address(0));
+        mintingReceiverWallet = newWallet;
     }
 }

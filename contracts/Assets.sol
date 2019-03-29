@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "./MPVToken.sol";
+import "./IMultiSigWallet.sol";
 
 
 contract Assets is Initializable {
@@ -62,24 +63,37 @@ contract Assets is Initializable {
     Asset[] public pendingAssets;
     uint256 public pendingAssetsTransactionId;
 
+    IMultiSigWallet public basicOwnerMultiSig;
+
+    modifier onlyBasicOwnerMultiSig() {
+        require(address(basicOwnerMultiSig) == msg.sender);
+        _;
+    }
+
     function initialize(
         uint256 _redemptionFee,
         address _redemptionFeeReceiverWallet,
-        MPVToken _mpvToken
+        MPVToken _mpvToken,
+        IMultiSigWallet _basicOwnerMultiSig
     ) public initializer {
         require(_redemptionFeeReceiverWallet != address(0));
         redemptionFee = _redemptionFee;
         redemptionFeeReceiverWallet = _redemptionFeeReceiverWallet;
         mpvToken = _mpvToken;
+        basicOwnerMultiSig = _basicOwnerMultiSig;
     }
 
-    function setRedemptionFee(uint256 fee) public {
+    function setRedemptionFee(uint256 fee)
+    public
+    onlyBasicOwnerMultiSig
+    {
         redemptionFee = fee;
     }
 
     function setRedemptionFeeReceiverWallet(address wallet)
-    // TODO only super owner multisig
-    public {
+    public
+    onlyBasicOwnerMultiSig
+    {
         require(wallet != address(0));
         redemptionFeeReceiverWallet = wallet;
     }
