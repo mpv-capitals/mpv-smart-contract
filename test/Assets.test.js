@@ -36,7 +36,11 @@ contract('Assets', accounts => {
     redemptionAdminRole = await RedemptionAdminRole.new()
     mpvToken = await initializeToken()
     assets = await initializeAssets()
-    redemptionAdminRole.initialize(redemptionAdminMultiSig.address, assets.address)
+    redemptionAdminRole.initialize(
+      redemptionAdminMultiSig.address,
+      assets.address
+    )
+    await redemptionAdminMultiSig.setTransactor(assets.address)
   })
 
   describe('setRedemptionFee()', () => {
