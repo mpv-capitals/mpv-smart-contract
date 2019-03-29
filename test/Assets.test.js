@@ -167,6 +167,8 @@ contract('Assets', accounts => {
       4,
       whitelist.address,
       masterPropertyValue.address,
+      masterPropertyValue.address, // mintingAdmin
+      masterPropertyValue.address, // redemptionAdmin
       DAILY_LIMIT
     )
     return mpvToken

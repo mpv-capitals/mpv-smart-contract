@@ -73,6 +73,7 @@ contract Assets is Initializable {
         mpvToken = _mpvToken;
     }
 
+    // TODO
     function setRedemptionFee(uint256 fee) public {
         redemptionFee = fee;
     }
@@ -84,6 +85,7 @@ contract Assets is Initializable {
         redemptionFeeReceiverWallet = wallet;
     }
 
+    // TODO
     function add(Asset memory asset) public {
         require(assets[asset.id].id == 0);
         assets[asset.id] = asset;
@@ -93,6 +95,7 @@ contract Assets is Initializable {
         return assets[id];
     }
 
+    // TODO
     function addList(Asset[] memory _assets) public {
         require(_assets.length > 0);
 
@@ -113,10 +116,12 @@ contract Assets is Initializable {
         pendingAssets.push(_asset);
     }
 
+    // TODO
     function resetPendingAssets() public {
         delete pendingAssets;
     }
 
+    // TODO
     function removePendingAsset(uint256 assetId)
     public
     {

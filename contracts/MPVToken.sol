@@ -11,6 +11,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     Whitelist public whitelist;
     MasterPropertyValue public masterPropertyValue;
+    address public mintingAdmin;
+    address public redemptionAdmin;
     mapping(address => DailyLimitInfo) public dailyLimits;
     uint256 public dailyLimit;
 
@@ -29,6 +31,16 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         _;
     }
 
+    modifier onlyMintingAdmin() {
+        require(mintingAdmin == msg.sender);
+        _;
+    }
+
+    modifier onlyRedemptionAdmin() {
+        require(mintingAdmin == msg.sender);
+        _;
+    }
+
     modifier mpvNotPaused() {
         require(masterPropertyValue.paused() == false);
         _;
@@ -40,6 +52,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         uint8 decimals,
         Whitelist _whitelist,
         MasterPropertyValue _masterPropertyValue,
+        address _mintingAdmin,
+        address _redemptionAdmin,
         uint256 _dailyLimit
 
     ) public initializer
@@ -47,6 +61,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         ERC20Detailed.initialize(name, symbol, decimals);
         whitelist = _whitelist;
         masterPropertyValue = _masterPropertyValue;
+        mintingAdmin = _mintingAdmin;
+        redemptionAdmin = _redemptionAdmin;
         dailyLimit = _dailyLimit;
     }
 
@@ -55,6 +71,20 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mpvAccessOnly(msg.sender)
     {
         masterPropertyValue = MasterPropertyValue(_masterPropertyValue);
+    }
+
+    function setMintingAdmin(address _mintingAdmin)
+    public
+    onlyMintingAdmin
+    {
+        mintingAdmin = _mintingAdmin;
+    }
+
+    function setRedemptionAdmin(address _redemptionAdmin)
+    public
+    onlyRedemptionAdmin
+    {
+        redemptionAdmin = _redemptionAdmin;
     }
 
     function setDailyLimit(uint256 _dailyLimit) public {
@@ -86,7 +116,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     function mint(address account, uint value)
     public
-    //mpvAccessOnly(msg.sender)
+    onlyMintingAdmin
     whitelistedAddress(account)
     {
         _mint(account, value);
@@ -94,7 +124,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     function burn(address account, uint value)
     public
-    mpvAccessOnly(msg.sender)
+    onlyRedemptionAdmin
     {
         _burn(account, value);
     }

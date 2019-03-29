@@ -29,6 +29,8 @@ contract('MPVToken', accounts => {
       4,
       whitelist.address,
       masterPropertyValue.address,
+      masterPropertyValue.address, // mintingAdmin
+      masterPropertyValue.address, // redemptionAdmin
       dailyLimit
     )
 
@@ -100,8 +102,7 @@ contract('MPVToken', accounts => {
       newTokenSupply.should.equal(previousTokenSupply + mintAmount)
     })
 
-    // TODO
-    it.skip('reverts if called by address other than the mintingAdmin', async () => {
+    it('reverts if called by address other than the mintingAdmin', async () => {
       await shouldFail(token.mint(accounts[0], 500, { from: accounts[0] }))
     })
 
