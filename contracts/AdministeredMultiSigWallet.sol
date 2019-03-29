@@ -9,8 +9,14 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     address public admin;
 
     /// transactor is a smart contract address able to only add transactions
-    /// to retrieve a transaction id.
+    /// to retrieve a transaction id and able to revoke all confirmations too.
     /// The transactor is not an owner and cannot confirm transactions.
+    /// An example for this existing is when the minting admin role contract
+    /// needs to add a multisig transaction to retrieve a trasaction id so that
+    /// minting admin' can begin to vote on it. We require a transaction id in
+    /// in this case immediately rather than requiring the multisig to submit
+    // the transaction because it would require majority vote which is not what
+    /// we want in this case.
     address public transactor;
 
     modifier onlyAdmin() {
@@ -109,6 +115,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
 
     function revokeAllConfirmations(uint256 transactionId)
     public
+    onlyTransactor
     {
         for (uint256 i=0; i < owners.length; i++) {
             confirmations[transactionId][owners[i]] = false;
