@@ -5,12 +5,14 @@ import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "./MPVToken.sol";
 import "./IMultiSigWallet.sol";
+import "./RedemptionAdminRole.sol";
 
 
 contract Assets is Initializable {
     using SafeMath for uint256;
 
-    event RedemptionRequested(uint256 assetId, address account);
+    event RedemptionRequested(uint256 assetId, address account, uint256 burnAmount, uint256 redemptionFee, uint256 transactionId);
+    event RedemptionCancelled(uint256 assetId, address account, uint256 refundAmount);
 
     // Asset is the structure for an asset.
     struct Asset {
@@ -36,6 +38,12 @@ contract Assets is Initializable {
         Status[] statusEvents;
     }
 
+    struct RedemptionTokenLock {
+        uint256 amount;
+        address account;
+        uint256 transactionId;
+    }
+
     // Status is the possible states for an asset.
     enum Status {
         // Pending is when the asset has been newly added and is pending approval by minting admins.
@@ -53,12 +61,14 @@ contract Assets is Initializable {
     }
 
     mapping (uint256 => Asset) public assets;
-    mapping (address => uint256) public redemptionTokenLocks;
+    mapping (uint256 => RedemptionTokenLock) public redemptionTokenLocks;
 
     MPVToken mpvToken;
 
     uint256 public redemptionFee;
     address public redemptionFeeReceiverWallet;
+    RedemptionAdminRole public redemptionAdminRole;
+    IMultiSigWallet public redemptionMultiSig;
 
     Asset[] public pendingAssets;
     uint256 public pendingAssetsTransactionId;
@@ -73,14 +83,18 @@ contract Assets is Initializable {
     function initialize(
         uint256 _redemptionFee,
         address _redemptionFeeReceiverWallet,
-        MPVToken _mpvToken,
-        IMultiSigWallet _basicOwnerMultiSig
+        RedemptionAdminRole _redemptionAdminRole,
+        IMultiSigWallet _redemptionMultiSig,
+        IMultiSigWallet _basicOwnerMultiSig,
+        MPVToken _mpvToken
     ) public initializer {
         require(_redemptionFeeReceiverWallet != address(0));
         redemptionFee = _redemptionFee;
         redemptionFeeReceiverWallet = _redemptionFeeReceiverWallet;
-        mpvToken = _mpvToken;
+        redemptionAdminRole = _redemptionAdminRole;
+        redemptionMultiSig = _redemptionMultiSig;
         basicOwnerMultiSig = _basicOwnerMultiSig;
+        mpvToken = _mpvToken;
     }
 
     function setRedemptionFee(uint256 fee)
@@ -147,16 +161,38 @@ contract Assets is Initializable {
         }
     }
 
-    function requestRedemption(uint256 assetId) public {
+    function requestRedemption(uint256 assetId)
+    public returns (uint256 transactionId)
+    {
         Asset storage asset = assets[assetId];
         require(asset.status == Status.ENLISTED);
-        uint256 tokensRequired = asset.tokens.add(redemptionFee);
 
         require(mpvToken.transferFrom(msg.sender, address(this), asset.tokens));
         require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
 
-        redemptionTokenLocks[msg.sender] = redemptionTokenLocks[msg.sender].add(asset.tokens);
+        bytes memory data = abi.encodeWithSelector(
+            redemptionAdminRole.startBurningCountdown.selector,
+            assetId
+        );
+        uint256 transactionId = redemptionMultiSig.addTransaction(address(redemptionAdminRole), data);
+
+        redemptionTokenLocks[assetId] = RedemptionTokenLock(asset.tokens, msg.sender, transactionId);
         asset.status = Assets.Status.LOCKED;
-        emit RedemptionRequested(assetId, msg.sender);
+
+        emit RedemptionRequested(assetId, msg.sender, asset.tokens, redemptionFee, transactionId);
+    }
+
+    function cancelRedemption(uint256 assetId) public {
+        Asset storage asset = assets[assetId];
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+        require(asset.status == Status.LOCKED);
+        require(redemptionMultiSig.getConfirmationCount(tokenLock.transactionId) == 0);
+        require(tokenLock.account == msg.sender);
+
+        mpvToken.transfer(msg.sender, tokenLock.amount);
+        asset.status = Status.ENLISTED;
+        emit RedemptionCancelled(assetId, msg.sender, tokenLock.amount);
+        delete redemptionTokenLocks[assetId];
     }
 }

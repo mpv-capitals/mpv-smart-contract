@@ -77,8 +77,10 @@ async function initContracts (accounts) {
   await assets.initialize(
     1000,
     redemptionFeeReceiverWallet,
-    mpvToken.address,
-    basicOwnerMultiSig.address
+    redemptionAdminRole.address,
+    redemptionAdminMultiSig.address,
+    basicOwnerMultiSig.address,
+    mpvToken.address
   )
 
   await superOwnerRole.initialize(
