@@ -12,10 +12,7 @@ contract SuperOwnerRole is Initializable {
     uint256 public superOwnerActionCountdownLength;
     uint256 public basicOwnerActionCountdownLength;
     uint256 public whitelistRemovalActionCountdownLength;
-    uint256 public mintingActionCountdownLength;
     uint256 public burningActionCountdownLength;
-
-    address public mintingReceiverWallet;
 
     modifier onlyMultiSig() {
         require(address(multiSig) == msg.sender);
@@ -23,21 +20,15 @@ contract SuperOwnerRole is Initializable {
     }
 
     function initialize(
-        IMultiSigWallet _multiSig,
-        address _mintingReceiverWallet
+        IMultiSigWallet _multiSig
     ) public initializer {
-        require(_mintingReceiverWallet != address(0));
-
         multiSig = _multiSig;
-        mintingReceiverWallet = _mintingReceiverWallet;
 
         transferLimitChangeCountdownLength = 48 hours;
         delayedTransferCountdownLength = 48 hours;
         superOwnerActionCountdownLength = 48 hours;
         basicOwnerActionCountdownLength = 48 hours;
         whitelistRemovalActionCountdownLength = 48 hours;
-        mintingActionCountdownLength = 48 hours;
-        burningActionCountdownLength = 48 hours;
     }
 
     function setTransferLimitChangeCountdownLength(
@@ -92,15 +83,5 @@ contract SuperOwnerRole is Initializable {
     onlyMultiSig
     {
         burningActionCountdownLength = newCountdown;
-    }
-
-    function setMintingReceiverWallet(
-        address newWallet
-    )
-    public
-    onlyMultiSig
-    {
-        require(newWallet != address(0));
-        mintingReceiverWallet = newWallet;
     }
 }

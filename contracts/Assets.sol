@@ -4,12 +4,15 @@ pragma experimental ABIEncoderV2;
 import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "./MPVToken.sol";
+import "./IMultiSigWallet.sol";
+import "./RedemptionAdminRole.sol";
 
 
 contract Assets is Initializable {
     using SafeMath for uint256;
 
-    event RedemptionRequested(uint256 assetId, address account);
+    event RedemptionRequested(uint256 assetId, address account, uint256 burnAmount, uint256 redemptionFee, uint256 transactionId);
+    event RedemptionCancelled(uint256 assetId, address account, uint256 refundAmount);
 
     // Asset is the structure for an asset.
     struct Asset {
@@ -35,6 +38,12 @@ contract Assets is Initializable {
         Status[] statusEvents;
     }
 
+    struct RedemptionTokenLock {
+        uint256 amount;
+        address account;
+        uint256 transactionId;
+    }
+
     // Status is the possible states for an asset.
     enum Status {
         // Pending is when the asset has been newly added and is pending approval by minting admins.
@@ -48,58 +57,68 @@ contract Assets is Initializable {
         LOCKED,
 
         // Redeemed is when the asset has been redeemed by a user.
-        REDEEMED
+        REDEEMED,
+
+        // Reserved is when the asset is temporarily reserved from redemption.
+        RESERVED
     }
 
     mapping (uint256 => Asset) public assets;
-    mapping (address => uint256) public redemptionTokenLocks;
+    mapping (uint256 => RedemptionTokenLock) public redemptionTokenLocks;
 
     MPVToken mpvToken;
 
     uint256 public redemptionFee;
     address public redemptionFeeReceiverWallet;
+    RedemptionAdminRole public redemptionAdminRole;
+    IMultiSigWallet public redemptionMultiSig;
 
     Asset[] public pendingAssets;
     uint256 public pendingAssetsTransactionId;
 
     address public superOwnerMultiSig;
     address public mintingAdminRole;
-
-    modifier onlySuperOwnerMultiSig() {
-        require(superOwnerMultiSig == msg.sender);
-        _;
-    }
+    IMultiSigWallet public basicOwnerMultiSig;
 
     modifier onlyMintingAdminRole() {
         require(mintingAdminRole == msg.sender);
         _;
     }
 
+    modifier onlyBasicOwnerMultiSig() {
+        require(address(basicOwnerMultiSig) == msg.sender);
+        _;
+    }
+
     function initialize(
         uint256 _redemptionFee,
         address _redemptionFeeReceiverWallet,
-        MPVToken _mpvToken,
-        address _superOwnerMultiSig,
-        address _mintingAdminRole
+        address _mintingAdminRole,
+        RedemptionAdminRole _redemptionAdminRole,
+        IMultiSigWallet _redemptionMultiSig,
+        IMultiSigWallet _basicOwnerMultiSig,
+        MPVToken _mpvToken
     ) public initializer {
         require(_redemptionFeeReceiverWallet != address(0));
         redemptionFee = _redemptionFee;
         redemptionFeeReceiverWallet = _redemptionFeeReceiverWallet;
-        mpvToken = _mpvToken;
-        superOwnerMultiSig = _superOwnerMultiSig;
         mintingAdminRole = _mintingAdminRole;
+        redemptionAdminRole = _redemptionAdminRole;
+        redemptionMultiSig = _redemptionMultiSig;
+        basicOwnerMultiSig = _basicOwnerMultiSig;
+        mpvToken = _mpvToken;
     }
 
     function setRedemptionFee(uint256 fee)
     public
-    onlySuperOwnerMultiSig
+    onlyBasicOwnerMultiSig
     {
         redemptionFee = fee;
     }
 
     function setRedemptionFeeReceiverWallet(address wallet)
     public
-    onlySuperOwnerMultiSig
+    onlyBasicOwnerMultiSig
     {
         require(wallet != address(0));
         redemptionFeeReceiverWallet = wallet;
@@ -159,17 +178,73 @@ contract Assets is Initializable {
         }
     }
 
-    function requestRedemption(uint256 assetId) public {
+    function requestRedemption(uint256 assetId)
+    public returns (uint256 transactionId)
+    {
         Asset storage asset = assets[assetId];
         require(asset.status == Status.ENLISTED);
-        uint256 tokensRequired = asset.tokens.add(redemptionFee);
-
         require(mpvToken.transferFrom(msg.sender, address(this), asset.tokens));
-        require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
 
-        redemptionTokenLocks[msg.sender] = redemptionTokenLocks[msg.sender].add(asset.tokens);
+        if (redemptionFee > 0) {
+            require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
+        }
+
+        bytes memory data = abi.encodeWithSelector(
+            redemptionAdminRole.startBurningCountdown.selector,
+            assetId
+        );
+        transactionId = redemptionMultiSig.addTransaction(address(redemptionAdminRole), data);
+
+        redemptionTokenLocks[assetId] = RedemptionTokenLock(asset.tokens, msg.sender, transactionId);
         asset.status = Assets.Status.LOCKED;
-        emit RedemptionRequested(assetId, msg.sender);
+
+        emit RedemptionRequested(assetId, msg.sender, asset.tokens, redemptionFee, transactionId);
+    }
+
+    function cancelRedemption(uint256 assetId) public {
+        Asset storage asset = assets[assetId];
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+        require(asset.status == Status.LOCKED);
+        require(redemptionMultiSig.getConfirmationCount(tokenLock.transactionId) == 0);
+        require(tokenLock.account == msg.sender);
+
+        mpvToken.transfer(msg.sender, tokenLock.amount);
+        asset.status = Status.ENLISTED;
+        emit RedemptionCancelled(assetId, msg.sender, tokenLock.amount);
+        delete redemptionTokenLocks[assetId];
+    }
+
+    function setReserved(uint256[] memory assetIds)
+    public
+    onlyBasicOwnerMultiSig
+    {
+        for (uint256 i = 0; i < assetIds.length; i++) {
+            _setReserved(assetIds[i]);
+        }
+    }
+
+    function _setReserved(uint256 assetId)
+    internal
+    {
+       require(assets[assetId].status == Status.ENLISTED);
+       assets[assetId].status = Status.RESERVED;
+    }
+
+    function setEnlisted(uint256[] memory assetIds)
+    public
+    onlyBasicOwnerMultiSig
+    {
+        for (uint256 i = 0; i < assetIds.length; i++) {
+            _setEnlisted(assetIds[i]);
+        }
+    }
+
+    function _setEnlisted(uint256 assetId)
+    internal
+    {
+       require(assets[assetId].status == Status.RESERVED);
+       assets[assetId].status = Status.ENLISTED;
     }
 
     function pendingAssetsCount() public returns (uint256) {
