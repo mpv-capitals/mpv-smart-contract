@@ -180,7 +180,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
             confirmations[transactionId][owners[i]] = false;
         }
 
-        emit Revocation(msg.sender, transactionId);
+        emit RevokeAll(msg.sender, transactionId);
     }
 
     /// @dev Allows anyone to execute a confirmed transaction.
