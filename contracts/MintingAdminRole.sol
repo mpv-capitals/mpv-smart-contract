@@ -176,6 +176,7 @@ contract MintingAdminRole is Initializable {
     public
     onlyBasicOwnerRole
     {
+        require(mintingCountdownStart > 0);
         multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
         mintingCountdownStart = 0;
     }

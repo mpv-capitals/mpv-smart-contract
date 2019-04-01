@@ -6,44 +6,80 @@
 [![CircleCI](https://circleci.com/gh/levelkdev/master-property-value-token.svg?style=svg)](https://circleci.com/gh/levelkdev/master-property-value-token)
 [![dependencies Status](https://david-dm.org/levelkdev/master-property-value-token/status.svg)](https://david-dm.org/levelkdev/master-property-value-token)
 
-## Install
+## Development
+
+Instructions for getting started:
+
+### Install
+
+Install dependencies:
 
 ```bash
 make install
 ```
 
-## Ganache
+### Ganache
+
+Start [ganache-cli](https://github.com/trufflesuite/ganache-cli):
 
 ```bash
 make start
 ```
 
-## Test
+### Lint
 
-```bash
-make test
-```
-
-## Lint
+Perform [standard](https://standardjs.com/) linting on tests files and [solhint](https://github.com/protofire/solhint) linting on solidity contracts:
 
 ```bash
 make lint
 ```
 
-## Deploy
+## Test
 
-First create a `.env` file with either a `MNEMONIC` or `PRIVATE_KEY` variable to export.
+Run all tests (requires ganache to be running):
 
 ```bash
-make deploy network=mainnet
+make test
 ```
+
+## Deploy
+
+For deployment:
+
+  - First create a `.env` file with either a `MNEMONIC` or `PRIVATE_KEY` variable to export.
+
+    ```bash
+    MNEMONIC='myth like bonus scare over problem client lizard pioneer submit female collect'
+    # or
+    PRIVATEK_KEY=0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d
+    ```
+  - Run deploy make rule passing in the desired network to deploy to:
+
+    ```bash
+    make deploy network=mainnet
+    ```
 
 ## Documentation
 
+Compile solidity documentation:
+
 ```bash
-make docs && make docs/site/build
+make docs
 ```
 
+Build [docusaurus](https://docusaurus.io/) website:
+
+```bash
+make docs/site/build
+```
+
+The output will be in `docs/build` which you can deploy.
+
+You can also run docs website locally:
+
+```bash
+make docs/site/start
+```
 
 ## License
 
