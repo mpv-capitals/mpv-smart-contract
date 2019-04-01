@@ -857,7 +857,7 @@ contract('MasterPropertyValue', accounts => {
       pendingAssetsCount.toNumber().should.equal(0)
 
       asset = await assets.get.call(1)
-      asset.tokens.should.equal('100')
+      asset.tokens.toNumber().should.equal(100)
     })
 
     it('reset pending asset votes', async () => {
@@ -1067,7 +1067,7 @@ contract('MasterPropertyValue', accounts => {
         from: defaultMintingAdmin,
       })
       let asset = await assets.get.call(1)
-      asset.status.should.equal(Status.Enlisted.toString())
+      asset.status.toNumber().should.equal(Status.Enlisted)
 
       const data = encodeCall(
         'setReserved',
@@ -1080,7 +1080,7 @@ contract('MasterPropertyValue', accounts => {
       })
 
       asset = await assets.get.call(1)
-      asset.status.should.equal(Status.Reserved.toString())
+      asset.status.toNumber().should.equal(Status.Reserved)
     })
 
     it('set asset from reserved to enlisted status', async () => {
@@ -1121,7 +1121,7 @@ contract('MasterPropertyValue', accounts => {
       })
 
       let asset = await assets.get.call(1)
-      asset.status.should.equal(Status.Reserved.toString())
+      asset.status.toNumber().should.equal(Status.Reserved)
 
       data = encodeCall(
         'setEnlisted',
@@ -1134,7 +1134,7 @@ contract('MasterPropertyValue', accounts => {
       })
 
       asset = await assets.get.call(1)
-      asset.status.should.equal(Status.Enlisted.toString())
+      asset.status.toNumber().should.equal(Status.Enlisted)
     })
   })
 })

@@ -32,6 +32,8 @@ contract Assets is Initializable {
         uint256 refundAmount
     );
 
+    event RedemptionRejected(uint256 assetId, address account, uint256 refundAmount);
+
     /*
      *  Storage
      */
@@ -110,6 +112,11 @@ contract Assets is Initializable {
         _;
     }
 
+    modifier onlyRedemptionAdminRole() {
+        require(address(redemptionAdminRole) == msg.sender);
+        _;
+    }
+
     /// @dev Requires that the sender is the basic owner multisig contract.
     modifier onlyBasicOwnerMultiSig() {
         require(address(basicOwnerMultiSig) == msg.sender);
@@ -177,6 +184,26 @@ contract Assets is Initializable {
     {
         require(assets[asset.id].id == 0);
         assets[asset.id] = asset;
+    }
+
+    /// @dev Get an asset given the asset id. Transaction can be called by anyone.
+    /// @param id Id of asset.
+    /// @return Returns the asset parameters.
+    function get(uint256 assetId) public returns (
+        uint256 id,
+        Status status,
+        bytes32 notarizationId,
+        uint256 tokens,
+        address owner,
+        uint256 timestamp
+    ) {
+        Asset storage asset = assets[assetId];
+        id = asset.id;
+        status = asset.status;
+        notarizationId = asset.notarizationId;
+        tokens = asset.tokens;
+        owner = asset.owner;
+        timestamp = timestamp;
     }
 
     /// @dev Add a list of a new assets to the assets map. Transaction has to
@@ -273,11 +300,22 @@ contract Assets is Initializable {
         require(asset.status == Status.Locked);
         require(redemptionMultiSig.getConfirmationCount(tokenLock.transactionId) == 0);
         require(tokenLock.account == msg.sender);
-
-        mpvToken.transfer(msg.sender, tokenLock.amount);
-        asset.status = Status.Enlisted;
         emit RedemptionCancelled(assetId, msg.sender, tokenLock.amount);
-        delete redemptionTokenLocks[assetId];
+        _revokeRedemption(assetId);
+    }
+
+    /// @dev Reject an asset redemption request. Locked tokens will be unlocked.
+    /// Transaction has be sent by a redemptionAdminRole owner.
+    /// @param assetId Id of asset to cancel redemption of.
+    function rejectRedemption(uint256 assetId)
+    public
+    onlyRedemptionAdminRole {
+        Asset storage asset = assets[assetId];
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+        require(asset.status == Status.Locked);
+        emit RedemptionRejected(assetId, tokenLock.account, tokenLock.amount);
+        _revokeRedemption(assetId);
     }
 
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by
@@ -302,13 +340,6 @@ contract Assets is Initializable {
         for (uint256 i = 0; i < assetIds.length; i++) {
             _setEnlisted(assetIds[i]);
         }
-    }
-
-    /// @dev Get an asset given the asset id. Transaction can be called by anyone.
-    /// @param id Id of asset.
-    /// @return Returns the asset structure.
-    function get(uint256 id) public returns (Asset memory) {
-        return assets[id];
     }
 
     /// @dev Get the count of pending assets. Transaction can be called by anyone.
@@ -340,5 +371,18 @@ contract Assets is Initializable {
     internal {
         require(assets[assetId].status == Status.Reserved);
         assets[assetId].status = Status.Enlisted;
+    }
+
+    /// @dev sets asset.status back to Enlisted and refunds tokens to redeemer
+    /// @param assetId Id of asset.
+    function _revokeRedemption(uint256 assetId)
+    internal
+    {
+        Asset storage asset = assets[assetId];
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+        mpvToken.transfer(tokenLock.account, tokenLock.amount);
+        asset.status = Status.Enlisted;
+        delete redemptionTokenLocks[assetId];
     }
 }

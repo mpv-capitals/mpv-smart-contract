@@ -28,14 +28,17 @@ contract('Assets', accounts => {
     whitelistedAccts = [accounts[0], accounts[1], accounts[2]]
     whitelist = await initializeWhitelist(multiSig)
     await whitelist.addWhitelisted(redemptionFeeReceiverWallet)
-    basicOwnerMultiSig = accounts[5]
+    basicOwnerMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
   })
 
   beforeEach(async () => {
+    // Setup redemptionAdminRole
     redemptionAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
     redemptionAdminRole = await RedemptionAdminRole.new()
+
+    // Initialize token, assets, and redemptionAdminRole
     mpvToken = await initializeToken()
-    assets = await initializeAssets(basicOwnerMultiSig)
+    assets = await initializeAssets(basicOwnerMultiSig.address)
     redemptionAdminRole.initialize(
       redemptionAdminMultiSig.address,
       assets.address
@@ -45,23 +48,27 @@ contract('Assets', accounts => {
 
   describe('setRedemptionFee()', () => {
     it('properly sets redemptionFee to the given value', async () => {
-      (await assets.redemptionFee()).toNumber().should.equal(REDEMPTION_FEE)
-      await assets.setRedemptionFee(500, {
-        from: basicOwnerMultiSig,
-      })
-      const newFee = (await assets.redemptionFee()).toNumber()
+      // initialize assets contract with accessible basicOwnerMultSig for testing
+      const multiSig = accounts[1]
+      const assetsB = await initializeAssets(multiSig)
+      expect((await assetsB.redemptionFee()).toNumber()).to.equal(REDEMPTION_FEE)
+      await assetsB.setRedemptionFee(500, { from: multiSig })
+      const newFee = (await assetsB.redemptionFee()).toNumber()
       newFee.should.equal(500)
     })
   })
 
   describe('setRedemptionFeeReceiverWallet()', () => {
     it('properly sets setRedemptionFeeReceiverWallet to the given value', async () => {
-      const defaultAddr = await assets.redemptionFeeReceiverWallet()
+      // initialize assets contract with accessible basicOwnerMultSig for testing
+      const multiSig = accounts[1]
+      const assetsB = await initializeAssets(multiSig)
+      const defaultAddr = await assetsB.redemptionFeeReceiverWallet()
       defaultAddr.should.equal(redemptionFeeReceiverWallet)
-      await assets.setRedemptionFeeReceiverWallet(accounts[5], {
-        from: basicOwnerMultiSig,
+      await assetsB.setRedemptionFeeReceiverWallet(accounts[5], {
+        from: multiSig,
       })
-      const newAddr = await assets.redemptionFeeReceiverWallet()
+      const newAddr = await assetsB.redemptionFeeReceiverWallet()
       newAddr.should.equal(accounts[5])
     })
   })
@@ -251,6 +258,80 @@ contract('Assets', accounts => {
 
       await assets.add(enlistedAsset)
       await shouldFail(assets.cancelRedemption(2))
+    })
+  })
+
+  describe('rejectRedemption()', () => {
+    let newAsset, redeemer
+    beforeEach(async () => {
+      const now = moment().unix()
+      redeemer = accounts[0]
+      newAsset = {
+        id: 1,
+        notarizationId: '0xabcd',
+        tokens: 100 * MULTIPLIER,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }
+      await assets.add(newAsset)
+      await mintTokens(accounts[0], 200 * MULTIPLIER)
+      await mpvToken.approve(assets.address, 200 * MULTIPLIER, { from: accounts[0] })
+      await assets.requestRedemption(1, { from: accounts[0] })
+    })
+
+    it('sets the asset status back to ENLISTED', async () => {
+      const locked = 2
+      const enlisted = 1
+      expect((await assets.assets(1)).status.toNumber()).to.equal(locked)
+      await redemptionAdminRole.rejectRedemption(1)
+      expect((await assets.assets(1)).status.toNumber()).to.equal(enlisted)
+    })
+
+    it('transfers the redemption token amount back to the requesting account', async () => {
+      const refund = newAsset.tokens
+
+      const previousAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
+      const previousAcctBalance = (await mpvToken.balanceOf(redeemer)).toNumber()
+
+      await redemptionAdminRole.rejectRedemption(1)
+
+      const currentAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
+      const currentAcctBalance = (await mpvToken.balanceOf(redeemer)).toNumber()
+
+      expect(previousAssetsBalance - currentAssetsBalance).to.equal(refund)
+      expect(currentAcctBalance - previousAcctBalance).to.equal(refund)
+    })
+
+    it('deletes the redemptionTokenLock info', async () => {
+      let redemptionTokenLock = await assets.redemptionTokenLocks(1)
+      expect(redemptionTokenLock.account).to.equal(redeemer)
+      expect(redemptionTokenLock.amount.toNumber()).to.equal(newAsset.tokens)
+
+      await redemptionAdminRole.rejectRedemption(1)
+
+      redemptionTokenLock = await assets.redemptionTokenLocks(1)
+
+      expect(redemptionTokenLock.account).to.equal(ZERO_ADDR)
+      expect(redemptionTokenLock.amount.toNumber()).to.equal(0)
+    })
+
+    it('reverts if the asset status it not LOCKED', async () => {
+      const enlistedAsset = {
+        id: 2,
+        notarizationId: '0xabcd',
+        tokens: 100 * MULTIPLIER,
+        status: 1,
+        owner: accounts[0],
+        timestamp: moment().unix(),
+      }
+
+      await assets.add(enlistedAsset)
+      await shouldFail(redemptionAdminRole.rejectRedemption(2))
+    })
+
+    it('reverts if called by address other than redemptionAdminRole', async () => {
+      await shouldFail(assets.rejectRedemption(1))
     })
   })
 

@@ -4,7 +4,6 @@ import "zos-lib/contracts/Initializable.sol";
 import "./IMultiSigWallet.sol";
 import "./MintingAdminRole.sol";
 
-
 /**
  * @title BasicOwnerRole
  * @dev Basic owner role contract.
