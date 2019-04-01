@@ -18,8 +18,19 @@ contract Assets is Initializable {
     /*
      *  Events
      */
-    event RedemptionRequested(uint256 assetId, address account, uint256 burnAmount, uint256 redemptionFee, uint256 transactionId);
-    event RedemptionCancelled(uint256 assetId, address account, uint256 refundAmount);
+    event RedemptionRequested(
+        uint256 assetId,
+        address account,
+        uint256 burnAmount,
+        uint256 redemptionFee,
+        uint256 transactionId
+    );
+
+    event RedemptionCancelled(
+        uint256 assetId,
+        address account,
+        uint256 refundAmount
+    );
 
     /*
      *  Storage
@@ -35,7 +46,7 @@ contract Assets is Initializable {
     address public superOwnerMultiSig;
     IMultiSigWallet public basicOwnerMultiSig;
     IMultiSigWallet public redemptionMultiSig;
-    MPVToken mpvToken;
+    MPVToken public mpvToken;
 
     /// @dev Asset is the structure for an asset.
     struct Asset {
@@ -73,7 +84,8 @@ contract Assets is Initializable {
 
     // @dev Status is an enum representing the possible states for an asset.
     enum Status {
-        /// @dev Pending is when the asset has been newly added and is pending approval by minting admins. Pending is the default state.
+        /// @dev Pending is when the asset has been newly added and is
+        /// pending approval by minting admins. Pending is the default state.
         Pending,
 
         /// @dev Enlisted is when the asset has been approved and added by minting admins.
@@ -160,8 +172,8 @@ contract Assets is Initializable {
     /// the minting admin role contract.
     /// @param asset Asset to add.
     function add(Asset memory asset)
-    onlyMintingAdminRole
     public
+    onlyMintingAdminRole
     {
         require(assets[asset.id].id == 0);
         assets[asset.id] = asset;
@@ -317,18 +329,16 @@ contract Assets is Initializable {
     /// @dev Sets an enlisted asset as reserved.
     /// @param assetId Id of asset.
     function _setReserved(uint256 assetId)
-    internal
-    {
-       require(assets[assetId].status == Status.Enlisted);
-       assets[assetId].status = Status.Reserved;
+    internal {
+        require(assets[assetId].status == Status.Enlisted);
+        assets[assetId].status = Status.Reserved;
     }
 
     /// @dev Sets a reserved asset as enlisted.
     /// @param assetId Id of asset.
     function _setEnlisted(uint256 assetId)
-    internal
-    {
-       require(assets[assetId].status == Status.Reserved);
-       assets[assetId].status = Status.Enlisted;
+    internal {
+        require(assets[assetId].status == Status.Reserved);
+        assets[assetId].status = Status.Enlisted;
     }
 }

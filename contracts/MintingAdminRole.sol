@@ -93,7 +93,9 @@ contract MintingAdminRole is Initializable {
         mintingActionCountdownLength = newCountdown;
     }
 
-    /// @dev Add asset to list of pending assets. Submits a multisig transaction and returns the transaction id. Transaction has to be sent by a minting admin.
+    /// @dev Add asset to list of pending assets. Submits a multisig
+    /// transaction and returns the transaction id. Transaction has to be
+    /// sent by a minting admin.
     /// @param _asset Asset to add as pending.
     /// @return Returns transaction ID.
     function addPendingAsset(Assets.Asset memory _asset)
