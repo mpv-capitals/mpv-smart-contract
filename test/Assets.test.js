@@ -76,7 +76,6 @@ contract('Assets', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: now,
-        statusEvents: [],
       }
 
       expect((await assets.assets(5)).id.toNumber()).to.equal(0)
@@ -102,7 +101,6 @@ contract('Assets', accounts => {
         status: 1,
         owner: accounts[0],
         timestamp: now,
-        statusEvents: [],
       }
       await assets.add(newAsset)
       await mintTokens(accounts[0], 200 * MULTIPLIER)
@@ -131,7 +129,6 @@ contract('Assets', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
-        statusEvents: [],
       }
 
       await assets.add(invalidAsset)
@@ -199,7 +196,6 @@ contract('Assets', accounts => {
         status: 1,
         owner: accounts[0],
         timestamp:  now,
-        statusEvents: [],
       }
       await assets.add(newAsset)
       await mintTokens(accounts[0], 200 * MULTIPLIER)
@@ -251,7 +247,6 @@ contract('Assets', accounts => {
         status: 1,
         owner: accounts[0],
         timestamp:  moment().unix(),
-        statusEvents: [],
       }
 
       await assets.add(enlistedAsset)

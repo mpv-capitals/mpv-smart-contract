@@ -3,7 +3,15 @@ pragma solidity ^0.5.1;
 import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
 
 
+/**
+ * @title AdministeredMultiSigWallet
+ * @dev An Administered MultiSigWallet where an admin account is authorized to
+ * submit transactions on behalf of the owner.
+ */
 contract AdministeredMultiSigWallet is BaseMultiSigWallet {
+    /*
+     *  Storage
+     */
     /// admin is the account or multisig able to submit transaction on
     /// behalf of this multisig.
     address public admin;
@@ -19,21 +27,33 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     /// we want in this case.
     address public transactor;
 
+    /*
+     *  Modifiers
+     */
+    /// @dev Requires sender to be the admin.
     modifier onlyAdmin() {
         require(msg.sender == admin);
         _;
     }
 
+    /// @dev Requires that the sender is an owner.
     modifier ownerExists(address owner) {
         require(isOwner[owner]);
         _;
     }
 
+    /// @dev Requires that the sender is the transactor account.
     modifier onlyTransactor() {
         require(transactor == msg.sender);
         _;
     }
 
+    /*
+     *  Public functions
+     */
+    /// @dev Contract constructor sets initial owners and required number of confirmations.
+    /// @param _owners List of initial owners.
+    /// @param _required Number of required confirmations.
     constructor(address[] memory _owners, uint _required)
     public
     BaseMultiSigWallet(_owners, _required)
@@ -41,6 +61,9 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         admin = msg.sender;
     }
 
+    /// @dev Sets an account to be the new admin. Transaction must be sent
+    /// from the current admin account.
+    /// @param _admin Address of new admin account.
     function setAdmin(address _admin)
     public
     onlyAdmin
@@ -48,6 +71,9 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         admin = _admin;
     }
 
+    /// @dev Sets an account to be the new transactor account. Transaction must
+    /// be sent from the current admin account.
+    /// @param _transactor Address of new transactor account.
     function setTransactor(address _transactor)
     public
     onlyAdmin
@@ -55,6 +81,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         transactor = _transactor;
     }
 
+    /// @dev Allows to add an owner. Transaction has to be sent by admin.
+    /// @param owner Address of owner.
     function addOwner(address owner)
     public
     onlyAdmin
@@ -63,6 +91,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         super.addOwner(owner);
     }
 
+    /// @dev Allows to remove an owner. Transaction has to be sent by admin.
+    /// @param owner Address of owner.
     function removeOwner(address owner)
     public
     onlyAdmin
@@ -75,6 +105,10 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         super.removeOwner(owner);
     }
 
+    /// @dev Allows to replace an owner with a new owner. Transaction has to be
+    /// sent by admin.
+    /// @param owner Address of owner to be replaced.
+    /// @param newOwner Address of new owner.
     function replaceOwner(address owner, address newOwner)
     public
     onlyAdmin
@@ -83,6 +117,9 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         super.replaceOwner(owner, newOwner);
     }
 
+    /// @dev Allows to change the number of required confirmations. Transaction
+    /// has to be sent by admin.
+    /// @param _required Number of required confirmations.
     function changeRequirement(uint _required)
     public
     onlyAdmin
@@ -91,6 +128,11 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         super.changeRequirement(_required);
     }
 
+    /// @dev Adds a new transaction to the transaction mapping, if transaction
+    /// does not exist yet. Transaction has to be sent by transactor account.
+    /// @param destination Transaction target address.
+    /// @param data Transaction data payload.
+    /// @return Returns transaction ID.
     function addTransaction(address destination, bytes memory data)
     public
     onlyTransactor
@@ -99,6 +141,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         return addTransaction(destination, 0, data);
     }
 
+    /// @dev Allows an owner to confirm a transaction.
+    /// @param transactionId Transaction ID.
     function confirmTransaction(uint transactionId)
     public
     ownerExists(msg.sender)
@@ -106,6 +150,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         super.confirmTransaction(transactionId);
     }
 
+    /// @dev Allows an owner to revoke a confirmation for a transaction.
+    /// @param transactionId Transaction ID.
     function revokeConfirmation(uint transactionId)
     public
     ownerExists(msg.sender)
@@ -122,6 +168,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         }
     }
 
+    /// @dev Allows anyone to execute a confirmed transaction.
+    /// @param transactionId Transaction ID.
     function executeTransaction(uint transactionId)
     public
     ownerExists(msg.sender)

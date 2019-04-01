@@ -38,6 +38,12 @@ First create a `.env` file with either a `MNEMONIC` or `PRIVATE_KEY` variable to
 make deploy network=mainnet
 ```
 
+## Documentation
+
+```bash
+make docs && make docs/site/build
+```
+
 
 ## License
 

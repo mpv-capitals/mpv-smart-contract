@@ -1,0 +1,44 @@
+{
+  "docs": {
+    "Docusaurus": [
+      "doc1"
+    ],
+    "First Category": [
+      "doc2"
+    ],
+    "Second Category": [
+      "doc3"
+    ]
+  },
+  "docs-other": {
+    "First Category": [
+      "doc4",
+      "doc5"
+    ]
+  },
+  "docs-api": {
+    "BASEMULTISIGWALLET": [
+      "BaseMultiSigWallet_BaseFactory",
+      "BaseMultiSigWallet_BaseMultiSigWallet",
+      "BaseMultiSigWallet_BaseMultiSigWalletFactory",
+      "BaseMultiSigWallet_BaseMultiSigWalletWithDailyLimit",
+      "BaseMultiSigWallet_BaseMultiSigWalletWithDailyLimitFactory"
+    ],
+    "UNCATEGORIZED": [
+      "AdministeredMultiSigWallet",
+      "Assets",
+      "BasicOwnerRole",
+      "IMultiSigWallet",
+      "IWhitelist",
+      "MPVAccessControl",
+      "MPVToken",
+      "MasterPropertyValue",
+      "MintingAdminRole",
+      "OperationAdminRole",
+      "Pausable",
+      "RedemptionAdminRole",
+      "SuperOwnerRole",
+      "Whitelist"
+    ]
+  }
+}

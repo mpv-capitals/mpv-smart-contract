@@ -5,17 +5,34 @@ import "./IMultiSigWallet.sol";
 import "./MPVToken.sol";
 import "./Assets.sol";
 
+/**
+ * @title RedemptionAdminRole
+ * @dev Redemption admin role contract.
+ */
 contract RedemptionAdminRole is Initializable {
+    /*
+     *  Storage
+     */
     IMultiSigWallet public multiSig;
-    Assets assets;
+    Assets public assets;
     uint256 public burningActionCountdownLength;
     mapping(uint256 => uint256) public redemptionCountdowns;
 
+    /*
+     *  Modifiers
+     */
+    /// @dev Requires the sender to be the redemption admin multisig contract.
     modifier onlyRedemptionAdminMultiSig() {
         require(address(multiSig) == msg.sender);
         _;
     }
 
+    /*
+     * Public functions
+     */
+    /// @dev Initialize function sets initial storage values.
+    /// @param _multiSig Address of the redemption admin multisig contract.
+    /// @param _assets Address of the assets contract.
     function initialize(
         IMultiSigWallet _multiSig,
         Assets _assets
@@ -25,8 +42,12 @@ contract RedemptionAdminRole is Initializable {
         burningActionCountdownLength = 48 hours;
     }
 
+    /// @dev Start the countdown to initiate burning of tokens. Transaction has
+    /// to be sent by the redemption admin multisig.
+    /// @param assetId Id of asset being redeemed.
     function startBurningCountdown(uint256 assetId)
-    public onlyRedemptionAdminMultiSig
+    public
+    onlyRedemptionAdminMultiSig
     {
         redemptionCountdowns[assetId] = now;
     }
