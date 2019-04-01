@@ -3,7 +3,7 @@
 > Ethereum smart contracts for Master Property Value assets
 
 [![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/levelkdev/master-property-value-token/master/LICENSE)
-[![CircleCI](https://circleci.com/gh/levelkdev/master-property-value-token.svg?style=svg)](https://circleci.com/gh/levelkdev/master-property-value-token)
+[![CircleCI](https://circleci.com/gh/levelkdev/master-property-value-token.svg?style=svg&circle-token=b94fe4a0faefdcfdbfef6b1516e77c262dd41a08)](https://circleci.com/gh/levelkdev/master-property-value-token)
 [![dependencies Status](https://david-dm.org/levelkdev/master-property-value-token/status.svg)](https://david-dm.org/levelkdev/master-property-value-token)
 
 ## Development
