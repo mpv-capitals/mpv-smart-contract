@@ -12,6 +12,17 @@ import "./Assets.sol";
  */
 contract RedemptionAdminRole is Initializable {
     /*
+     *  Events
+     */
+    event BurningCountdownStarted(
+            address indexed sender,
+            uint256 indexed assetId,
+            uint256 indexed tokens
+    );
+
+    event RedemptionRejected(address indexed sender, uint256 indexed assetId);
+
+    /*
      *  Storage
      */
     IMultiSigWallet public multiSig;
@@ -56,16 +67,28 @@ contract RedemptionAdminRole is Initializable {
         public
         onlyRedemptionAdminMultiSig
     {
-        (, Assets.Status status, , , ,) =  assets.get(assetId);
+        (
+            ,/*id*/
+            Assets.Status status,
+            ,/*notarizationId*/
+            uint256 tokens,
+            ,/*owner*/
+            /*timestamp*/
+        ) =  assets.get(assetId);
 
         require(status == Assets.Status.Locked);
         redemptionCountdowns[assetId] = now;
+        emit BurningCountdownStarted(msg.sender, assetId, tokens);
     }
 
+    /// @dev Reject a redemption request. Transaction has to be sent by
+    /// a redemption admin.
+    /// @param assetId Id of asset being redeemed.
     function rejectRedemption(uint256 assetId)
         public
         onlyRedemptionAdminOwner
     {
         assets.rejectRedemption(assetId);
+        emit RedemptionRejected(msg.sender, assetId);
     }
 }

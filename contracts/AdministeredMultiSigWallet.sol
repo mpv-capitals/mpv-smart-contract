@@ -10,6 +10,13 @@ import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
  */
 contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     /*
+     *  Events
+     */
+    event RevokeAll(address indexed sender, uint256 indexed transactionId);
+    event AdminUpdated(address indexed sender, address indexed admin);
+    event TransactorUpdated(address indexed sender, address indexed transactor);
+
+    /*
      *  Storage
      */
     /// admin is the account or multisig able to submit transaction on
@@ -69,6 +76,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     onlyAdmin
     {
         admin = _admin;
+        emit AdminUpdated(msg.sender, _admin);
     }
 
     /// @dev Sets an account to be the new transactor account. Transaction must
@@ -79,6 +87,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     onlyAdmin
     {
         transactor = _transactor;
+        emit TransactorUpdated(msg.sender, _transactor);
     }
 
     /// @dev Allows to add an owner. Transaction has to be sent by admin.
@@ -159,6 +168,10 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         super.revokeConfirmation(transactionId);
     }
 
+    /// @dev Allows the transactor admin to revoke all confirmations for a
+    /// transaction id. This method is invoked when reseting confirmation votes
+    /// on cancelleation actions.
+    /// @param transactionId Transaction ID.
     function revokeAllConfirmations(uint256 transactionId)
     public
     onlyTransactor
@@ -166,6 +179,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         for (uint256 i=0; i < owners.length; i++) {
             confirmations[transactionId][owners[i]] = false;
         }
+
+        emit Revocation(msg.sender, transactionId);
     }
 
     /// @dev Allows anyone to execute a confirmed transaction.
