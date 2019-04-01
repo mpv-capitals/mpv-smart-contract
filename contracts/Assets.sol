@@ -20,6 +20,7 @@ contract Assets is Initializable {
      */
     event RedemptionRequested(uint256 assetId, address account, uint256 burnAmount, uint256 redemptionFee, uint256 transactionId);
     event RedemptionCancelled(uint256 assetId, address account, uint256 refundAmount);
+    event RedemptionRejected(uint256 assetId, address account, uint256 refundAmount);
 
     /*
      *  Storage
@@ -96,6 +97,11 @@ contract Assets is Initializable {
     modifier onlyMintingAdminRole() {
         require(mintingAdminRole == msg.sender);
         _;
+    }
+
+    modifier onlyRedemptionAdminRole() {
+      require(address(redemptionAdminRole) == msg.sender);
+      _;
     }
 
     /// @dev Requires that the sender is the basic owner multisig contract.
@@ -281,11 +287,29 @@ contract Assets is Initializable {
         require(asset.status == Status.Locked);
         require(redemptionMultiSig.getConfirmationCount(tokenLock.transactionId) == 0);
         require(tokenLock.account == msg.sender);
-
-        mpvToken.transfer(msg.sender, tokenLock.amount);
-        asset.status = Status.Enlisted;
         emit RedemptionCancelled(assetId, msg.sender, tokenLock.amount);
-        delete redemptionTokenLocks[assetId];
+        _revokeRedemption(assetId);
+    }
+
+    function rejectRedemption(uint256 assetId)
+    public
+    onlyRedemptionAdminRole {
+      Asset storage asset = assets[assetId];
+      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+      require(asset.status == Status.Locked);
+      emit RedemptionRejected(assetId, tokenLock.account, tokenLock.amount);
+      _revokeRedemption(assetId);
+    }
+
+    function _revokeRedemption(uint256 assetId)
+    internal {
+      Asset storage asset = assets[assetId];
+      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+      mpvToken.transfer(tokenLock.account, tokenLock.amount);
+      asset.status = Status.Enlisted;
+      delete redemptionTokenLocks[assetId];
     }
 
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by

@@ -17,7 +17,7 @@ const DAILY_LIMIT = 1000 * MULTIPLIER
 
 contract('Assets', accounts => {
   let whitelist, masterPropertyValue // needed for token setup
-  let assets, mpvToken, whitelistedAccts, basicOwnerMultiSig
+  let assets, mpvToken, whitelistedAccts, basicOwnerMultiSig, basicOwnerRole
   let redemptionFeeReceiverWallet, redemptionAdminMultiSig, redemptionAdminRole
 
   before(async () => {
@@ -28,14 +28,17 @@ contract('Assets', accounts => {
     whitelistedAccts = [accounts[0], accounts[1], accounts[2]]
     whitelist = await initializeWhitelist(multiSig)
     await whitelist.addWhitelisted(redemptionFeeReceiverWallet)
-    basicOwnerMultiSig = accounts[5]
+    basicOwnerMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
   })
 
   beforeEach(async () => {
+    // Setup redemptionAdminRole
     redemptionAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
     redemptionAdminRole = await RedemptionAdminRole.new()
+
+    // Initialize token, assets, and redemptionAdminRole
     mpvToken = await initializeToken()
-    assets = await initializeAssets(basicOwnerMultiSig)
+    assets = await initializeAssets(basicOwnerMultiSig.address)
     redemptionAdminRole.initialize(
       redemptionAdminMultiSig.address,
       assets.address
@@ -45,23 +48,27 @@ contract('Assets', accounts => {
 
   describe('setRedemptionFee()', () => {
     it('properly sets redemptionFee to the given value', async () => {
-      (await assets.redemptionFee()).toNumber().should.equal(REDEMPTION_FEE)
-      await assets.setRedemptionFee(500, {
-        from: basicOwnerMultiSig
-      })
-      const newFee = (await assets.redemptionFee()).toNumber()
+      // initialize assets contract with accessible basicOwnerMultSig for testing
+      const multiSig = accounts[1]
+      const assetsB = await initializeAssets(multiSig)
+      expect((await assetsB.redemptionFee()).toNumber()).to.equal(REDEMPTION_FEE)
+      await assetsB.setRedemptionFee(500, { from: multiSig })
+      const newFee = (await assetsB.redemptionFee()).toNumber()
       newFee.should.equal(500)
     })
   })
 
   describe('setRedemptionFeeReceiverWallet()', () => {
     it('properly sets setRedemptionFeeReceiverWallet to the given value', async () => {
-      const defaultAddr = await assets.redemptionFeeReceiverWallet()
+      // initialize assets contract with accessible basicOwnerMultSig for testing
+      const multiSig = accounts[1]
+      const assetsB = await initializeAssets(multiSig)
+      const defaultAddr = await assetsB.redemptionFeeReceiverWallet()
       defaultAddr.should.equal(redemptionFeeReceiverWallet)
-      await assets.setRedemptionFeeReceiverWallet(accounts[5], {
-        from: basicOwnerMultiSig
+      await assetsB.setRedemptionFeeReceiverWallet(accounts[5], {
+        from: multiSig
       })
-      const newAddr = await assets.redemptionFeeReceiverWallet()
+      const newAddr = await assetsB.redemptionFeeReceiverWallet()
       newAddr.should.equal(accounts[5])
     })
   })
