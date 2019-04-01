@@ -15,7 +15,7 @@ contract RedemptionAdminRole is Initializable {
      *  Storage
      */
     IMultiSigWallet public multiSig;
-    Assets assets;
+    Assets public assets;
     uint256 public burningActionCountdownLength;
     mapping(uint256 => uint256) public redemptionCountdowns;
 

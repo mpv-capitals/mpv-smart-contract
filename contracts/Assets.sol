@@ -291,6 +291,9 @@ contract Assets is Initializable {
         _revokeRedemption(assetId);
     }
 
+    /// @dev Reject an asset redemption request. Locked tokens will be unlocked.
+    /// Transaction has be sent by a redemptionAdminRole owner.
+    /// @param assetId Id of asset to cancel redemption of.
     function rejectRedemption(uint256 assetId)
     public
     onlyRedemptionAdminRole {
@@ -300,16 +303,6 @@ contract Assets is Initializable {
       require(asset.status == Status.Locked);
       emit RedemptionRejected(assetId, tokenLock.account, tokenLock.amount);
       _revokeRedemption(assetId);
-    }
-
-    function _revokeRedemption(uint256 assetId)
-    internal {
-      Asset storage asset = assets[assetId];
-      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
-
-      mpvToken.transfer(tokenLock.account, tokenLock.amount);
-      asset.status = Status.Enlisted;
-      delete redemptionTokenLocks[assetId];
     }
 
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by
@@ -367,5 +360,18 @@ contract Assets is Initializable {
     {
        require(assets[assetId].status == Status.Reserved);
        assets[assetId].status = Status.Enlisted;
+    }
+
+    /// @dev sets asset.status back to Enlisted and refunds tokens to redeemer
+    /// @param assetId Id of asset.
+    function _revokeRedemption(uint256 assetId)
+    internal
+    {
+      Asset storage asset = assets[assetId];
+      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+      mpvToken.transfer(tokenLock.account, tokenLock.amount);
+      asset.status = Status.Enlisted;
+      delete redemptionTokenLocks[assetId];
     }
 }

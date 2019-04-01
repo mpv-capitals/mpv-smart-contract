@@ -261,6 +261,80 @@ contract('Assets', accounts => {
     })
   })
 
+  describe('rejectRedemption()', () => {
+    let newAsset, redeemer
+    beforeEach(async () => {
+      const now = moment().unix()
+      redeemer = accounts[0]
+      newAsset = {
+        id: 1,
+        notarizationId: '0xabcd',
+        tokens: 100 * MULTIPLIER,
+        status: 1,
+        owner: accounts[0],
+        timestamp:  now,
+      }
+      await assets.add(newAsset)
+      await mintTokens(accounts[0], 200 * MULTIPLIER)
+      await mpvToken.approve(assets.address, 200 * MULTIPLIER, {from: accounts[0]})
+      await assets.requestRedemption(1, {from: accounts[0]})
+    })
+
+    it('sets the asset status back to ENLISTED', async () => {
+      const locked = 2
+      const enlisted = 1
+      expect((await assets.assets(1)).status.toNumber()).to.equal(locked)
+      await redemptionAdminRole.rejectRedemption(1)
+      expect((await assets.assets(1)).status.toNumber()).to.equal(enlisted)
+    })
+
+    it('transfers the redemption token amount back to the requesting account', async () => {
+      const refund = newAsset.tokens
+
+      const previousAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
+      const previousAcctBalance = (await mpvToken.balanceOf(redeemer)).toNumber()
+
+      await redemptionAdminRole.rejectRedemption(1)
+
+      const currentAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
+      const currentAcctBalance = (await mpvToken.balanceOf(redeemer)).toNumber()
+
+      expect(previousAssetsBalance - currentAssetsBalance).to.equal(refund)
+      expect(currentAcctBalance - previousAcctBalance).to.equal(refund)
+    })
+
+    it('deletes the redemptionTokenLock info', async () => {
+      let redemptionTokenLock = await assets.redemptionTokenLocks(1)
+      expect(redemptionTokenLock.account).to.equal(redeemer)
+      expect(redemptionTokenLock.amount.toNumber()).to.equal(newAsset.tokens)
+
+      await redemptionAdminRole.rejectRedemption(1)
+
+      redemptionTokenLock = await assets.redemptionTokenLocks(1)
+
+      expect(redemptionTokenLock.account).to.equal(ZERO_ADDR)
+      expect(redemptionTokenLock.amount.toNumber()).to.equal(0)
+    })
+
+    it('reverts if the asset status it not LOCKED', async () => {
+      enlistedAsset = {
+        id: 2,
+        notarizationId: '0xabcd',
+        tokens: 100 * MULTIPLIER,
+        status: 1,
+        owner: accounts[0],
+        timestamp:  moment().unix(),
+      }
+
+      await assets.add(enlistedAsset)
+      await shouldFail(redemptionAdminRole.rejectRedemption(2))
+    })
+
+    it('reverts if called by address other than redemptionAdminRole', async () => {
+      await shouldFail(assets.rejectRedemption(1))
+    })
+  })
+
   async function mintTokens (account, amount) {
     await masterPropertyValue.mock_callMint(mpvToken.address, account, amount)
   }
