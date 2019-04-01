@@ -42,6 +42,7 @@ contract('Assets', accounts => {
     assets = await initializeAssets(basicOwnerMultiSig.address)
     redemptionAdminRole.initialize(
       redemptionAdminMultiSig.address,
+      basicOwnerMultiSig.address,
       assets.address
     )
     await redemptionAdminMultiSig.setTransactor(assets.address)

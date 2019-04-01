@@ -2,7 +2,6 @@ pragma solidity ^0.5.1;
 
 import "zos-lib/contracts/Initializable.sol";
 import "./IMultiSigWallet.sol";
-import "./BasicOwnerRole.sol";
 import "./MPVToken.sol";
 import "./Assets.sol";
 
@@ -17,6 +16,7 @@ contract RedemptionAdminRole is Initializable {
      *  Storage
      */
     IMultiSigWallet public multiSig;
+    IMultiSigWallet public basicOwnerMultiSig;
     Assets public assets;
     uint256 public burningActionCountdownLength;
     mapping(uint256 => uint256) public redemptionCountdowns;
@@ -44,9 +44,11 @@ contract RedemptionAdminRole is Initializable {
     /// @param _assets Address of the assets contract.
     function initialize(
         IMultiSigWallet _multiSig,
+        IMultiSigWallet _basicOwnerMultiSig,
         Assets _assets
     ) public initializer {
         multiSig = _multiSig;
+        basicOwnerMultiSig = _basicOwnerMultiSig;
         assets = _assets;
         burningActionCountdownLength = 48 hours;
     }
@@ -73,9 +75,14 @@ contract RedemptionAdminRole is Initializable {
 
     function executeRedemption(uint256 assetId)
         public
-        onlyRedemptionAdminOwner
     {
-        require(now > redemptionCountdowns[assetId].add(burningActionCountdownLength));
+        require(
+          multiSig.hasOwner(msg.sender) ||
+          basicOwnerMultiSig.hasOwner(msg.sender)
+        );
+        require(
+          now > redemptionCountdowns[assetId].add(burningActionCountdownLength)
+        );
         assets.executeRedemption(assetId);
     }
 }
