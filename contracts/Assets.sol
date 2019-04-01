@@ -33,6 +33,7 @@ contract Assets is Initializable {
     );
 
     event RedemptionRejected(uint256 assetId, address account, uint256 refundAmount);
+    event RedemptionExecuted(uint256 assetId, address account, uint256 assetValue);
 
     /*
      *  Storage
@@ -316,6 +317,18 @@ contract Assets is Initializable {
         require(asset.status == Status.Locked);
         emit RedemptionRejected(assetId, tokenLock.account, tokenLock.amount);
         _revokeRedemption(assetId);
+    }
+
+    function executeRedemption(uint256 assetId)
+    public
+    onlyRedemptionAdminRole
+    {
+      Asset storage asset = assets[assetId];
+      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+      asset.status = Status.Redeemed;
+      delete redemptionTokenLocks[assetId];
+      emit RedemptionExecuted(assetId, tokenLock.account, tokenLock.amount);
     }
 
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by

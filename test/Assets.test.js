@@ -1,4 +1,5 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
+ const { mine } = require('./helpers')
 require('chai').should()
 const moment = require('moment')
 
@@ -332,6 +333,46 @@ contract('Assets', accounts => {
 
     it('reverts if called by address other than redemptionAdminRole', async () => {
       await shouldFail(assets.rejectRedemption(1))
+    })
+  })
+
+  describe('executeRedemption()', () => {
+    beforeEach(async () => {
+      const now = moment().unix()
+      redeemer = accounts[0]
+      newAsset = {
+        id: 1,
+        notarizationId: '0xabcd',
+        tokens: 100 * MULTIPLIER,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }
+      await assets.add(newAsset)
+      await mintTokens(accounts[0], 200 * MULTIPLIER)
+      await mpvToken.approve(assets.address, 200 * MULTIPLIER, { from: accounts[0] })
+      await assets.requestRedemption(1, { from: accounts[0] })
+      await redemptionAdminMultiSig.confirmTransaction(0)
+      mine(60 * 60 * 48 + 1)
+    })
+
+    it('sets asset status to Redeemed', async () => {
+      const locked = 2
+      const redeemed = 3
+
+      expect((await assets.assets(1)).status.toNumber()).to.equal(locked)
+      await redemptionAdminRole.executeRedemption(1)
+      expect((await assets.assets(1)).status.toNumber()).to.equal(redeemed)
+    })
+
+    it('deletes the corresponding redemptionTokenLocks data', async () => {
+      expect((await assets.redemptionTokenLocks(1)).account).to.equal(accounts[0])
+      await redemptionAdminRole.executeRedemption(1)
+      expect((await assets.redemptionTokenLocks(1)).account).to.equal(ZERO_ADDR)
+    })
+
+    it('reverts if called by address other than redemptionAdminRole', async () => {
+      await shouldFail(assets.executeRedemption(1))
     })
   })
 

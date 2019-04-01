@@ -11,6 +11,8 @@ import "./Assets.sol";
  * @dev Redemption admin role contract.
  */
 contract RedemptionAdminRole is Initializable {
+    using SafeMath for uint256;
+
     /*
      *  Storage
      */
@@ -67,5 +69,13 @@ contract RedemptionAdminRole is Initializable {
         onlyRedemptionAdminOwner
     {
         assets.rejectRedemption(assetId);
+    }
+
+    function executeRedemption(uint256 assetId)
+        public
+        onlyRedemptionAdminOwner
+    {
+        require(now > redemptionCountdowns[assetId].add(burningActionCountdownLength));
+        assets.executeRedemption(assetId);
     }
 }
