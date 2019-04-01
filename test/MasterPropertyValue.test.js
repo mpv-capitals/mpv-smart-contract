@@ -1040,7 +1040,7 @@ contract('MasterPropertyValue', accounts => {
     })
 
     it('set asset to from enlisted to reserved status', async () => {
-      let newAsset = {
+      const newAsset = {
         id: 1,
         notarizationId: '0xabcd',
         tokens: 100,
@@ -1069,7 +1069,7 @@ contract('MasterPropertyValue', accounts => {
       let asset = await assets.get.call(1)
       asset.status.toNumber().should.equal(Status.Enlisted)
 
-      let data = encodeCall(
+      const data = encodeCall(
         'setReserved',
         ['uint256[]'],
         [[1]]
@@ -1084,7 +1084,7 @@ contract('MasterPropertyValue', accounts => {
     })
 
     it('set asset from reserved to enlisted status', async () => {
-      let newAsset = {
+      const newAsset = {
         id: 1,
         notarizationId: '0xabcd',
         tokens: 100,

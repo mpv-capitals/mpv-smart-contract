@@ -52,5 +52,7 @@ docs/site/start:
 
 .PHONY: docs/site/build
 docs/site/build:
-	@(cd docs/website && yarn build) && mv docs/website/build/Master\ Property\ Value docs/build
+	@(cd docs/website && yarn build) && \
+		rm -rf docs/build && \
+		mv docs/website/build/Master\ Property\ Value docs/build
 	@echo 'output: ./docs/build'

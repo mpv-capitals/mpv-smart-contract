@@ -18,8 +18,20 @@ contract Assets is Initializable {
     /*
      *  Events
      */
-    event RedemptionRequested(uint256 assetId, address account, uint256 burnAmount, uint256 redemptionFee, uint256 transactionId);
-    event RedemptionCancelled(uint256 assetId, address account, uint256 refundAmount);
+    event RedemptionRequested(
+        uint256 assetId,
+        address account,
+        uint256 burnAmount,
+        uint256 redemptionFee,
+        uint256 transactionId
+    );
+
+    event RedemptionCancelled(
+        uint256 assetId,
+        address account,
+        uint256 refundAmount
+    );
+
     event RedemptionRejected(uint256 assetId, address account, uint256 refundAmount);
 
     /*
@@ -36,7 +48,7 @@ contract Assets is Initializable {
     address public superOwnerMultiSig;
     IMultiSigWallet public basicOwnerMultiSig;
     IMultiSigWallet public redemptionMultiSig;
-    MPVToken mpvToken;
+    MPVToken public mpvToken;
 
     /// @dev Asset is the structure for an asset.
     struct Asset {
@@ -74,7 +86,8 @@ contract Assets is Initializable {
 
     // @dev Status is an enum representing the possible states for an asset.
     enum Status {
-        /// @dev Pending is when the asset has been newly added and is pending approval by minting admins. Pending is the default state.
+        /// @dev Pending is when the asset has been newly added and is
+        /// pending approval by minting admins. Pending is the default state.
         Pending,
 
         /// @dev Enlisted is when the asset has been approved and added by minting admins.
@@ -100,8 +113,8 @@ contract Assets is Initializable {
     }
 
     modifier onlyRedemptionAdminRole() {
-      require(address(redemptionAdminRole) == msg.sender);
-      _;
+        require(address(redemptionAdminRole) == msg.sender);
+        _;
     }
 
     /// @dev Requires that the sender is the basic owner multisig contract.
@@ -166,8 +179,8 @@ contract Assets is Initializable {
     /// the minting admin role contract.
     /// @param asset Asset to add.
     function add(Asset memory asset)
-    onlyMintingAdminRole
     public
+    onlyMintingAdminRole
     {
         require(assets[asset.id].id == 0);
         assets[asset.id] = asset;
@@ -177,12 +190,12 @@ contract Assets is Initializable {
     /// @param id Id of asset.
     /// @return Returns the asset parameters.
     function get(uint256 assetId) public returns (
-      uint256 id,
-      Status status,
-      bytes32 notarizationId,
-      uint256 tokens,
-      address owner,
-      uint256 timestamp
+        uint256 id,
+        Status status,
+        bytes32 notarizationId,
+        uint256 tokens,
+        address owner,
+        uint256 timestamp
     ) {
         Asset storage asset = assets[assetId];
         id = asset.id;
@@ -297,12 +310,12 @@ contract Assets is Initializable {
     function rejectRedemption(uint256 assetId)
     public
     onlyRedemptionAdminRole {
-      Asset storage asset = assets[assetId];
-      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+        Asset storage asset = assets[assetId];
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
 
-      require(asset.status == Status.Locked);
-      emit RedemptionRejected(assetId, tokenLock.account, tokenLock.amount);
-      _revokeRedemption(assetId);
+        require(asset.status == Status.Locked);
+        emit RedemptionRejected(assetId, tokenLock.account, tokenLock.amount);
+        _revokeRedemption(assetId);
     }
 
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by
@@ -347,19 +360,17 @@ contract Assets is Initializable {
     /// @dev Sets an enlisted asset as reserved.
     /// @param assetId Id of asset.
     function _setReserved(uint256 assetId)
-    internal
-    {
-       require(assets[assetId].status == Status.Enlisted);
-       assets[assetId].status = Status.Reserved;
+    internal {
+        require(assets[assetId].status == Status.Enlisted);
+        assets[assetId].status = Status.Reserved;
     }
 
     /// @dev Sets a reserved asset as enlisted.
     /// @param assetId Id of asset.
     function _setEnlisted(uint256 assetId)
-    internal
-    {
-       require(assets[assetId].status == Status.Reserved);
-       assets[assetId].status = Status.Enlisted;
+    internal {
+        require(assets[assetId].status == Status.Reserved);
+        assets[assetId].status = Status.Enlisted;
     }
 
     /// @dev sets asset.status back to Enlisted and refunds tokens to redeemer
@@ -367,11 +378,11 @@ contract Assets is Initializable {
     function _revokeRedemption(uint256 assetId)
     internal
     {
-      Asset storage asset = assets[assetId];
-      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+        Asset storage asset = assets[assetId];
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
 
-      mpvToken.transfer(tokenLock.account, tokenLock.amount);
-      asset.status = Status.Enlisted;
-      delete redemptionTokenLocks[assetId];
+        mpvToken.transfer(tokenLock.account, tokenLock.amount);
+        asset.status = Status.Enlisted;
+        delete redemptionTokenLocks[assetId];
     }
 }

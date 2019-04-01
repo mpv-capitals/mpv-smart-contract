@@ -56,14 +56,7 @@ contract RedemptionAdminRole is Initializable {
         public
         onlyRedemptionAdminMultiSig
     {
-        (
-          uint256 id,
-          Assets.Status status,
-          bytes32 notarizationId,
-          uint256 tokens,
-          address owner,
-          uint256 timestamp
-        ) =  assets.get(assetId);
+        (, Assets.Status status, , , ,) =  assets.get(assetId);
 
         require(status == Assets.Status.Locked);
         redemptionCountdowns[assetId] = now;
