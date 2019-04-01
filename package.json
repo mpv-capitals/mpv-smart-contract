@@ -15,6 +15,7 @@
   "dependencies": {},
   "devDependencies": {
     "chai": "^4.2.0",
+    "docusaurus": "^1.8.0",
     "dotenv": "^6.2.0",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^10.2.1",
@@ -27,8 +28,10 @@
     "moment": "^2.24.0",
     "openzeppelin-eth": "^2.1.3",
     "openzeppelin-test-helpers": "^0.2.0",
+    "solc": "^0.5.7",
     "solhint": "^1.5.0",
     "solidity-coverage": "https://github.com:rotcivegaf/solidity-coverage.git#5875f5b7bc74d447f3312c9c0e9fc7814b482477",
+    "solidity-docgen": "^0.1.1",
     "standard": "^12.0.1",
     "truffle": "^5.0.4",
     "truffle-hdwallet-provider": "^1.0.5",
@@ -38,6 +41,10 @@
     "zos-lib": "^2.2.1"
   },
   "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/levelkdev/master-property-value-token.git"
+  },
   "license": "MIT",
   "standard": {
     "globals": [

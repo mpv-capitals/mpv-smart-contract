@@ -5,17 +5,29 @@ import "openzeppelin-eth/contracts/access/Roles.sol";
 import "./IMultiSigWallet.sol";
 
 
+/**
+ * @title Whitelist
+ * @dev Whitelist for managing accounts authorized to transfer tokens.
+ */
 contract Whitelist is Initializable {
     using Roles for Roles.Role;
+    Roles.Role private _whitelisteds;
 
+    /*
+     *  Events
+     */
     event WhitelistedAdded(address indexed account);
     event WhitelistedRemoved(address indexed account);
 
-    Roles.Role private _whitelisteds;
-
+    /*
+     *  Storage
+     */
     IMultiSigWallet public operationAdminMultiSig;
     IMultiSigWallet public basicOwnerMultiSig;
 
+    /*
+     *  Modifiers
+     */
     modifier onlyOperationAdmin() {
         require(operationAdminMultiSig.hasOwner(msg.sender));
         _;
@@ -31,6 +43,9 @@ contract Whitelist is Initializable {
         _;
     }
 
+    /*
+     *  Public functions
+     */
     function initialize(
         address _operationAdminMultiSig,
         address _basicOwnerMultiSig
@@ -71,6 +86,9 @@ contract Whitelist is Initializable {
         _removeWhitelisted(msg.sender);
     }
 
+    /*
+     *  Internal functions
+     */
     function _addWhitelisted(address account) internal {
         _whitelisteds.add(account);
         emit WhitelistedAdded(account);

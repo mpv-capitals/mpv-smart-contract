@@ -9,11 +9,25 @@ import "./Assets.sol";
 import "./IWhitelist.sol";
 
 
+/**
+ * @title MasterPropertyValue
+ * @dev The main Master Property Value contract.
+ */
 contract MasterPropertyValue is Initializable, Pausable, MPVAccessControl {
+    /*
+     *  Storage
+     */
     MPVToken public mpvToken;
     Assets public assets;
     IWhitelist public whitelist;
 
+    /*
+     * Public functions
+     */
+    /// @dev Initialize function sets initial storage values.
+    /// @param _mpvToken Address of the MPV Token contract.
+    /// @param _assets Address of the Assets contract.
+    /// @param _whitelist Address of the whitelist contract.
     function initialize(
         MPVToken _mpvToken,
         Assets _assets,

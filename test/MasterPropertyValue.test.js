@@ -808,7 +808,6 @@ contract('MasterPropertyValue', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
-        statusEvents: [],
       }
 
       let pendingAssetsCount = await assets.pendingAssetsCount.call({
@@ -869,7 +868,6 @@ contract('MasterPropertyValue', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
-        statusEvents: [],
       }
 
       let pendingAssetsCount = await assets.pendingAssetsCount.call({
@@ -901,7 +899,6 @@ contract('MasterPropertyValue', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
-        statusEvents: [],
       }
 
       txId = await mintingAdminRole.addPendingAsset.call(secondAsset, {
@@ -928,7 +925,6 @@ contract('MasterPropertyValue', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
-        statusEvents: [],
       }, {
         id: 3,
         notarizationId: '0xabcd',
@@ -936,7 +932,6 @@ contract('MasterPropertyValue', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
-        statusEvents: [],
       }]
 
       let txId = await mintingAdminRole.addPendingAssets.call(list, {
@@ -1000,7 +995,6 @@ contract('MasterPropertyValue', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
-        statusEvents: [],
       }
 
       const txId = await mintingAdminRole.addPendingAsset.call(asset, {
@@ -1053,7 +1047,6 @@ contract('MasterPropertyValue', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
-        statusEvents: [],
       }
       const txId = await mintingAdminRole.addPendingAsset.call(newAsset, {
         from: defaultMintingAdmin,
@@ -1074,7 +1067,7 @@ contract('MasterPropertyValue', accounts => {
         from: defaultMintingAdmin,
       })
       let asset = await assets.get.call(1)
-      asset.status.should.equal(Status.ENLISTED.toString())
+      asset.status.should.equal(Status.Enlisted.toString())
 
       let data = encodeCall(
         'setReserved',
@@ -1087,7 +1080,7 @@ contract('MasterPropertyValue', accounts => {
       })
 
       asset = await assets.get.call(1)
-      asset.status.should.equal(Status.RESERVED.toString())
+      asset.status.should.equal(Status.Reserved.toString())
     })
 
     it('set asset from reserved to enlisted status', async () => {
@@ -1098,7 +1091,6 @@ contract('MasterPropertyValue', accounts => {
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
-        statusEvents: [],
       }
       const txId = await mintingAdminRole.addPendingAsset.call(newAsset, {
         from: defaultMintingAdmin,
@@ -1129,7 +1121,7 @@ contract('MasterPropertyValue', accounts => {
       })
 
       let asset = await assets.get.call(1)
-      asset.status.should.equal(Status.RESERVED.toString())
+      asset.status.should.equal(Status.Reserved.toString())
 
       data = encodeCall(
         'setEnlisted',
@@ -1142,7 +1134,7 @@ contract('MasterPropertyValue', accounts => {
       })
 
       asset = await assets.get.call(1)
-      asset.status.should.equal(Status.ENLISTED.toString())
+      asset.status.should.equal(Status.Enlisted.toString())
     })
   })
 })

@@ -7,8 +7,14 @@ import "./Whitelist.sol";
 import "./MasterPropertyValue.sol";
 
 
+/**
+ * @title MPVToken
+ * @dev The MPV Token contract.
+ */
 contract MPVToken is Initializable, ERC20, ERC20Detailed {
-
+    /*
+     *  Storage
+     */
     Whitelist public whitelist;
     MasterPropertyValue public masterPropertyValue;
     address public mintingAdmin;
@@ -16,36 +22,59 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mapping(address => DailyLimitInfo) public dailyLimits;
     uint256 public dailyLimit;
 
+    /// @dev Daily limit info structure.
     struct DailyLimitInfo {
         uint lastDay;
         uint spentToday;
     }
 
-    modifier whitelistedAddress(address addr) {
-        require(whitelist.isWhitelisted(addr));
+    /*
+     *  Modifiers
+     */
+    /// @dev Requires that account address is whitelisted.
+    /// @param account Address of account.
+    modifier whitelistedAddress(address account) {
+        require(whitelist.isWhitelisted(account));
         _;
     }
 
-    modifier mpvAccessOnly(address addr) {
-        require(addr == address(masterPropertyValue));
+    /// @dev Requires that account address is the MPV contract.
+    /// @param account Address of account.
+    modifier mpvAccessOnly(address account) {
+        require(account == address(masterPropertyValue));
         _;
     }
 
+    /// @dev Requires the sender to be the minting admin role contract.
     modifier onlyMintingAdmin() {
         require(mintingAdmin == msg.sender);
         _;
     }
 
+    /// @dev Requires the sender to be the redemption admin role contract.
     modifier onlyRedemptionAdmin() {
         require(mintingAdmin == msg.sender);
         _;
     }
 
+    /// @dev Requires that the main MPV contract is not paused.
     modifier mpvNotPaused() {
         require(masterPropertyValue.paused() == false);
         _;
     }
 
+    /*
+     *  Public functions
+     */
+    /// @dev Initialize function sets initial storage values.
+    /// @param name Name of token.
+    /// @param symbol Symbol of token.
+    /// @param decimals Number of decimals for token.
+    /// @param _whitelist Whitelist contract address.
+    /// @param _masterPropertyValue Main MPV contract address.
+    /// @param _mintingAdmin Minting admin role contract address.
+    /// @param _redemptionAdmin Redemption admin role contract address.
+    /// @param _dailyLimit Daily limit amount.
     function initialize(
         string memory name,
         string memory symbol,
@@ -55,8 +84,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         address _mintingAdmin,
         address _redemptionAdmin,
         uint256 _dailyLimit
-
-    ) public initializer
+    )
+    public
+    initializer
     {
         ERC20Detailed.initialize(name, symbol, decimals);
         whitelist = _whitelist;
@@ -66,6 +96,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         dailyLimit = _dailyLimit;
     }
 
+    /// @dev Set the MPV contract address.
+    /// @param _masterPropertyValue Address of main MPV contract.
     function setMPV(address _masterPropertyValue)
     public
     mpvAccessOnly(msg.sender)
@@ -73,6 +105,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         masterPropertyValue = MasterPropertyValue(_masterPropertyValue);
     }
 
+    /// @dev Set the minting admin role contract address.
+    /// @param _mintingAdmin Address of minting admin role contract.
     function setMintingAdmin(address _mintingAdmin)
     public
     onlyMintingAdmin
@@ -80,6 +114,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         mintingAdmin = _mintingAdmin;
     }
 
+    /// @dev Set the redemption admin role contract address.
+    /// @param _redemptionAdmin Address of redemption admin role contract.
     function setRedemptionAdmin(address _redemptionAdmin)
     public
     onlyRedemptionAdmin
@@ -91,6 +127,10 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         dailyLimit = _dailyLimit;
     }
 
+    /// @dev Transfer tokens to another account.
+    /// @param to Address to transfer tokens to.
+    /// @param value Amount of tokens to transfer.
+    /// @return Success boolean.
     function transfer(address to, uint256 value)
     public
     whitelistedAddress(to)
@@ -103,6 +143,11 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         return true;
     }
 
+    /// @dev Transfer tokens from an account to another account.
+    /// @param from Address to transfer tokens from.
+    /// @param to Address to transfer tokens to.
+    /// @param value Amount of tokens to transfer.
+    /// @return Success boolean.
     function transferFrom(address from, address to, uint256 value)
     public
     whitelistedAddress(to)
@@ -114,6 +159,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         return super.transferFrom(from, to, value);
     }
 
+    /// @dev Mint new tokens.
+    /// @param account Address to send newly minted tokens to.
+    /// @param value Amount of tokens to mint.
     function mint(address account, uint value)
     public
     onlyMintingAdmin
@@ -122,6 +170,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         _mint(account, value);
     }
 
+    /// @dev Burn tokens.
+    /// @param account Address to burn tokens from.
+    /// @param value Amount of tokens to burn.
     function burn(address account, uint value)
     public
     onlyRedemptionAdmin
@@ -129,6 +180,13 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         _burn(account, value);
     }
 
+    /*
+     *  Internal functions
+     */
+    /// @dev Returns true if token holder is under daily limit of transfers.
+    /// @param account Address of account.
+    /// @param amount Amount of tokens account needing to transfer.
+    /// @return boolean.
     function _isUnderLimit(address account, uint amount)
     internal
     returns (bool)

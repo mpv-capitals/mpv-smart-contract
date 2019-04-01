@@ -1,6 +1,10 @@
 pragma solidity ^0.5.1;
 
 
+/**
+ * @title IMultiSigWallet
+ * @dev MultiSig wallet interface.
+ */
 interface IMultiSigWallet {
     function addOwner(address owner) external;
 

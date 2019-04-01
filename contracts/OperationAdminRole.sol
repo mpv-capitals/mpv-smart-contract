@@ -4,14 +4,10 @@ import "zos-lib/contracts/Initializable.sol";
 import "./IMultiSigWallet.sol";
 
 
+/**
+ * @title OperationAdminRole
+ * @dev Operation admin role contract.
+ */
 contract OperationAdminRole is Initializable {
-    IMultiSigWallet public multiSig;
 
-    /*
-    function initialize(
-        //IMultiSigWallet _multiSig,
-    ) public initializer {
-        //multiSig = _multiSig;
-    }
-    */
 }
