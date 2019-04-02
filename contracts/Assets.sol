@@ -19,6 +19,28 @@ contract Assets is Initializable {
     /*
      *  Events
      */
+    event RedemptionFeeUpdated(address indexed sender, uint256 indexed fee);
+
+    event RedemptionFeeReceiverWalletUpdated(
+        address indexed sender,
+        address indexed fee
+    );
+
+    event AssetAdded(
+        address indexed sender,
+        uint256 indexed assetId,
+        Status indexed status,
+        bytes32 notarizationId,
+        uint256 tokens,
+        uint256 timstamp
+    );
+
+    event PendingAssetAdded(address indexed sender, uint256 indexed assetId);
+    event PendingAssetRemoved(address indexed sender, uint256 indexed assetId);
+    event PendingAssetsCleared(address indexed sender);
+    event AssetMarkedReserved(address indexed sender, uint256 indexed assetId);
+    event AssetMarkedEnlisted(address indexed sender, uint256 indexed assetId);
+
     event RedemptionRequested(
         uint256 assetId,
         address account,
@@ -34,6 +56,7 @@ contract Assets is Initializable {
     );
 
     event RedemptionRejected(uint256 assetId, address account, uint256 refundAmount);
+    event RedemptionExecuted(uint256 assetId, address account, uint256 assetValue);
 
     /*
      *  Storage
@@ -114,6 +137,7 @@ contract Assets is Initializable {
         _;
     }
 
+    /// @dev Requires that the sender is the redemption admin role contract.
     modifier onlyRedemptionAdminRole() {
         require(address(redemptionAdminRole) == msg.sender);
         _;
@@ -173,6 +197,7 @@ contract Assets is Initializable {
     mpvNotPaused
     {
         redemptionFee = fee;
+        emit RedemptionFeeUpdated(msg.sender, fee);
     }
 
     /// @dev Set the redemption fee receiver wallet address. Transaction has
@@ -184,6 +209,7 @@ contract Assets is Initializable {
     {
         require(wallet != address(0));
         redemptionFeeReceiverWallet = wallet;
+        emit RedemptionFeeReceiverWalletUpdated(msg.sender, wallet);
     }
 
     /// @dev Add a new asset to the assets map. Transaction has to be sent by
@@ -196,6 +222,14 @@ contract Assets is Initializable {
     {
         require(assets[asset.id].id == 0);
         assets[asset.id] = asset;
+        emit AssetAdded(
+            msg.sender,
+            asset.id,
+            asset.status,
+            asset.notarizationId,
+            asset.tokens,
+            asset.timestamp
+        );
     }
 
     /// @dev Get an asset given the asset id. Transaction can be called by anyone.
@@ -216,6 +250,17 @@ contract Assets is Initializable {
         tokens = asset.tokens;
         owner = asset.owner;
         timestamp = timestamp;
+    }
+
+    function getRedemptionTokenLock(uint256 assetId) public returns (
+        uint256 amount,
+        address account,
+        uint256 transactionId
+    ) {
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+        amount = tokenLock.amount;
+        account = tokenLock.account;
+        transactionId = tokenLock.transactionId;
     }
 
     /// @dev Add a list of a new assets to the assets map. Transaction has to
@@ -242,6 +287,7 @@ contract Assets is Initializable {
     mpvNotPaused
     {
         pendingAssets.push(_asset);
+        emit PendingAssetAdded(msg.sender, _asset.id);
     }
 
     /// @dev Clear list of pending assets. Transaction has to be sent by the
@@ -252,6 +298,7 @@ contract Assets is Initializable {
     mpvNotPaused
     {
         delete pendingAssets;
+        emit PendingAssetsCleared(msg.sender);
     }
 
     /// @dev Remove an asset from the list of pending assets. Transaction has
@@ -271,6 +318,7 @@ contract Assets is Initializable {
                 }
                 delete pendingAssets[pendingAssets.length-1];
                 pendingAssets.length--;
+                emit PendingAssetRemoved(msg.sender, assetId);
             }
         }
     }
@@ -337,6 +385,18 @@ contract Assets is Initializable {
         _revokeRedemption(assetId);
     }
 
+    function executeRedemption(uint256 assetId)
+    public
+    onlyRedemptionAdminRole
+    {
+      Asset storage asset = assets[assetId];
+      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+      asset.status = Status.Redeemed;
+      emit RedemptionExecuted(assetId, tokenLock.account, tokenLock.amount);
+      delete redemptionTokenLocks[assetId];
+    }
+
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by
     /// the basic owner multisig.
     /// @param assetIds List of asset Ids to set as reserved.
@@ -385,6 +445,7 @@ contract Assets is Initializable {
     {
         require(assets[assetId].status == Status.Enlisted);
         assets[assetId].status = Status.Reserved;
+        emit AssetMarkedReserved(msg.sender, assetId);
     }
 
     /// @dev Sets a reserved asset as enlisted.
@@ -394,6 +455,7 @@ contract Assets is Initializable {
     {
         require(assets[assetId].status == Status.Reserved);
         assets[assetId].status = Status.Enlisted;
+        emit AssetMarkedEnlisted(msg.sender, assetId);
     }
 
     /// @dev sets asset.status back to Enlisted and refunds tokens to redeemer

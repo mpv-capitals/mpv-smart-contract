@@ -3,7 +3,6 @@ pragma solidity ^0.5.1;
 import "zos-lib/contracts/Initializable.sol";
 import "./MasterPropertyValue.sol";
 import "./IMultiSigWallet.sol";
-import "./BasicOwnerRole.sol";
 import "./MPVToken.sol";
 import "./Assets.sol";
 
@@ -12,11 +11,26 @@ import "./Assets.sol";
  * @dev Redemption admin role contract.
  */
 contract RedemptionAdminRole is Initializable {
+    using SafeMath for uint256;
+
+    /*
+     *  Events
+     */
+    event BurningCountdownStarted(
+            address indexed sender,
+            uint256 indexed assetId,
+            uint256 indexed tokens
+    );
+
+    event RedemptionRejected(address indexed sender, uint256 indexed assetId);
+
     /*
      *  Storage
      */
     IMultiSigWallet public multiSig;
+    IMultiSigWallet public basicOwnerMultiSig;
     Assets public assets;
+    MPVToken public mpvToken;
     uint256 public burningActionCountdownLength;
     mapping(uint256 => uint256) public redemptionCountdowns;
     MasterPropertyValue public masterPropertyValue;
@@ -50,11 +64,15 @@ contract RedemptionAdminRole is Initializable {
     /// @param _assets Address of the assets contract.
     function initialize(
         IMultiSigWallet _multiSig,
+        IMultiSigWallet _basicOwnerMultiSig,
         Assets _assets,
+        MPVToken _mpvToken,
         MasterPropertyValue _masterPropertyValue
     ) public initializer {
         multiSig = _multiSig;
+        basicOwnerMultiSig = _basicOwnerMultiSig;
         assets = _assets;
+        mpvToken = _mpvToken;
         masterPropertyValue = _masterPropertyValue;
         burningActionCountdownLength = 48 hours;
     }
@@ -67,17 +85,45 @@ contract RedemptionAdminRole is Initializable {
         onlyRedemptionAdminMultiSig
         mpvNotPaused
     {
-        (, Assets.Status status, , , ,) =  assets.get(assetId);
+        (
+            ,/*id*/
+            Assets.Status status,
+            ,/*notarizationId*/
+            uint256 tokens,
+            ,/*owner*/
+            /*timestamp*/
+        ) =  assets.get(assetId);
 
         require(status == Assets.Status.Locked);
         redemptionCountdowns[assetId] = now;
+        emit BurningCountdownStarted(msg.sender, assetId, tokens);
     }
 
+    /// @dev Reject a redemption request. Transaction has to be sent by
+    /// a redemption admin.
+    /// @param assetId Id of asset being redeemed.
     function rejectRedemption(uint256 assetId)
         public
         onlyRedemptionAdminOwner
         mpvNotPaused
     {
         assets.rejectRedemption(assetId);
+        emit RedemptionRejected(msg.sender, assetId);
+    }
+
+    function executeRedemption(uint256 assetId)
+        public
+    {
+        require(
+          multiSig.hasOwner(msg.sender) ||
+          basicOwnerMultiSig.hasOwner(msg.sender)
+        );
+        require(
+          now > redemptionCountdowns[assetId].add(burningActionCountdownLength)
+        );
+
+        (uint256 amount, ,) = assets.redemptionTokenLocks(assetId);
+        mpvToken.burn(address(assets), amount);
+        assets.executeRedemption(assetId);
     }
 }

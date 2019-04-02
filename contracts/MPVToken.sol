@@ -13,6 +13,14 @@ import "./MasterPropertyValue.sol";
  */
 contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /*
+     *  Events
+     */
+    event MPVUpdated(address indexed sender, address indexed addr);
+    event MintingAdminUpdated(address indexed sender, address indexed admin);
+    event RedemptionAdminUpdated(address indexed sender, address indexed admin);
+    event DailyLimitUpdated(address indexed sender, uint256 indexed dailyLimit);
+
+    /*
      *  Storage
      */
     Whitelist public whitelist;
@@ -53,7 +61,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     /// @dev Requires the sender to be the redemption admin role contract.
     modifier onlyRedemptionAdmin() {
-        require(mintingAdmin == msg.sender);
+        require(redemptionAdmin == msg.sender);
         _;
     }
 
@@ -104,6 +112,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mpvNotPaused
     {
         masterPropertyValue = MasterPropertyValue(_masterPropertyValue);
+        emit MPVUpdated(msg.sender, _masterPropertyValue);
     }
 
     /// @dev Set the minting admin role contract address.
@@ -114,6 +123,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mpvNotPaused
     {
         mintingAdmin = _mintingAdmin;
+        emit MintingAdminUpdated(msg.sender, _mintingAdmin);
     }
 
     /// @dev Set the redemption admin role contract address.
@@ -124,10 +134,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mpvNotPaused
     {
         redemptionAdmin = _redemptionAdmin;
+        emit RedemptionAdminUpdated(msg.sender, _redemptionAdmin);
     }
 
     function setDailyLimit(uint256 _dailyLimit) public {
         dailyLimit = _dailyLimit;
+        emit DailyLimitUpdated(msg.sender, _dailyLimit);
     }
 
     /// @dev Transfer tokens to another account.

@@ -35,7 +35,7 @@ test:
 lint:
 	@npm run lint:fix
 	@solhint contracts/*.sol
-	#@npm run lint:sol
+	@#@npm run lint:sol
 
 #solc required: https://solidity.readthedocs.io/en/v0.4.24/installing-solidity.html
 .PHONY: docs

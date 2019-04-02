@@ -11,6 +11,14 @@ import "./MasterPropertyValue.sol";
  */
 contract SuperOwnerRole is Initializable {
     /*
+     *  Events
+     */
+    event TransferLimitChangeCountdownUpdated(address indexed sender, uint256 indexed countdown);
+    event DelayTransferCountdownUpdated(address indexed sender, uint256 indexed countdown);
+    event WhitelistRemovalCountdownUpdated(address indexed sender, uint256 indexed countdown);
+    event BurningActionCountdownUpdated(address indexed sender, uint256 indexed countdown);
+
+    /*
      *  Storage
      */
     IMultiSigWallet public multiSig;
@@ -62,6 +70,7 @@ contract SuperOwnerRole is Initializable {
     mpvNotPaused
     {
         transferLimitChangeCountdownLength = newCountdown;
+        emit TransferLimitChangeCountdownUpdated(msg.sender, newCountdown);
     }
 
     /// @dev Set the delayed transfer countdown length. Transaction has to be
@@ -75,6 +84,7 @@ contract SuperOwnerRole is Initializable {
     mpvNotPaused
     {
         delayedTransferCountdownLength = newCountdown;
+        emit DelayTransferCountdownUpdated(msg.sender, newCountdown);
     }
 
     /// @dev Set the countdown length for the whitelist removal action.
@@ -88,6 +98,7 @@ contract SuperOwnerRole is Initializable {
     mpvNotPaused
     {
         whitelistRemovalActionCountdownLength = newCountdown;
+        emit WhitelistRemovalCountdownUpdated(msg.sender, newCountdown);
     }
 
     /// @dev Set the countdown length for the action of burning of tokens.
@@ -101,5 +112,6 @@ contract SuperOwnerRole is Initializable {
     mpvNotPaused
     {
         burningActionCountdownLength = newCountdown;
+        emit BurningActionCountdownUpdated(msg.sender, newCountdown);
     }
 }
