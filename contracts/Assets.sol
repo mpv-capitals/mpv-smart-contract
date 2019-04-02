@@ -33,6 +33,7 @@ contract Assets is Initializable {
     );
 
     event RedemptionRejected(uint256 assetId, address account, uint256 refundAmount);
+    event RedemptionExecuted(uint256 assetId, address account, uint256 assetValue);
 
     /*
      *  Storage
@@ -206,6 +207,17 @@ contract Assets is Initializable {
         timestamp = timestamp;
     }
 
+    function getRedemptionTokenLock(uint256 assetId) public returns (
+        uint256 amount,
+        address account,
+        uint256 transactionId
+    ) {
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+        amount = tokenLock.amount;
+        account = tokenLock.account;
+        transactionId = tokenLock.transactionId;
+    }
+
     /// @dev Add a list of a new assets to the assets map. Transaction has to
     /// be sent by the minting admin role contract.
     /// @param _assets List of assets to add.
@@ -316,6 +328,18 @@ contract Assets is Initializable {
         require(asset.status == Status.Locked);
         emit RedemptionRejected(assetId, tokenLock.account, tokenLock.amount);
         _revokeRedemption(assetId);
+    }
+
+    function executeRedemption(uint256 assetId)
+    public
+    onlyRedemptionAdminRole
+    {
+      Asset storage asset = assets[assetId];
+      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+
+      asset.status = Status.Redeemed;
+      emit RedemptionExecuted(assetId, tokenLock.account, tokenLock.amount);
+      delete redemptionTokenLocks[assetId];
     }
 
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by

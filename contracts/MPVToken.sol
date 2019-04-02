@@ -53,7 +53,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     /// @dev Requires the sender to be the redemption admin role contract.
     modifier onlyRedemptionAdmin() {
-        require(mintingAdmin == msg.sender);
+        require(redemptionAdmin == msg.sender);
         _;
     }
 
