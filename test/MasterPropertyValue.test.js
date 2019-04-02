@@ -110,44 +110,13 @@ async function initContracts (accounts) {
     whitelist.address
   )
 
-  mpv.addRole(Roles.SuperOwner, superOwnerRole.address)
-  mpv.addRole(Roles.BasicOwner, basicOwnerRole.address)
-  mpv.addRole(Roles.OperationAdmin, operationAdminRole.address)
-  mpv.addRole(Roles.MintingAdmin, mintingAdminRole.address)
-  mpv.addRole(Roles.RedemptionAdmin, redemptionAdminRole.address)
-
-  mpv.renounceRole(Roles.SuperOwner)
-  mpv.renounceRole(Roles.BasicOwner)
-  mpv.renounceRole(Roles.OperationAdmin)
-  mpv.renounceRole(Roles.RedemptionAdmin)
-
-  await superOwnerMultiSig.setAdmin(superOwnerMultiSig.address, {
-    from: accounts[0],
-  })
-
-  await basicOwnerMultiSig.setAdmin(superOwnerMultiSig.address, {
-    from: accounts[0],
-  })
-
-  await operationAdminMultiSig.setAdmin(basicOwnerMultiSig.address, {
-    from: accounts[0],
-  })
-
-  await mintingAdminMultiSig.setTransactor(mintingAdminRole.address, {
-    from: accounts[0],
-  })
-
-  await mintingAdminMultiSig.setAdmin(basicOwnerMultiSig.address, {
-    from: accounts[0],
-  })
-
-  await redemptionAdminMultiSig.setTransactor(assets.address, {
-    from: accounts[0],
-  })
-
-  await redemptionAdminMultiSig.setAdmin(basicOwnerMultiSig.address, {
-    from: accounts[0],
-  })
+  await superOwnerMultiSig.setAdmin(superOwnerMultiSig.address)
+  await basicOwnerMultiSig.setAdmin(superOwnerMultiSig.address)
+  await operationAdminMultiSig.setAdmin(basicOwnerMultiSig.address)
+  await mintingAdminMultiSig.setTransactor(mintingAdminRole.address)
+  await mintingAdminMultiSig.setAdmin(basicOwnerMultiSig.address)
+  await redemptionAdminMultiSig.setTransactor(assets.address)
+  await redemptionAdminMultiSig.setAdmin(basicOwnerMultiSig.address)
 }
 
 contract('MasterPropertyValue', accounts => {
