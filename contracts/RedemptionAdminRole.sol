@@ -18,6 +18,7 @@ contract RedemptionAdminRole is Initializable {
     IMultiSigWallet public multiSig;
     IMultiSigWallet public basicOwnerMultiSig;
     Assets public assets;
+    MPVToken public mpvToken;
     uint256 public burningActionCountdownLength;
     mapping(uint256 => uint256) public redemptionCountdowns;
 
@@ -45,11 +46,13 @@ contract RedemptionAdminRole is Initializable {
     function initialize(
         IMultiSigWallet _multiSig,
         IMultiSigWallet _basicOwnerMultiSig,
-        Assets _assets
+        Assets _assets,
+        MPVToken _mpvToken
     ) public initializer {
         multiSig = _multiSig;
         basicOwnerMultiSig = _basicOwnerMultiSig;
         assets = _assets;
+        mpvToken = _mpvToken;
         burningActionCountdownLength = 48 hours;
     }
 
@@ -83,6 +86,9 @@ contract RedemptionAdminRole is Initializable {
         require(
           now > redemptionCountdowns[assetId].add(burningActionCountdownLength)
         );
+
+        (uint256 amount, ,) = assets.redemptionTokenLocks(assetId);
+        mpvToken.burn(address(assets), amount);
         assets.executeRedemption(assetId);
     }
 }

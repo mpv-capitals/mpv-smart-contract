@@ -207,6 +207,17 @@ contract Assets is Initializable {
         timestamp = timestamp;
     }
 
+    function getRedemptionTokenLock(uint256 assetId) public returns (
+        uint256 amount,
+        address account,
+        uint256 transactionId
+    ) {
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+        amount = tokenLock.amount;
+        account = tokenLock.account;
+        transactionId = tokenLock.transactionId;
+    }
+
     /// @dev Add a list of a new assets to the assets map. Transaction has to
     /// be sent by the minting admin role contract.
     /// @param _assets List of assets to add.
@@ -327,8 +338,8 @@ contract Assets is Initializable {
       RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
 
       asset.status = Status.Redeemed;
-      delete redemptionTokenLocks[assetId];
       emit RedemptionExecuted(assetId, tokenLock.account, tokenLock.amount);
+      delete redemptionTokenLocks[assetId];
     }
 
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by

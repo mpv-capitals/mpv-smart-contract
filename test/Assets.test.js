@@ -43,7 +43,8 @@ contract('Assets', accounts => {
     redemptionAdminRole.initialize(
       redemptionAdminMultiSig.address,
       basicOwnerMultiSig.address,
-      assets.address
+      assets.address,
+      mpvToken.address
     )
     await redemptionAdminMultiSig.setTransactor(assets.address)
   })
@@ -390,7 +391,7 @@ contract('Assets', accounts => {
       whitelist.address,
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
-      masterPropertyValue.address, // redemptionAdmin
+      redemptionAdminRole.address, // redemptionAdmin
       DAILY_LIMIT
     )
     return mpvToken
