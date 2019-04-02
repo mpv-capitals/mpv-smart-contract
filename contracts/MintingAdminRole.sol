@@ -15,6 +15,17 @@ import "./BasicOwnerRole.sol";
  */
 contract MintingAdminRole is Initializable {
     /*
+     *  Events
+     */
+    event MintingCancelled(address indexed sender);
+    event MintingReceiverWalletUpdated(address indexed sender, address indexed wallet);
+    event MintingCountdownStarted(address indexed sender);
+    event RefreshPendingAssetsStatus(address indexed sender);
+    event PendingAssetAdded(address indexed sender, uint256 indexed assetId);
+    event PendingAssetRemoved(address indexed sender, uint256 indexed assetId);
+    event AssetEnlisted(address indexed sender, uint256 indexed assetId);
+
+    /*
      *  Storage
      */
     IMultiSigWallet public multiSig;
@@ -115,10 +126,12 @@ contract MintingAdminRole is Initializable {
 
             uint256 transactionId = multiSig.addTransaction(address(this), data);
             pendingAssetsTransactionId = transactionId;
+            emit PendingAssetAdded(msg.sender, _asset.id);
             return transactionId;
         } else {
             assets.addPendingAsset(_asset);
             multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+            emit PendingAssetAdded(msg.sender, _asset.id);
             return pendingAssetsTransactionId;
         }
     }
@@ -145,7 +158,9 @@ contract MintingAdminRole is Initializable {
     public
     onlyMultiSig
     {
+        require(mintingCountdownStart == 0);
         mintingCountdownStart = now;
+        emit MintingCountdownStarted(msg.sender);
     }
 
     /// @dev Refreshes the status of pending assets. Transaction can be sent
@@ -155,6 +170,7 @@ contract MintingAdminRole is Initializable {
     {
         require(now >= mintingCountdownStart + mintingActionCountdownLength);
         _enlistPendingAssets();
+        emit RefreshPendingAssetsStatus(msg.sender);
     }
 
     /// @dev Removes an asset from the list of pending assets. This actions
@@ -169,6 +185,7 @@ contract MintingAdminRole is Initializable {
         assets.removePendingAsset(assetId);
 
         multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+        emit PendingAssetRemoved(msg.sender, assetId);
         return pendingAssetsTransactionId;
     }
 
@@ -181,6 +198,7 @@ contract MintingAdminRole is Initializable {
         require(mintingCountdownStart > 0);
         multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
         mintingCountdownStart = 0;
+        emit MintingCancelled(msg.sender);
     }
 
     /// @dev Set the receiver wallet of newly minting tokens. Transaction has
@@ -194,6 +212,7 @@ contract MintingAdminRole is Initializable {
     {
         require(newWallet != address(0));
         mintingReceiverWallet = newWallet;
+        emit MintingReceiverWalletUpdated(msg.sender, newWallet);
     }
 
     /*
@@ -220,5 +239,6 @@ contract MintingAdminRole is Initializable {
         asset.status = Assets.Status.Enlisted;
         assets.add(asset);
         mpvToken.mint(mintingReceiverWallet, asset.tokens);
+        emit AssetEnlisted(msg.sender, asset.id);
     }
 }
