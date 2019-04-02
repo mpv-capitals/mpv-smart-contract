@@ -6,6 +6,7 @@ import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "./MPVToken.sol";
 import "./IMultiSigWallet.sol";
 import "./RedemptionAdminRole.sol";
+import "./MasterPropertyValue.sol";
 
 
 /**
@@ -48,6 +49,7 @@ contract Assets is Initializable {
     address public superOwnerMultiSig;
     IMultiSigWallet public basicOwnerMultiSig;
     IMultiSigWallet public redemptionMultiSig;
+    MasterPropertyValue public masterPropertyValue;
     MPVToken public mpvToken;
 
     /// @dev Asset is the structure for an asset.
@@ -123,6 +125,12 @@ contract Assets is Initializable {
         _;
     }
 
+    /// @dev Requires that the MPV contract is not paused.
+    modifier mpvNotPaused() {
+        require(masterPropertyValue.paused() == false);
+        _;
+    }
+
     /*
      * Public functions
      */
@@ -142,7 +150,8 @@ contract Assets is Initializable {
         RedemptionAdminRole _redemptionAdminRole,
         IMultiSigWallet _redemptionMultiSig,
         IMultiSigWallet _basicOwnerMultiSig,
-        MPVToken _mpvToken
+        MPVToken _mpvToken,
+        MasterPropertyValue _masterPropertyValue
     ) public initializer {
         require(_redemptionFeeReceiverWallet != address(0));
         redemptionFee = _redemptionFee;
@@ -152,6 +161,7 @@ contract Assets is Initializable {
         redemptionMultiSig = _redemptionMultiSig;
         basicOwnerMultiSig = _basicOwnerMultiSig;
         mpvToken = _mpvToken;
+        masterPropertyValue = _masterPropertyValue;
     }
 
     /// @dev Set the redemption fee amount. Transaction has to be sent by
@@ -160,6 +170,7 @@ contract Assets is Initializable {
     function setRedemptionFee(uint256 fee)
     public
     onlyBasicOwnerMultiSig
+    mpvNotPaused
     {
         redemptionFee = fee;
     }
@@ -181,6 +192,7 @@ contract Assets is Initializable {
     function add(Asset memory asset)
     public
     onlyMintingAdminRole
+    mpvNotPaused
     {
         require(assets[asset.id].id == 0);
         assets[asset.id] = asset;
@@ -212,6 +224,7 @@ contract Assets is Initializable {
     function addList(Asset[] memory _assets)
     public
     onlyMintingAdminRole
+    mpvNotPaused
     {
         require(_assets.length > 0);
 
@@ -226,6 +239,7 @@ contract Assets is Initializable {
     function addPendingAsset(Asset memory _asset)
     public
     onlyMintingAdminRole
+    mpvNotPaused
     {
         pendingAssets.push(_asset);
     }
@@ -235,6 +249,7 @@ contract Assets is Initializable {
     function clearPendingAssets()
     public
     onlyMintingAdminRole
+    mpvNotPaused
     {
         delete pendingAssets;
     }
@@ -245,6 +260,7 @@ contract Assets is Initializable {
     function removePendingAsset(uint256 assetId)
     public
     onlyMintingAdminRole
+    mpvNotPaused
     {
         for (uint256 i = 0; i < pendingAssets.length; i++) {
             if (pendingAssets[i].id == assetId) {
@@ -266,6 +282,7 @@ contract Assets is Initializable {
     /// @return Returns transaction ID.
     function requestRedemption(uint256 assetId)
     public
+    mpvNotPaused
     returns (uint256 transactionId)
     {
         Asset storage asset = assets[assetId];
@@ -293,7 +310,8 @@ contract Assets is Initializable {
     /// Transaction has be sent by the redeemer of the asset.
     /// @param assetId Id of asset to cancel redemption of.
     function cancelRedemption(uint256 assetId)
-    public {
+    public
+    mpvNotPaused {
         Asset storage asset = assets[assetId];
         RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
 
@@ -309,7 +327,8 @@ contract Assets is Initializable {
     /// @param assetId Id of asset to cancel redemption of.
     function rejectRedemption(uint256 assetId)
     public
-    onlyRedemptionAdminRole {
+    onlyRedemptionAdminRole
+    mpvNotPaused {
         Asset storage asset = assets[assetId];
         RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
 
@@ -324,6 +343,7 @@ contract Assets is Initializable {
     function setReserved(uint256[] memory assetIds)
     public
     onlyBasicOwnerMultiSig
+    mpvNotPaused
     {
         for (uint256 i = 0; i < assetIds.length; i++) {
             _setReserved(assetIds[i]);
@@ -336,6 +356,7 @@ contract Assets is Initializable {
     function setEnlisted(uint256[] memory assetIds)
     public
     onlyBasicOwnerMultiSig
+    mpvNotPaused
     {
         for (uint256 i = 0; i < assetIds.length; i++) {
             _setEnlisted(assetIds[i]);
@@ -360,7 +381,8 @@ contract Assets is Initializable {
     /// @dev Sets an enlisted asset as reserved.
     /// @param assetId Id of asset.
     function _setReserved(uint256 assetId)
-    internal {
+    internal
+    {
         require(assets[assetId].status == Status.Enlisted);
         assets[assetId].status = Status.Reserved;
     }
@@ -368,7 +390,8 @@ contract Assets is Initializable {
     /// @dev Sets a reserved asset as enlisted.
     /// @param assetId Id of asset.
     function _setEnlisted(uint256 assetId)
-    internal {
+    internal
+    {
         require(assets[assetId].status == Status.Reserved);
         assets[assetId].status = Status.Enlisted;
     }

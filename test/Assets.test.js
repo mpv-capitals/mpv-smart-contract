@@ -41,7 +41,8 @@ contract('Assets', accounts => {
     assets = await initializeAssets(basicOwnerMultiSig.address)
     redemptionAdminRole.initialize(
       redemptionAdminMultiSig.address,
-      assets.address
+      assets.address,
+      masterPropertyValue.address
     )
     await redemptionAdminMultiSig.setTransactor(assets.address)
   })
@@ -363,7 +364,8 @@ contract('Assets', accounts => {
       redemptionAdminRole.address,
       redemptionAdminMultiSig.address,
       basicOwnerMultiSig,
-      mpvToken.address
+      mpvToken.address,
+      masterPropertyValue.address
     )
     await whitelist.addWhitelisted(assets.address)
     return assets
@@ -371,7 +373,11 @@ contract('Assets', accounts => {
 
   async function initializeWhitelist (multiSig) {
     const whitelist = await Whitelist.new()
-    await whitelist.initialize(multiSig.address, accounts[5])
+    await whitelist.initialize(
+      multiSig.address,
+      accounts[5],
+      masterPropertyValue.address
+    )
     for (const acct of whitelistedAccts) {
       await whitelist.addWhitelisted(acct)
     }

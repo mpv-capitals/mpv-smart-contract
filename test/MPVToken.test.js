@@ -19,7 +19,8 @@ contract('MPVToken', accounts => {
     whitelist = await Whitelist.new()
     await whitelist.initialize(
       multiSig.address,
-      basicOwnerMultiSig.address
+      basicOwnerMultiSig.address,
+      masterPropertyValue.address
     )
     token = await MPVToken.new()
     const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4

@@ -6,7 +6,7 @@ import "./Pausable.sol";
 import "./MPVAccessControl.sol";
 import "./MPVToken.sol";
 import "./Assets.sol";
-import "./IWhitelist.sol";
+import "./Whitelist.sol";
 
 
 /**
@@ -19,7 +19,7 @@ contract MasterPropertyValue is Initializable, Pausable, MPVAccessControl {
      */
     MPVToken public mpvToken;
     Assets public assets;
-    IWhitelist public whitelist;
+    Whitelist public whitelist;
 
     /*
      * Public functions
@@ -31,7 +31,7 @@ contract MasterPropertyValue is Initializable, Pausable, MPVAccessControl {
     function initialize(
         MPVToken _mpvToken,
         Assets _assets,
-        IWhitelist _whitelist
+        Whitelist _whitelist
     ) public initializer {
         mpvToken = _mpvToken;
         assets = _assets;
