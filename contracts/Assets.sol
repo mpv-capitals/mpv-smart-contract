@@ -25,7 +25,15 @@ contract Assets is Initializable {
         address indexed fee
     );
 
-    event AssetAdded(address indexed sender, uint256 indexed assetId);
+    event AssetAdded(
+        address indexed sender,
+        uint256 indexed assetId,
+        Status indexed status,
+        bytes32 notarizationId,
+        uint256 tokens,
+        uint256 timstamp
+    );
+
     event PendingAssetAdded(address indexed sender, uint256 indexed assetId);
     event PendingAssetRemoved(address indexed sender, uint256 indexed assetId);
     event PendingAssetsCleared(address indexed sender);
@@ -201,7 +209,14 @@ contract Assets is Initializable {
     {
         require(assets[asset.id].id == 0);
         assets[asset.id] = asset;
-        emit AssetAdded(msg.sender, asset.id);
+        emit AssetAdded(
+            msg.sender,
+            asset.id,
+            asset.status,
+            asset.notarizationId,
+            asset.tokens,
+            asset.timestamp
+        );
     }
 
     /// @dev Get an asset given the asset id. Transaction can be called by anyone.
