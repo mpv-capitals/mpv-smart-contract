@@ -235,18 +235,25 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
       ) public view returns (uint8 returnValue)
       {
           DailyLimitInfo storage limitInfo = dailyLimits[from];
-          // if no daily limit, tranfer is valid
-          if (limitInfo.dailyLimit == 0) {
-              returnValue = 0;
+
+          if (!whitelist.isWhitelisted(to)) {
+            return 1;
           }
-          // if new day, only check current transfer value
-          if (limitInfo.lastDay + 24 hours < now) {
-              returnValue = value <= limitInfo.dailyLimit ? 0 : 1;
+
+          // if daily limit exists
+          if (limitInfo.dailyLimit != 0){
+            // if new day, only check current transfer value
+            if (now > limitInfo.lastDay + 24 hours) {
+                if (value > limitInfo.dailyLimit) {
+                  return 2;
+                }
+            // if daily period not over, check against previous transfers
+            } else if (!_isUnderLimit(limitInfo, value)) {
+              return 2;
+            }
           }
-          // if daily period not over, check against previous transfers
-          else {
-              returnValue = _isUnderLimit(limitInfo, value) ? 0 : 1;
-          }
+
+          return 0;
       }
 
       /// @dev Translates uint8 restriction code to a human readable string
@@ -257,7 +264,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
       ) public view returns (string memory) {
           if (restrictionCode == 0)
               return 'Valid transfer';
-          if (restrictionCode == 1) {
+          if (restrictionCode == 1)
+              return 'Invalid transfer: nonwhitelisted recipient';
+          if (restrictionCode == 2) {
               return 'Invalid transfer: exceeds daily limit';
           } else {
               revert('Invalid restrictionCode');
@@ -267,7 +276,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /*
      *  Internal functions
      */
-    /// @dev Returns true if token holder is under daily limit of transfers.
+    /// @dev Updates account info and reverts if daily limit is breached
     /// @param account Address of account.
     /// @param amount Amount of tokens account needing to transfer.
     /// @return boolean.

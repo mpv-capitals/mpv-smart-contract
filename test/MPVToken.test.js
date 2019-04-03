@@ -137,13 +137,41 @@ contract('MPVToken', accounts => {
   })
 
   describe('detectTransferRestriction()', () => {
-    describe('regarding daily limits', async () => {
+    beforeEach(async () => {
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+    })
+
+    describe('regarding whitelisted accounts', () => {
+      let whitelistedAcct, nonWhitelistedAcct
+
+      before(async () => {
+        whitelistedAcct = accounts[1]
+        nonWhitelistedAcct = accounts[5]
+      })
+
+      it('returns 0 if sending to a whitelisted account', async () => {
+        expect(
+          (await token.detectTransferRestriction(
+            accounts[0], whitelistedAcct,
+            11 * MULTIPLIER)).toNumber()
+          ).to.equal(0)
+      })
+
+      it('returns 1 if sending to a nonwhitelisted account', async () => {
+        expect(
+          (await token.detectTransferRestriction(
+            accounts[0], nonWhitelistedAcct,
+            11 * MULTIPLIER)).toNumber()
+          ).to.equal(1)
+      })
+    })
+
+    describe('regarding daily limits', () => {
       let dailyLimit
 
-      beforeEach(async () => {
+      before(async () => {
         dailyLimit = 50 * MULTIPLIER
-        await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-        await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
       })
 
       it('returns 0 if there is no daily limit', async () => {
@@ -171,12 +199,12 @@ contract('MPVToken', accounts => {
             ).to.equal(0)
         })
 
-        it('returns 1 if transfer value exceeds daily limit', async () => {
+        it('returns 2 if transfer value exceeds daily limit', async () => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               51 * MULTIPLIER)).toNumber()
-            ).to.equal(1)
+            ).to.equal(2)
         })
       })
 
@@ -195,22 +223,23 @@ contract('MPVToken', accounts => {
             ).to.equal(0)
         })
 
-        it('returns 1 if value + previous transfers exceeds daily limit', async () => {
+        it('returns 2 if value + previous transfers exceeds daily limit', async () => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               11 * MULTIPLIER)).toNumber()
-            ).to.equal(1)
+            ).to.equal(2)
         })
       })
     })
   })
 
   describe('messageForTransferRestriction()', () => {
-    let validTransferMsg, dailyLimitMsg, invalidCodeMsg
+    let validTransferMsg, dailyLimitMsg, invalidCodeMsg, whitelistMsg
 
     before(async () => {
       validTransferMsg = 'Valid transfer'
+      whitelistMsg     = 'Invalid transfer: nonwhitelisted recipient'
       dailyLimitMsg    = 'Invalid transfer: exceeds daily limit'
       invalidCodeMsg   = 'Invalid restrictionCode'
     })
@@ -220,7 +249,11 @@ contract('MPVToken', accounts => {
     })
 
     it('returns the correct message for input 1', async () => {
-      expect(await token.messageForTransferRestriction(1)).to.equal(dailyLimitMsg)
+      expect(await token.messageForTransferRestriction(1)).to.equal(whitelistMsg)
+    })
+
+    it('returns the correct message for input 2', async () => {
+      expect(await token.messageForTransferRestriction(2)).to.equal(dailyLimitMsg)
     })
 
     it('reverts for input above 2', async () => {
