@@ -1,5 +1,5 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
- const { mine } = require('./helpers')
+const { mine } = require('./helpers')
 require('chai').should()
 const moment = require('moment')
 
@@ -341,8 +341,7 @@ contract('Assets', accounts => {
   describe('executeRedemption()', () => {
     beforeEach(async () => {
       const now = moment().unix()
-      redeemer = accounts[0]
-      newAsset = {
+      const newAsset = {
         id: 1,
         notarizationId: '0xabcd',
         tokens: 100 * MULTIPLIER,
@@ -375,6 +374,51 @@ contract('Assets', accounts => {
 
     it('reverts if called by address other than redemptionAdminRole', async () => {
       await shouldFail(assets.executeRedemption(1))
+    })
+  })
+
+  describe('totalMinted()', () => {
+    it('returns total minted for PENDING assets', async () => {
+      const now = moment().unix()
+      const newAsset = {
+        id: 10,
+        notarizationId: '0xabcd',
+        tokens: 100,
+        status: 0,
+        owner: accounts[0],
+        timestamp: now,
+      }
+
+      await assets.addPendingAsset(newAsset)
+      let totalMinted = await assets.totalMinted.call(0)
+      expect(totalMinted.toNumber()).to.equal(100)
+
+      await assets.removePendingAsset(newAsset.id)
+      totalMinted = await assets.totalMinted.call(0)
+      expect(totalMinted.toNumber()).to.equal(0)
+    })
+
+    it('returns total minted for ENLISTED assets', async () => {
+      const now = moment().unix()
+      const newAssets = [{
+        id: 11,
+        notarizationId: '0xabcd',
+        tokens: 105,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }, {
+        id: 12,
+        notarizationId: '0xabcd',
+        tokens: 95,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }]
+
+      await assets.addList(newAssets)
+      const totalMinted = await assets.totalMinted.call(1)
+      expect(totalMinted.toNumber()).to.equal(200)
     })
   })
 
