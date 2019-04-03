@@ -1,7 +1,7 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
 const { encodeCall } = require('zos-lib')
 const moment = require('moment')
-const { Roles, Status, mine } = require('./helpers')
+const { Status, mine } = require('./helpers')
 
 require('chai').should()
 
@@ -14,7 +14,6 @@ const Whitelist = artifacts.require('Whitelist')
 const AdministeredMultiSigWallet = artifacts.require('AdministeredMultiSigWallet')
 const SuperOwnerRole = artifacts.require('SuperOwnerRole')
 const BasicOwnerRole = artifacts.require('BasicOwnerRole')
-const OperationAdminRole = artifacts.require('OperationAdminRole')
 const MintingAdminRole = artifacts.require('MintingAdminRole')
 const RedemptionAdminRole = artifacts.require('RedemptionAdminRole')
 
@@ -25,7 +24,6 @@ let whitelist = null
 
 let superOwnerRole = null
 let basicOwnerRole = null
-let operationAdminRole = null
 let mintingAdminRole = null
 let redemptionAdminRole = null
 
@@ -49,7 +47,6 @@ async function initContracts (accounts) {
 
   superOwnerRole = await SuperOwnerRole.new()
   basicOwnerRole = await BasicOwnerRole.new()
-  operationAdminRole = await OperationAdminRole.new()
   mintingAdminRole = await MintingAdminRole.new()
   redemptionAdminRole = await RedemptionAdminRole.new()
 
@@ -61,7 +58,8 @@ async function initContracts (accounts) {
 
   await whitelist.initialize(
     operationAdminMultiSig.address,
-    basicOwnerMultiSig.address
+    basicOwnerMultiSig.address,
+    mpv.address
   )
 
   const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4
@@ -83,11 +81,13 @@ async function initContracts (accounts) {
     redemptionAdminRole.address,
     redemptionAdminMultiSig.address,
     basicOwnerMultiSig.address,
-    mpvToken.address
+    mpvToken.address,
+    mpv.address
   )
 
   await superOwnerRole.initialize(
-    superOwnerMultiSig.address
+    superOwnerMultiSig.address,
+    mpv.address
   )
 
   await basicOwnerRole.initialize(
@@ -101,53 +101,24 @@ async function initContracts (accounts) {
     mpvToken.address,
     superOwnerRole.address,
     basicOwnerRole.address,
-    mintingReceiverWallet
+    mintingReceiverWallet,
+    mpv.address
   )
 
   await mpv.initialize(
     mpvToken.address,
     assets.address,
-    whitelist.address
+    whitelist.address,
   )
 
-  mpv.addRole(Roles.SuperOwner, superOwnerRole.address)
-  mpv.addRole(Roles.BasicOwner, basicOwnerRole.address)
-  mpv.addRole(Roles.OperationAdmin, operationAdminRole.address)
-  mpv.addRole(Roles.MintingAdmin, mintingAdminRole.address)
-  mpv.addRole(Roles.RedemptionAdmin, redemptionAdminRole.address)
-
-  mpv.renounceRole(Roles.SuperOwner)
-  mpv.renounceRole(Roles.BasicOwner)
-  mpv.renounceRole(Roles.OperationAdmin)
-  mpv.renounceRole(Roles.RedemptionAdmin)
-
-  await superOwnerMultiSig.setAdmin(superOwnerMultiSig.address, {
-    from: accounts[0],
-  })
-
-  await basicOwnerMultiSig.setAdmin(superOwnerMultiSig.address, {
-    from: accounts[0],
-  })
-
-  await operationAdminMultiSig.setAdmin(basicOwnerMultiSig.address, {
-    from: accounts[0],
-  })
-
-  await mintingAdminMultiSig.setTransactor(mintingAdminRole.address, {
-    from: accounts[0],
-  })
-
-  await mintingAdminMultiSig.setAdmin(basicOwnerMultiSig.address, {
-    from: accounts[0],
-  })
-
-  await redemptionAdminMultiSig.setTransactor(assets.address, {
-    from: accounts[0],
-  })
-
-  await redemptionAdminMultiSig.setAdmin(basicOwnerMultiSig.address, {
-    from: accounts[0],
-  })
+  await superOwnerMultiSig.setAdmin(superOwnerMultiSig.address)
+  await basicOwnerMultiSig.setAdmin(superOwnerMultiSig.address)
+  await operationAdminMultiSig.setAdmin(basicOwnerMultiSig.address)
+  await mintingAdminMultiSig.setTransactor(mintingAdminRole.address)
+  await mintingAdminMultiSig.setAdmin(basicOwnerMultiSig.address)
+  await redemptionAdminMultiSig.setTransactor(assets.address)
+  await redemptionAdminMultiSig.setAdmin(basicOwnerMultiSig.address)
+  await mpv.setPausableAdmin(superOwnerMultiSig.address)
 }
 
 contract('MasterPropertyValue', accounts => {
@@ -705,6 +676,11 @@ contract('MasterPropertyValue', accounts => {
       let paused = await mpv.paused.call()
       paused.should.equal(false)
 
+      // must happen through multisig
+      await shouldFail(mpv.pause({
+        from: defaultSuperOwner,
+      }))
+
       const data = encodeCall(
         'pause',
         [],
@@ -722,6 +698,10 @@ contract('MasterPropertyValue', accounts => {
     it('super owner should unpause contract', async () => {
       let paused = await mpv.paused.call()
       paused.should.equal(true)
+
+      await shouldFail(mpv.unpause({
+        from: defaultSuperOwner,
+      }))
 
       const data = encodeCall(
         'unpause',

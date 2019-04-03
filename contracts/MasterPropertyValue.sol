@@ -3,23 +3,22 @@ pragma experimental ABIEncoderV2;
 
 import "zos-lib/contracts/Initializable.sol";
 import "./Pausable.sol";
-import "./MPVAccessControl.sol";
 import "./MPVToken.sol";
 import "./Assets.sol";
-import "./IWhitelist.sol";
+import "./Whitelist.sol";
 
 
 /**
  * @title MasterPropertyValue
  * @dev The main Master Property Value contract.
  */
-contract MasterPropertyValue is Initializable, Pausable, MPVAccessControl {
+contract MasterPropertyValue is Initializable, Pausable {
     /*
      *  Storage
      */
     MPVToken public mpvToken;
     Assets public assets;
-    IWhitelist public whitelist;
+    Whitelist public whitelist;
 
     /*
      * Public functions
@@ -31,7 +30,7 @@ contract MasterPropertyValue is Initializable, Pausable, MPVAccessControl {
     function initialize(
         MPVToken _mpvToken,
         Assets _assets,
-        IWhitelist _whitelist
+        Whitelist _whitelist
     ) public initializer {
         mpvToken = _mpvToken;
         assets = _assets;

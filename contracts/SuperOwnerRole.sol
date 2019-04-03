@@ -2,6 +2,7 @@ pragma solidity ^0.5.1;
 
 import "zos-lib/contracts/Initializable.sol";
 import "./IMultiSigWallet.sol";
+import "./MasterPropertyValue.sol";
 
 
 /**
@@ -25,6 +26,7 @@ contract SuperOwnerRole is Initializable {
     uint256 public delayedTransferCountdownLength;
     uint256 public whitelistRemovalActionCountdownLength;
     uint256 public burningActionCountdownLength;
+    MasterPropertyValue public masterPropertyValue;
 
     /*
      *  Modifiers
@@ -34,15 +36,23 @@ contract SuperOwnerRole is Initializable {
         _;
     }
 
+    /// @dev Requires that the MPV contract is not paused.
+    modifier mpvNotPaused() {
+        require(masterPropertyValue.paused() == false);
+        _;
+    }
+
     /*
      * Public functions
      */
     /// @dev Initialize function set initial storage values.
     /// @param _multiSig Address of the super owner multisig.
     function initialize(
-        IMultiSigWallet _multiSig
+        IMultiSigWallet _multiSig,
+        MasterPropertyValue _masterPropertyValue
     ) public initializer {
         multiSig = _multiSig;
+        masterPropertyValue = _masterPropertyValue;
 
         transferLimitChangeCountdownLength = 48 hours;
         delayedTransferCountdownLength = 48 hours;
@@ -57,6 +67,7 @@ contract SuperOwnerRole is Initializable {
     )
     public
     onlyMultiSig
+    mpvNotPaused
     {
         transferLimitChangeCountdownLength = newCountdown;
         emit TransferLimitChangeCountdownUpdated(msg.sender, newCountdown);
@@ -70,6 +81,7 @@ contract SuperOwnerRole is Initializable {
     )
     public
     onlyMultiSig
+    mpvNotPaused
     {
         delayedTransferCountdownLength = newCountdown;
         emit DelayTransferCountdownUpdated(msg.sender, newCountdown);
@@ -83,6 +95,7 @@ contract SuperOwnerRole is Initializable {
     )
     public
     onlyMultiSig
+    mpvNotPaused
     {
         whitelistRemovalActionCountdownLength = newCountdown;
         emit WhitelistRemovalCountdownUpdated(msg.sender, newCountdown);
@@ -96,6 +109,7 @@ contract SuperOwnerRole is Initializable {
     )
     public
     onlyMultiSig
+    mpvNotPaused
     {
         burningActionCountdownLength = newCountdown;
         emit BurningActionCountdownUpdated(msg.sender, newCountdown);

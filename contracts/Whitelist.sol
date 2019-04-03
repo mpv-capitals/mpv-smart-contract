@@ -3,6 +3,7 @@ pragma solidity ^0.5.1;
 import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/access/Roles.sol";
 import "./IMultiSigWallet.sol";
+import "./MasterPropertyValue.sol";
 
 
 /**
@@ -24,6 +25,7 @@ contract Whitelist is Initializable {
      */
     IMultiSigWallet public operationAdminMultiSig;
     IMultiSigWallet public basicOwnerMultiSig;
+    MasterPropertyValue public masterPropertyValue;
 
     /*
      *  Modifiers
@@ -46,6 +48,12 @@ contract Whitelist is Initializable {
         _;
     }
 
+    /// @dev Requires that the MPV contract is not paused.
+    modifier mpvNotPaused() {
+        require(masterPropertyValue.paused() == false);
+        _;
+    }
+
     /*
      *  Public functions
      */
@@ -54,21 +62,32 @@ contract Whitelist is Initializable {
     /// @param _basicOwnerMultiSig Address of basic owner multisig contract.
     function initialize(
         address _operationAdminMultiSig,
-        address _basicOwnerMultiSig
-    ) public initializer {
+        address _basicOwnerMultiSig,
+        MasterPropertyValue _masterPropertyValue
+    ) public initializer
+    {
         operationAdminMultiSig = IMultiSigWallet(_operationAdminMultiSig);
         basicOwnerMultiSig = IMultiSigWallet(_basicOwnerMultiSig);
+        masterPropertyValue = _masterPropertyValue;
     }
 
     /// @dev Add account to whitelist.
     /// @param account Address of account.
-    function addWhitelisted(address account) public onlyOperationAdmin {
+    function addWhitelisted(address account)
+    public
+    onlyOperationAdmin
+    mpvNotPaused
+    {
         _addWhitelisted(account);
     }
 
     /// @dev Add multiple accounts to whitelist.
     /// @param accounts List of account addresses.
-    function addWhitelisteds(address[] memory accounts) public onlyOperationAdmin {
+    function addWhitelisteds(address[] memory accounts)
+    public
+    onlyOperationAdmin
+    mpvNotPaused
+    {
         for (uint256 i = 0; i < accounts.length; i++) {
             _addWhitelisted(accounts[i]);
         }
@@ -78,7 +97,9 @@ contract Whitelist is Initializable {
     /// @param account Address of account.
     function removeWhitelisted(address account)
     public
-    onlyBasicOwnerMultiSig {
+    onlyBasicOwnerMultiSig
+    mpvNotPaused
+    {
         _removeWhitelisted(account);
     }
 
@@ -86,14 +107,19 @@ contract Whitelist is Initializable {
     /// @param accounts List of account addresses.
     function removeWhitelisteds(address[] memory accounts)
     public
-    onlyBasicOwnerMultiSig {
+    onlyBasicOwnerMultiSig
+    mpvNotPaused
+    {
         for (uint256 i = 0; i < accounts.length; i++) {
             _removeWhitelisted(accounts[i]);
         }
     }
 
     /// @dev Remove sender from whitelist.
-    function renounceWhitelisted() public {
+    function renounceWhitelisted()
+    public
+    mpvNotPaused
+    {
         _removeWhitelisted(msg.sender);
     }
 

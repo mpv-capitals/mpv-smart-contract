@@ -44,7 +44,8 @@ contract('Assets', accounts => {
       redemptionAdminMultiSig.address,
       basicOwnerMultiSig.address,
       assets.address,
-      mpvToken.address
+      mpvToken.address,
+      masterPropertyValue.address
     )
     await redemptionAdminMultiSig.setTransactor(assets.address)
   })
@@ -191,6 +192,42 @@ contract('Assets', accounts => {
       await redemptionAdminMultiSig.confirmTransaction(txId)
       const updatedCountdown = (await redemptionAdminRole.redemptionCountdowns(1)).toNumber()
       expect(updatedCountdown).to.be.closeTo(moment().unix() - 5, moment().unix() + 5)
+    })
+  })
+
+  describe('requestRedemptions()', () => {
+    let newAssets
+    beforeEach(async () => {
+      const now = moment().unix()
+      newAssets = [{
+        id: 6,
+        notarizationId: '0xabcd',
+        tokens: 100 * MULTIPLIER,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }, {
+        id: 7,
+        notarizationId: '0xabcd',
+        tokens: 100 * MULTIPLIER,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }]
+      await assets.addList(newAssets)
+      await mintTokens(accounts[0], 400 * MULTIPLIER)
+      await mpvToken.approve(assets.address, 400 * MULTIPLIER, { from: accounts[0] })
+    })
+
+    it('sets the assets\' status to LOCKED', async () => {
+      const enlisted = 1
+      const locked = 2
+      expect((await assets.assets(6)).status.toNumber()).to.equal(enlisted)
+      expect((await assets.assets(7)).status.toNumber()).to.equal(enlisted)
+      await assets.requestRedemption(6, { from: accounts[0] })
+      await assets.requestRedemption(7, { from: accounts[0] })
+      expect((await assets.assets(6)).status.toNumber()).to.equal(locked)
+      expect((await assets.assets(7)).status.toNumber()).to.equal(locked)
     })
   })
 
@@ -450,7 +487,8 @@ contract('Assets', accounts => {
       redemptionAdminRole.address,
       redemptionAdminMultiSig.address,
       basicOwnerMultiSig,
-      mpvToken.address
+      mpvToken.address,
+      masterPropertyValue.address
     )
     await whitelist.addWhitelisted(assets.address)
     return assets
@@ -458,7 +496,11 @@ contract('Assets', accounts => {
 
   async function initializeWhitelist (multiSig) {
     const whitelist = await Whitelist.new()
-    await whitelist.initialize(multiSig.address, accounts[5])
+    await whitelist.initialize(
+      multiSig.address,
+      accounts[5],
+      masterPropertyValue.address
+    )
     for (const acct of whitelistedAccts) {
       await whitelist.addWhitelisted(acct)
     }
