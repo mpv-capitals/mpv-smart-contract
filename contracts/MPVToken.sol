@@ -78,6 +78,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         _;
     }
 
+    /// @dev Requires that transfer does not exceed account daily limit
+    modifier enforceDailyLimit(address account, uint256 value) {
+        require(_enforceLimit(account, value));
+        _;
+    }
+
     /*
      *  Public functions
      */
@@ -172,10 +178,10 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function transfer(address to, uint256 value)
     public
     whitelistedAddress(to)
+    enforceDailyLimit(msg.sender, value)
     mpvNotPaused
     returns (bool)
     {
-        _enforceLimit(msg.sender, value);
         dailyLimits[msg.sender].spentToday += value;
         _transfer(msg.sender, to, value);
         return true;
@@ -190,9 +196,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     public
     whitelistedAddress(to)
     mpvNotPaused
+    enforceDailyLimit(from, value)
     returns (bool)
     {
-        _enforceLimit(from, value);
         dailyLimits[from].spentToday += value;
         return super.transferFrom(from, to, value);
     }
@@ -282,7 +288,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /// @return boolean.
     function _enforceLimit(address account, uint amount)
     internal
-    returns (bool)
+    returns (bool isUnderLimit)
     {
         DailyLimitInfo storage limitInfo = dailyLimits[account];
 
@@ -300,7 +306,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
             limitInfo.updatedDailyLimit = 0;
             emit DailyLimitUpdateFulfilled(account, limitInfo.dailyLimit);
         }
-        require(_isUnderLimit(limitInfo, amount));
+        isUnderLimit = _isUnderLimit(limitInfo, amount);
     }
 
     function _isUnderLimit(DailyLimitInfo memory limitInfo, uint256 amount)
