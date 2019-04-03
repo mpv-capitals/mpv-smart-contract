@@ -1,6 +1,7 @@
 pragma solidity ^0.5.1;
 
 import "zos-lib/contracts/Initializable.sol";
+import "./MasterPropertyValue.sol";
 import "./IMultiSigWallet.sol";
 import "./MPVToken.sol";
 import "./Assets.sol";
@@ -32,6 +33,7 @@ contract RedemptionAdminRole is Initializable {
     MPVToken public mpvToken;
     uint256 public burningActionCountdownLength;
     mapping(uint256 => uint256) public redemptionCountdowns;
+    MasterPropertyValue public masterPropertyValue;
 
     /*
      *  Modifiers
@@ -48,6 +50,12 @@ contract RedemptionAdminRole is Initializable {
         _;
     }
 
+    /// @dev Requires that the MPV contract is not paused.
+    modifier mpvNotPaused() {
+        require(masterPropertyValue.paused() == false);
+        _;
+    }
+
     /*
      * Public functions
      */
@@ -58,12 +66,14 @@ contract RedemptionAdminRole is Initializable {
         IMultiSigWallet _multiSig,
         IMultiSigWallet _basicOwnerMultiSig,
         Assets _assets,
-        MPVToken _mpvToken
+        MPVToken _mpvToken,
+        MasterPropertyValue _masterPropertyValue
     ) public initializer {
         multiSig = _multiSig;
         basicOwnerMultiSig = _basicOwnerMultiSig;
         assets = _assets;
         mpvToken = _mpvToken;
+        masterPropertyValue = _masterPropertyValue;
         burningActionCountdownLength = 48 hours;
     }
 
@@ -73,6 +83,7 @@ contract RedemptionAdminRole is Initializable {
     function startBurningCountdown(uint256 assetId)
         public
         onlyRedemptionAdminMultiSig
+        mpvNotPaused
     {
         (
             ,/*id*/
@@ -94,6 +105,7 @@ contract RedemptionAdminRole is Initializable {
     function rejectRedemption(uint256 assetId)
         public
         onlyRedemptionAdminOwner
+        mpvNotPaused
     {
         assets.rejectRedemption(assetId);
         emit RedemptionRejected(msg.sender, assetId);

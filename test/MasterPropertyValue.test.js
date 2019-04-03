@@ -61,7 +61,8 @@ async function initContracts (accounts) {
 
   await whitelist.initialize(
     operationAdminMultiSig.address,
-    basicOwnerMultiSig.address
+    basicOwnerMultiSig.address,
+    mpv.address
   )
 
   const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4
@@ -83,11 +84,13 @@ async function initContracts (accounts) {
     redemptionAdminRole.address,
     redemptionAdminMultiSig.address,
     basicOwnerMultiSig.address,
-    mpvToken.address
+    mpvToken.address,
+    mpv.address
   )
 
   await superOwnerRole.initialize(
-    superOwnerMultiSig.address
+    superOwnerMultiSig.address,
+    mpv.address
   )
 
   await basicOwnerRole.initialize(
@@ -101,14 +104,17 @@ async function initContracts (accounts) {
     mpvToken.address,
     superOwnerRole.address,
     basicOwnerRole.address,
-    mintingReceiverWallet
+    mintingReceiverWallet,
+    mpv.address
   )
 
   await mpv.initialize(
     mpvToken.address,
     assets.address,
-    whitelist.address
+    whitelist.address,
   )
+
+  await mpv.setPausableAdmin(superOwnerMultiSig.address)
 
   mpv.addRole(Roles.SuperOwner, superOwnerRole.address)
   mpv.addRole(Roles.BasicOwner, basicOwnerRole.address)
@@ -705,6 +711,11 @@ contract('MasterPropertyValue', accounts => {
       let paused = await mpv.paused.call()
       paused.should.equal(false)
 
+      // must happen through multisig
+      await shouldFail(mpv.pause({
+        from: defaultSuperOwner
+      }))
+
       const data = encodeCall(
         'pause',
         [],
@@ -722,6 +733,10 @@ contract('MasterPropertyValue', accounts => {
     it('super owner should unpause contract', async () => {
       let paused = await mpv.paused.call()
       paused.should.equal(true)
+
+      await shouldFail(mpv.unpause({
+        from: defaultSuperOwner
+      }))
 
       const data = encodeCall(
         'unpause',

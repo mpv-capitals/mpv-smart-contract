@@ -1,6 +1,7 @@
 pragma solidity ^0.5.1;
 
 import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
+import "./MasterPropertyValue.sol";
 
 
 /**
@@ -22,6 +23,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     /// admin is the account or multisig able to submit transaction on
     /// behalf of this multisig.
     address public admin;
+    MasterPropertyValue public masterPropertyValue;
 
     /// transactor is a smart contract address able to only add transactions
     /// to retrieve a transaction id and able to revoke all confirmations too.
@@ -55,6 +57,12 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         _;
     }
 
+    /// @dev Requires that the MPV contract is not paused.
+    modifier mpvNotPaused() {
+        require(masterPropertyValue.paused() == false);
+        _;
+    }
+
     /*
      *  Public functions
      */
@@ -67,6 +75,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     {
         admin = msg.sender;
     }
+
+    MasterPropertyValue _masterPropertyValue;
 
     /// @dev Sets an account to be the new admin. Transaction must be sent
     /// from the current admin account.

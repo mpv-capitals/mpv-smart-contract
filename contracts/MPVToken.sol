@@ -109,6 +109,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function setMPV(address _masterPropertyValue)
     public
     mpvAccessOnly(msg.sender)
+    mpvNotPaused
     {
         masterPropertyValue = MasterPropertyValue(_masterPropertyValue);
         emit MPVUpdated(msg.sender, _masterPropertyValue);
@@ -119,6 +120,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function setMintingAdmin(address _mintingAdmin)
     public
     onlyMintingAdmin
+    mpvNotPaused
     {
         mintingAdmin = _mintingAdmin;
         emit MintingAdminUpdated(msg.sender, _mintingAdmin);
@@ -129,6 +131,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function setRedemptionAdmin(address _redemptionAdmin)
     public
     onlyRedemptionAdmin
+    mpvNotPaused
     {
         redemptionAdmin = _redemptionAdmin;
         emit RedemptionAdminUpdated(msg.sender, _redemptionAdmin);
@@ -146,7 +149,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function transfer(address to, uint256 value)
     public
     whitelistedAddress(to)
-    mpvNotPaused()
+    mpvNotPaused
     returns (bool)
     {
         require(_isUnderLimit(msg.sender, value));
@@ -163,7 +166,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function transferFrom(address from, address to, uint256 value)
     public
     whitelistedAddress(to)
-    mpvNotPaused()
+    mpvNotPaused
     returns (bool)
     {
         require(_isUnderLimit(from, value));
@@ -178,6 +181,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     public
     onlyMintingAdmin
     whitelistedAddress(account)
+    mpvNotPaused
     {
         _mint(account, value);
     }
@@ -188,6 +192,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function burn(address account, uint value)
     public
     onlyRedemptionAdmin
+    mpvNotPaused
     {
         _burn(account, value);
     }
