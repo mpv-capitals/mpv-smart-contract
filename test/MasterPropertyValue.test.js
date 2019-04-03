@@ -73,8 +73,7 @@ async function initContracts (accounts) {
     whitelist.address,
     mpv.address,
     mintingAdminRole.address,
-    redemptionAdminRole.address,
-    dailyLimit
+    redemptionAdminRole.address
   )
 
   await assets.initialize(
@@ -292,26 +291,6 @@ contract('MasterPropertyValue', accounts => {
 
       const updatedWallet = await assets.redemptionFeeReceiverWallet.call()
       updatedWallet.should.equal(currentWallet)
-    })
-
-    it('set token daily limit', async () => {
-      const currentLimit = await mpvToken.dailyLimit.call()
-      currentLimit.toNumber().should.equal(1000 * (10 ** 4))
-
-      const newLimit = 2000 * (10 * 4)
-
-      const data = encodeCall(
-        'setDailyLimit',
-        ['uint256'],
-        [newLimit]
-      )
-      await superOwnerMultiSig.submitTransaction(mpvToken.address, 0, data, {
-        from: defaultSuperOwner,
-      })
-
-      const updatedLimit = await mpvToken.dailyLimit.call()
-
-      updatedLimit.toNumber().should.equal(newLimit)
     })
 
     it('set transfer limit countdown length', async () => {
