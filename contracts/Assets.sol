@@ -274,7 +274,7 @@ contract Assets is Initializable {
         require(_assets.length > 0);
 
         for (uint256 i = 0; i < _assets.length; i++) {
-            add(assets[i]);
+            add(_assets[i]);
         }
     }
 
@@ -333,25 +333,20 @@ contract Assets is Initializable {
     mpvNotPaused
     returns (uint256 transactionId)
     {
-        Asset storage asset = assets[assetId];
-        require(asset.status == Status.Enlisted);
-        require(mpvToken.transferFrom(msg.sender, address(this), asset.tokens));
+        return _requestRedemption(assetId);
+    }
 
-        if (redemptionFee > 0) {
-            require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
+    /// @dev Submit multiple redemption requests at once redeem. Sender needs to
+    /// have the amount of tokens the assets are worth plus the redemption fee
+    /// for each asset. The redemption fee is non-refundable. Transaction can
+    /// be sent by anyone.
+    /// @param assetIds Ids of assets to redeem.
+    function requestRedemptions(uint256[] memory assetIds)
+    public
+    {
+        for (uint256 i = 0; i < assetIds.length; i++) {
+            _requestRedemption(assetIds[i]);
         }
-
-        bytes memory data = abi.encodeWithSelector(
-            redemptionAdminRole.startBurningCountdown.selector,
-            assetId
-        );
-
-        transactionId = redemptionMultiSig.addTransaction(address(redemptionAdminRole), data);
-
-        redemptionTokenLocks[assetId] = RedemptionTokenLock(asset.tokens, msg.sender, transactionId);
-        asset.status = Assets.Status.Locked;
-
-        emit RedemptionRequested(assetId, msg.sender, asset.tokens, redemptionFee, transactionId);
     }
 
     /// @dev Cancel an asset redemption request. Locked tokens will be unlocked.
@@ -389,12 +384,12 @@ contract Assets is Initializable {
     public
     onlyRedemptionAdminRole
     {
-      Asset storage asset = assets[assetId];
-      RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
+        Asset storage asset = assets[assetId];
+        RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
 
-      asset.status = Status.Redeemed;
-      emit RedemptionExecuted(assetId, tokenLock.account, tokenLock.amount);
-      delete redemptionTokenLocks[assetId];
+        asset.status = Status.Redeemed;
+        emit RedemptionExecuted(assetId, tokenLock.account, tokenLock.amount);
+        delete redemptionTokenLocks[assetId];
     }
 
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by
@@ -456,6 +451,31 @@ contract Assets is Initializable {
         require(assets[assetId].status == Status.Reserved);
         assets[assetId].status = Status.Enlisted;
         emit AssetMarkedEnlisted(msg.sender, assetId);
+    }
+
+    function _requestRedemption(uint256 assetId)
+    internal
+    returns (uint256 transactionId)
+    {
+        Asset storage asset = assets[assetId];
+        require(asset.status == Status.Enlisted);
+        require(mpvToken.transferFrom(msg.sender, address(this), asset.tokens));
+
+        if (redemptionFee > 0) {
+            require(mpvToken.transferFrom(msg.sender, redemptionFeeReceiverWallet, redemptionFee));
+        }
+
+        bytes memory data = abi.encodeWithSelector(
+            redemptionAdminRole.startBurningCountdown.selector,
+            assetId
+        );
+
+        transactionId = redemptionMultiSig.addTransaction(address(redemptionAdminRole), data);
+
+        redemptionTokenLocks[assetId] = RedemptionTokenLock(asset.tokens, msg.sender, transactionId);
+        asset.status = Assets.Status.Locked;
+
+        emit RedemptionRequested(assetId, msg.sender, asset.tokens, redemptionFee, transactionId);
     }
 
     /// @dev sets asset.status back to Enlisted and refunds tokens to redeemer

@@ -9,5 +9,5 @@ import "./IMultiSigWallet.sol";
  * @dev Operation admin role contract.
  */
 contract OperationAdminRole is Initializable {
-
+    //
 }

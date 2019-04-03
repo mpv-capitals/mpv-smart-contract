@@ -115,11 +115,11 @@ contract RedemptionAdminRole is Initializable {
         public
     {
         require(
-          multiSig.hasOwner(msg.sender) ||
-          basicOwnerMultiSig.hasOwner(msg.sender)
+            multiSig.hasOwner(msg.sender) ||
+            basicOwnerMultiSig.hasOwner(msg.sender)
         );
         require(
-          now > redemptionCountdowns[assetId].add(burningActionCountdownLength)
+            now > redemptionCountdowns[assetId].add(burningActionCountdownLength)
         );
 
         (uint256 amount, ,) = assets.redemptionTokenLocks(assetId);

@@ -1,5 +1,5 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
- const { mine } = require('./helpers')
+const { mine } = require('./helpers')
 require('chai').should()
 const moment = require('moment')
 
@@ -195,6 +195,42 @@ contract('Assets', accounts => {
     })
   })
 
+  describe('requestRedemptions()', () => {
+    let newAssets
+    beforeEach(async () => {
+      const now = moment().unix()
+      newAssets = [{
+        id: 6,
+        notarizationId: '0xabcd',
+        tokens: 100 * MULTIPLIER,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }, {
+        id: 7,
+        notarizationId: '0xabcd',
+        tokens: 100 * MULTIPLIER,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }]
+      await assets.addList(newAssets)
+      await mintTokens(accounts[0], 400 * MULTIPLIER)
+      await mpvToken.approve(assets.address, 400 * MULTIPLIER, { from: accounts[0] })
+    })
+
+    it(`sets the assets' status to LOCKED`, async () => {
+      const enlisted = 1
+      const locked = 2
+      expect((await assets.assets(6)).status.toNumber()).to.equal(enlisted)
+      expect((await assets.assets(7)).status.toNumber()).to.equal(enlisted)
+      await assets.requestRedemption(6, { from: accounts[0] })
+      await assets.requestRedemption(7, { from: accounts[0] })
+      expect((await assets.assets(6)).status.toNumber()).to.equal(locked)
+      expect((await assets.assets(7)).status.toNumber()).to.equal(locked)
+    })
+  })
+
   describe('cancelRedemption()', () => {
     let newAsset, redeemer
     beforeEach(async () => {
@@ -342,8 +378,7 @@ contract('Assets', accounts => {
   describe('executeRedemption()', () => {
     beforeEach(async () => {
       const now = moment().unix()
-      redeemer = accounts[0]
-      newAsset = {
+      const newAsset = {
         id: 1,
         notarizationId: '0xabcd',
         tokens: 100 * MULTIPLIER,
