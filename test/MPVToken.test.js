@@ -1,4 +1,5 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
+const { mine } = require('./helpers')
 require('chai').should()
 
 const MPVToken = artifacts.require('MPVToken')
@@ -31,8 +32,7 @@ contract('MPVToken', accounts => {
       whitelist.address,
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
-      masterPropertyValue.address, // redemptionAdmin
-      dailyLimit
+      masterPropertyValue.address // redemptionAdmin
     )
 
     await whitelist.addWhitelisted(accounts[0])
@@ -60,6 +60,8 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if transfer breaches daily limit', async () => {
+      await token.updateDailyLimit(1000 * MULTIPLIER)
+      await mine(60 * 60 * 48 + 1)
       await token.transfer(accounts[1], 500 * MULTIPLIER)
       await shouldFail(token.transfer(accounts[1], 501 * MULTIPLIER))
     })
@@ -87,6 +89,8 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if transfer breaches daily limit', async () => {
+      await token.updateDailyLimit(1000 * MULTIPLIER, { from: accounts[1] })
+      await mine(60 * 60 * 48 + 1)
       await token.transferFrom(accounts[1], accounts[0], 500 * MULTIPLIER)
       await shouldFail(token.transferFrom(accounts[1], accounts[0], 501 * MULTIPLIER))
     })
@@ -129,6 +133,98 @@ contract('MPVToken', accounts => {
 
     it('reverts if called by address other than the redemptionAdmin', async () => {
       await shouldFail(token.burn(accounts[0], 300, { from: accounts[0] }))
+    })
+  })
+
+  describe('detectTransferRestriction()', () => {
+    describe('regarding daily limits', async () => {
+      let dailyLimit
+
+      beforeEach(async () => {
+        dailyLimit = 50 * MULTIPLIER
+        await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
+        await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      })
+
+      it('returns 0 if there is no daily limit', async () => {
+        await token.transfer(accounts[1], 40 * MULTIPLIER)
+        expect(
+          (await token.detectTransferRestriction(
+            accounts[0], accounts[1],
+            11 * MULTIPLIER)).toNumber()
+          ).to.equal(0)
+      })
+
+      describe('when new daily limit', () => {
+        beforeEach(async () => {
+          await token.updateDailyLimit(dailyLimit)
+          await mine(60 * 60 * 48 + 1)
+          await token.transfer(accounts[1], 40 * MULTIPLIER)
+          await mine(60 * 60 * 24 + 1)
+        })
+
+        it('returns 0 if transfer limit does not exceed daily limit', async () => {
+          expect(
+            (await token.detectTransferRestriction(
+              accounts[0], accounts[1],
+              11 * MULTIPLIER)).toNumber()
+            ).to.equal(0)
+        })
+
+        it('returns 1 if transfer value exceeds daily limit', async () => {
+          expect(
+            (await token.detectTransferRestriction(
+              accounts[0], accounts[1],
+              51 * MULTIPLIER)).toNumber()
+            ).to.equal(1)
+        })
+      })
+
+      describe('when still in previous daily limit period', () => {
+        beforeEach(async () => {
+          await token.updateDailyLimit(dailyLimit)
+          await mine(60 * 60 * 48 + 1)
+          await token.transfer(accounts[1], 40 * MULTIPLIER)
+        })
+
+        it('returns 0 if value + previous transfers does not exceed daily limit', async () => {
+          expect(
+            (await token.detectTransferRestriction(
+              accounts[0], accounts[1],
+              10 * MULTIPLIER)).toNumber()
+            ).to.equal(0)
+        })
+
+        it('returns 1 if value + previous transfers exceeds daily limit', async () => {
+          expect(
+            (await token.detectTransferRestriction(
+              accounts[0], accounts[1],
+              11 * MULTIPLIER)).toNumber()
+            ).to.equal(1)
+        })
+      })
+    })
+  })
+
+  describe('messageForTransferRestriction()', () => {
+    let validTransferMsg, dailyLimitMsg, invalidCodeMsg
+
+    before(async () => {
+      validTransferMsg = 'Valid transfer'
+      dailyLimitMsg    = 'Invalid transfer: exceeds daily limit'
+      invalidCodeMsg   = 'Invalid restrictionCode'
+    })
+
+    it('returns the correct message for input 0', async () => {
+      expect(await token.messageForTransferRestriction(0)).to.equal(validTransferMsg)
+    })
+
+    it('returns the correct message for input 1', async () => {
+      expect(await token.messageForTransferRestriction(1)).to.equal(dailyLimitMsg)
+    })
+
+    it('reverts for input above 2', async () => {
+      await shouldFail(token.messageForTransferRestriction(3))
     })
   })
 })
