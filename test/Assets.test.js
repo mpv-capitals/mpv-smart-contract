@@ -473,7 +473,6 @@ contract('Assets', accounts => {
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
       redemptionAdminRole.address, // redemptionAdmin
-      DAILY_LIMIT
     )
     return mpvToken
   }
