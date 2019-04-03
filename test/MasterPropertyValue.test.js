@@ -1,7 +1,7 @@
 const { shouldFail } = require('openzeppelin-test-helpers')
 const { encodeCall } = require('zos-lib')
 const moment = require('moment')
-const { Roles, Status, mine } = require('./helpers')
+const { Status, mine } = require('./helpers')
 
 require('chai').should()
 
@@ -14,7 +14,6 @@ const Whitelist = artifacts.require('Whitelist')
 const AdministeredMultiSigWallet = artifacts.require('AdministeredMultiSigWallet')
 const SuperOwnerRole = artifacts.require('SuperOwnerRole')
 const BasicOwnerRole = artifacts.require('BasicOwnerRole')
-const OperationAdminRole = artifacts.require('OperationAdminRole')
 const MintingAdminRole = artifacts.require('MintingAdminRole')
 const RedemptionAdminRole = artifacts.require('RedemptionAdminRole')
 
@@ -25,7 +24,6 @@ let whitelist = null
 
 let superOwnerRole = null
 let basicOwnerRole = null
-let operationAdminRole = null
 let mintingAdminRole = null
 let redemptionAdminRole = null
 
@@ -49,7 +47,6 @@ async function initContracts (accounts) {
 
   superOwnerRole = await SuperOwnerRole.new()
   basicOwnerRole = await BasicOwnerRole.new()
-  operationAdminRole = await OperationAdminRole.new()
   mintingAdminRole = await MintingAdminRole.new()
   redemptionAdminRole = await RedemptionAdminRole.new()
 
@@ -660,7 +657,7 @@ contract('MasterPropertyValue', accounts => {
 
       // must happen through multisig
       await shouldFail(mpv.pause({
-        from: defaultSuperOwner
+        from: defaultSuperOwner,
       }))
 
       const data = encodeCall(
@@ -682,7 +679,7 @@ contract('MasterPropertyValue', accounts => {
       paused.should.equal(true)
 
       await shouldFail(mpv.unpause({
-        from: defaultSuperOwner
+        from: defaultSuperOwner,
       }))
 
       const data = encodeCall(

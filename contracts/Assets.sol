@@ -74,6 +74,7 @@ contract Assets is Initializable {
     IMultiSigWallet public redemptionMultiSig;
     MasterPropertyValue public masterPropertyValue;
     MPVToken public mpvToken;
+    mapping (uint256 => uint256) public statusTotalTokens;
 
     /// @dev Asset is the structure for an asset.
     struct Asset {
@@ -222,6 +223,7 @@ contract Assets is Initializable {
     {
         require(assets[asset.id].id == 0);
         assets[asset.id] = asset;
+        _incrementTotalMintedCount(asset.status, asset.tokens);
         emit AssetAdded(
             msg.sender,
             asset.id,
@@ -287,6 +289,7 @@ contract Assets is Initializable {
     mpvNotPaused
     {
         pendingAssets.push(_asset);
+        _incrementTotalMintedCount(_asset.status, _asset.tokens);
         emit PendingAssetAdded(msg.sender, _asset.id);
     }
 
@@ -297,6 +300,11 @@ contract Assets is Initializable {
     onlyMintingAdminRole
     mpvNotPaused
     {
+
+        for (uint256 i = 0; i < pendingAssets.length; i++) {
+            _decrementTotalMintedCount(pendingAssets[i].status, pendingAssets[i].tokens);
+        }
+
         delete pendingAssets;
         emit PendingAssetsCleared(msg.sender);
     }
@@ -311,6 +319,8 @@ contract Assets is Initializable {
     {
         for (uint256 i = 0; i < pendingAssets.length; i++) {
             if (pendingAssets[i].id == assetId) {
+                _decrementTotalMintedCount(pendingAssets[i].status, pendingAssets[i].tokens);
+
                 if (i >= pendingAssets.length) continue;
                 // remove pending asset array item and shift items
                 for (uint256 j = i; j < pendingAssets.length-1; j++) {
@@ -386,8 +396,9 @@ contract Assets is Initializable {
     {
         Asset storage asset = assets[assetId];
         RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
-
+        _decrementTotalMintedCount(asset.status, asset.tokens);
         asset.status = Status.Redeemed;
+        _incrementTotalMintedCount(asset.status, asset.tokens);
         emit RedemptionExecuted(assetId, tokenLock.account, tokenLock.amount);
         delete redemptionTokenLocks[assetId];
     }
@@ -439,7 +450,9 @@ contract Assets is Initializable {
     internal
     {
         require(assets[assetId].status == Status.Enlisted);
+        _decrementTotalMintedCount(assets[assetId].status, assets[assetId].tokens);
         assets[assetId].status = Status.Reserved;
+        _incrementTotalMintedCount(assets[assetId].status, assets[assetId].tokens);
         emit AssetMarkedReserved(msg.sender, assetId);
     }
 
@@ -449,7 +462,9 @@ contract Assets is Initializable {
     internal
     {
         require(assets[assetId].status == Status.Reserved);
+        _decrementTotalMintedCount(assets[assetId].status, assets[assetId].tokens);
         assets[assetId].status = Status.Enlisted;
+        _incrementTotalMintedCount(assets[assetId].status, assets[assetId].tokens);
         emit AssetMarkedEnlisted(msg.sender, assetId);
     }
 
@@ -473,7 +488,9 @@ contract Assets is Initializable {
         transactionId = redemptionMultiSig.addTransaction(address(redemptionAdminRole), data);
 
         redemptionTokenLocks[assetId] = RedemptionTokenLock(asset.tokens, msg.sender, transactionId);
+        _decrementTotalMintedCount(asset.status, asset.tokens);
         asset.status = Assets.Status.Locked;
+        _incrementTotalMintedCount(asset.status, asset.tokens);
 
         emit RedemptionRequested(assetId, msg.sender, asset.tokens, redemptionFee, transactionId);
     }
@@ -487,7 +504,19 @@ contract Assets is Initializable {
         RedemptionTokenLock storage tokenLock = redemptionTokenLocks[assetId];
 
         mpvToken.transfer(tokenLock.account, tokenLock.amount);
+        _decrementTotalMintedCount(asset.status, asset.tokens);
         asset.status = Status.Enlisted;
+        _incrementTotalMintedCount(asset.status, assets[assetId].tokens);
         delete redemptionTokenLocks[assetId];
+    }
+
+    function _decrementTotalMintedCount(Status status, uint256 amount)
+    internal {
+        statusTotalTokens[uint256(status)] = statusTotalTokens[uint256(status)].sub(amount);
+    }
+
+    function _incrementTotalMintedCount(Status status, uint256 amount)
+    internal {
+        statusTotalTokens[uint256(status)] = statusTotalTokens[uint256(status)].add(amount);
     }
 }

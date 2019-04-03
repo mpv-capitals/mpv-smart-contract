@@ -38,7 +38,7 @@ contract MintingAdminRole is Initializable {
     uint256 public mintingActionCountdownLength;
     uint256 public mintingCountdownStart;
     uint256 public pendingAssetsTransactionId;
-    MasterPropertyValue masterPropertyValue;
+    MasterPropertyValue public masterPropertyValue;
 
     /*
      *  Modifiers

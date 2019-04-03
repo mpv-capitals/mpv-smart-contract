@@ -219,7 +219,7 @@ contract('Assets', accounts => {
       await mpvToken.approve(assets.address, 400 * MULTIPLIER, { from: accounts[0] })
     })
 
-    it(`sets the assets' status to LOCKED`, async () => {
+    it('sets the assets\' status to LOCKED', async () => {
       const enlisted = 1
       const locked = 2
       expect((await assets.assets(6)).status.toNumber()).to.equal(enlisted)
@@ -411,6 +411,51 @@ contract('Assets', accounts => {
 
     it('reverts if called by address other than redemptionAdminRole', async () => {
       await shouldFail(assets.executeRedemption(1))
+    })
+  })
+
+  describe('statusTotalTokens()', () => {
+    it('returns total minted for PENDING assets', async () => {
+      const now = moment().unix()
+      const newAsset = {
+        id: 10,
+        notarizationId: '0xabcd',
+        tokens: 100,
+        status: 0,
+        owner: accounts[0],
+        timestamp: now,
+      }
+
+      await assets.addPendingAsset(newAsset)
+      let statusTotalTokens = await assets.statusTotalTokens.call(0)
+      expect(statusTotalTokens.toNumber()).to.equal(100)
+
+      await assets.removePendingAsset(newAsset.id)
+      statusTotalTokens = await assets.statusTotalTokens.call(0)
+      expect(statusTotalTokens.toNumber()).to.equal(0)
+    })
+
+    it('returns total minted for ENLISTED assets', async () => {
+      const now = moment().unix()
+      const newAssets = [{
+        id: 11,
+        notarizationId: '0xabcd',
+        tokens: 105,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }, {
+        id: 12,
+        notarizationId: '0xabcd',
+        tokens: 95,
+        status: 1,
+        owner: accounts[0],
+        timestamp: now,
+      }]
+
+      await assets.addList(newAssets)
+      const statusTotalTokens = await assets.statusTotalTokens.call(1)
+      expect(statusTotalTokens.toNumber()).to.equal(200)
     })
   })
 

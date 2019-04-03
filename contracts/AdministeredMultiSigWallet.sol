@@ -76,8 +76,6 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
         admin = msg.sender;
     }
 
-    MasterPropertyValue _masterPropertyValue;
-
     /// @dev Sets an account to be the new admin. Transaction must be sent
     /// from the current admin account.
     /// @param _admin Address of new admin account.
