@@ -31,7 +31,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     MasterPropertyValue public masterPropertyValue;
     address public mintingAdmin;
     address public redemptionAdmin;
-    uint256 public countdownLength;
+    uint256 public updateDailyLimitCountdownLength;
     mapping(address => DailyLimitInfo) public dailyLimits;
 
     /// @dev Daily limit info structure.
@@ -112,7 +112,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         masterPropertyValue = _masterPropertyValue;
         mintingAdmin = _mintingAdmin;
         redemptionAdmin = _redemptionAdmin;
-        countdownLength = 48 hours;
+        updateDailyLimitCountdownLength = 48 hours;
     }
 
     /// @dev Set the MPV contract address.
@@ -165,7 +165,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function cancelDailyLimitUpdate() public {
       DailyLimitInfo storage limitInfo = dailyLimits[msg.sender];
 
-      require(limitInfo.countdownStart + countdownLength < now);
+      require(limitInfo.countdownStart + updateDailyLimitCountdownLength < now);
       limitInfo.countdownStart = 0;
       limitInfo.updatedDailyLimit = 0;
       emit DailyLimitUpdateCancelled(msg.sender, limitInfo.dailyLimit);
@@ -202,6 +202,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         dailyLimits[from].spentToday += value;
         return super.transferFrom(from, to, value);
     }
+
+    /* function delayedTransferupdateDailyLimitCountdownLength */
 
     /// @dev Mint new tokens.
     /// @param account Address to send newly minted tokens to.
@@ -299,7 +301,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
         if (
             limitInfo.countdownStart != 0 &&
-            now > limitInfo.countdownStart + countdownLength
+            now > limitInfo.countdownStart + updateDailyLimitCountdownLength
         ) {
             limitInfo.countdownStart = 0;
             limitInfo.dailyLimit = limitInfo.updatedDailyLimit;
