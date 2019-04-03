@@ -414,7 +414,7 @@ contract('Assets', accounts => {
     })
   })
 
-  describe('totalMinted()', () => {
+  describe('statusTotalTokens()', () => {
     it('returns total minted for PENDING assets', async () => {
       const now = moment().unix()
       const newAsset = {
@@ -427,12 +427,12 @@ contract('Assets', accounts => {
       }
 
       await assets.addPendingAsset(newAsset)
-      let totalMinted = await assets.totalMinted.call(0)
-      expect(totalMinted.toNumber()).to.equal(100)
+      let statusTotalTokens = await assets.statusTotalTokens.call(0)
+      expect(statusTotalTokens.toNumber()).to.equal(100)
 
       await assets.removePendingAsset(newAsset.id)
-      totalMinted = await assets.totalMinted.call(0)
-      expect(totalMinted.toNumber()).to.equal(0)
+      statusTotalTokens = await assets.statusTotalTokens.call(0)
+      expect(statusTotalTokens.toNumber()).to.equal(0)
     })
 
     it('returns total minted for ENLISTED assets', async () => {
@@ -454,8 +454,8 @@ contract('Assets', accounts => {
       }]
 
       await assets.addList(newAssets)
-      const totalMinted = await assets.totalMinted.call(1)
-      expect(totalMinted.toNumber()).to.equal(200)
+      const statusTotalTokens = await assets.statusTotalTokens.call(1)
+      expect(statusTotalTokens.toNumber()).to.equal(200)
     })
   })
 

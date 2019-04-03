@@ -74,7 +74,7 @@ contract Assets is Initializable {
     IMultiSigWallet public redemptionMultiSig;
     MasterPropertyValue public masterPropertyValue;
     MPVToken public mpvToken;
-    mapping (uint256 => uint256) public totalMinted;
+    mapping (uint256 => uint256) public statusTotalTokens;
 
     /// @dev Asset is the structure for an asset.
     struct Asset {
@@ -512,11 +512,11 @@ contract Assets is Initializable {
 
     function _decrementTotalMintedCount(Status status, uint256 amount)
     internal {
-        totalMinted[uint256(status)] = totalMinted[uint256(status)].sub(amount);
+        statusTotalTokens[uint256(status)] = statusTotalTokens[uint256(status)].sub(amount);
     }
 
     function _incrementTotalMintedCount(Status status, uint256 amount)
     internal {
-        totalMinted[uint256(status)] = totalMinted[uint256(status)].add(amount);
+        statusTotalTokens[uint256(status)] = statusTotalTokens[uint256(status)].add(amount);
     }
 }
