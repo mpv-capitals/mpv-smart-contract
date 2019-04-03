@@ -2,6 +2,7 @@ pragma solidity ^0.5.1;
 pragma experimental ABIEncoderV2;
 
 import "zos-lib/contracts/Initializable.sol";
+import "./MasterPropertyValue.sol";
 import "./IMultiSigWallet.sol";
 import "./Assets.sol";
 import "./MPVToken.sol";
@@ -15,6 +16,17 @@ import "./BasicOwnerRole.sol";
  */
 contract MintingAdminRole is Initializable {
     /*
+     *  Events
+     */
+    event MintingCancelled(address indexed sender);
+    event MintingReceiverWalletUpdated(address indexed sender, address indexed wallet);
+    event MintingCountdownStarted(address indexed sender);
+    event RefreshPendingAssetsStatus(address indexed sender);
+    event PendingAssetAdded(address indexed sender, uint256 indexed assetId);
+    event PendingAssetRemoved(address indexed sender, uint256 indexed assetId);
+    event AssetEnlisted(address indexed sender, uint256 indexed assetId);
+
+    /*
      *  Storage
      */
     IMultiSigWallet public multiSig;
@@ -26,6 +38,7 @@ contract MintingAdminRole is Initializable {
     uint256 public mintingActionCountdownLength;
     uint256 public mintingCountdownStart;
     uint256 public pendingAssetsTransactionId;
+    MasterPropertyValue masterPropertyValue;
 
     /*
      *  Modifiers
@@ -55,6 +68,12 @@ contract MintingAdminRole is Initializable {
         _;
     }
 
+    /// @dev Requires that the MPV contract is not paused.
+    modifier mpvNotPaused() {
+        require(masterPropertyValue.paused() == false);
+        _;
+    }
+
     /*
      * Public functions
      */
@@ -71,11 +90,13 @@ contract MintingAdminRole is Initializable {
         MPVToken _mpvToken,
         SuperOwnerRole _superOwnerRole,
         BasicOwnerRole _basicOwnerRole,
-        address _mintingReceiverWallet
+        address _mintingReceiverWallet,
+        MasterPropertyValue _masterPropertyValue
     ) public initializer {
         multiSig = _multiSig;
         assets = _assets;
         mpvToken = _mpvToken;
+        masterPropertyValue = _masterPropertyValue;
         superOwnerRole = _superOwnerRole;
         basicOwnerRole = _basicOwnerRole;
         mintingReceiverWallet = _mintingReceiverWallet;
@@ -89,6 +110,7 @@ contract MintingAdminRole is Initializable {
     )
     public
     onlySuperOwnerMultiSig
+    mpvNotPaused
     {
         mintingActionCountdownLength = newCountdown;
     }
@@ -101,6 +123,7 @@ contract MintingAdminRole is Initializable {
     function addPendingAsset(Assets.Asset memory _asset)
     public
     onlyOwner
+    mpvNotPaused
     returns (uint256) {
         // minting countdown terminated
         require(mintingCountdownStart == 0);
@@ -115,10 +138,12 @@ contract MintingAdminRole is Initializable {
 
             uint256 transactionId = multiSig.addTransaction(address(this), data);
             pendingAssetsTransactionId = transactionId;
+            emit PendingAssetAdded(msg.sender, _asset.id);
             return transactionId;
         } else {
             assets.addPendingAsset(_asset);
             multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+            emit PendingAssetAdded(msg.sender, _asset.id);
             return pendingAssetsTransactionId;
         }
     }
@@ -131,6 +156,7 @@ contract MintingAdminRole is Initializable {
     function addPendingAssets(Assets.Asset[] memory _assets)
     public
     onlyOwner
+    mpvNotPaused
     returns (uint256) {
         for (uint256 i = 0; i < _assets.length; i++) {
             addPendingAsset(_assets[i]);
@@ -144,8 +170,11 @@ contract MintingAdminRole is Initializable {
     function _startMintingCountdown()
     public
     onlyMultiSig
+    mpvNotPaused
     {
+        require(mintingCountdownStart == 0);
         mintingCountdownStart = now;
+        emit MintingCountdownStarted(msg.sender);
     }
 
     /// @dev Refreshes the status of pending assets. Transaction can be sent
@@ -155,6 +184,7 @@ contract MintingAdminRole is Initializable {
     {
         require(now >= mintingCountdownStart + mintingActionCountdownLength);
         _enlistPendingAssets();
+        emit RefreshPendingAssetsStatus(msg.sender);
     }
 
     /// @dev Removes an asset from the list of pending assets. This actions
@@ -164,11 +194,13 @@ contract MintingAdminRole is Initializable {
     function removePendingAsset(uint256 assetId)
     public
     onlyOwner
+    mpvNotPaused
     returns (uint256)
     {
         assets.removePendingAsset(assetId);
 
         multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+        emit PendingAssetRemoved(msg.sender, assetId);
         return pendingAssetsTransactionId;
     }
 
@@ -177,10 +209,12 @@ contract MintingAdminRole is Initializable {
     function cancelMinting()
     public
     onlyBasicOwnerRole
+    mpvNotPaused
     {
         require(mintingCountdownStart > 0);
         multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
         mintingCountdownStart = 0;
+        emit MintingCancelled(msg.sender);
     }
 
     /// @dev Set the receiver wallet of newly minting tokens. Transaction has
@@ -191,9 +225,11 @@ contract MintingAdminRole is Initializable {
     )
     public
     onlyBasicOwnerMultiSig
+    mpvNotPaused
     {
         require(newWallet != address(0));
         mintingReceiverWallet = newWallet;
+        emit MintingReceiverWalletUpdated(msg.sender, newWallet);
     }
 
     /*
@@ -220,5 +256,6 @@ contract MintingAdminRole is Initializable {
         asset.status = Assets.Status.Enlisted;
         assets.add(asset);
         mpvToken.mint(mintingReceiverWallet, asset.tokens);
+        emit AssetEnlisted(msg.sender, asset.id);
     }
 }

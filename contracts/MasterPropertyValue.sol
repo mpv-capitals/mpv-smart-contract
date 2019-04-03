@@ -5,7 +5,7 @@ import "zos-lib/contracts/Initializable.sol";
 import "./Pausable.sol";
 import "./MPVToken.sol";
 import "./Assets.sol";
-import "./IWhitelist.sol";
+import "./Whitelist.sol";
 
 
 /**
@@ -18,7 +18,7 @@ contract MasterPropertyValue is Initializable, Pausable {
      */
     MPVToken public mpvToken;
     Assets public assets;
-    IWhitelist public whitelist;
+    Whitelist public whitelist;
 
     /*
      * Public functions
@@ -30,7 +30,7 @@ contract MasterPropertyValue is Initializable, Pausable {
     function initialize(
         MPVToken _mpvToken,
         Assets _assets,
-        IWhitelist _whitelist
+        Whitelist _whitelist
     ) public initializer {
         mpvToken = _mpvToken;
         assets = _assets;
