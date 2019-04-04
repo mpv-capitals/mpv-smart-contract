@@ -331,7 +331,7 @@ contract('MasterPropertyValue', accounts => {
       const newCountdown = 60 * 60 * 24
 
       const data = encodeCall(
-        'updateWhitelistRemovalActionCountdown',
+        'updateWhitelistRemovalActionCountdownLength',
         ['uint256'],
         [newCountdown]
       )
@@ -348,7 +348,7 @@ contract('MasterPropertyValue', accounts => {
       const newCountdown = 60 * 60 * 24
 
       const data = encodeCall(
-        'updateDelayedTransferCountdown',
+        'updateDelayedTransferCountdownLength',
         ['uint256'],
         [newCountdown]
       )
@@ -708,7 +708,7 @@ contract('MasterPropertyValue', accounts => {
       await initContracts(accounts)
 
       let data = encodeCall(
-        'updateMintingActionCountdown',
+        'updateMintingActionCountdownLength',
         ['uint256'],
         [1]
       )
