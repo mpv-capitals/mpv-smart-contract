@@ -32,7 +32,10 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     address public mintingAdmin;
     address public redemptionAdmin;
     uint256 public updateDailyLimitCountdownLength;
+    uint256 public delayedTransferCountdownLength;
+    uint256 public delayedTransferNonce;
     mapping(address => DailyLimitInfo) public dailyLimits;
+    mapping(uint256 => DelayedTransfer) public delayedTransfers;
 
     /// @dev Daily limit info structure.
     struct DailyLimitInfo {
@@ -41,6 +44,19 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         uint256 dailyLimit;
         uint256 countdownStart;
         uint256 updatedDailyLimit;
+    }
+
+    struct DelayedTransfer {
+        address from;
+        address to;
+        uint256 value;
+        uint256 countdownStart;
+        TransferMethod transferMethod;
+    }
+
+    enum TransferMethod {
+        Transfer,
+        TransferFrom
     }
 
     /*
@@ -113,6 +129,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         mintingAdmin = _mintingAdmin;
         redemptionAdmin = _redemptionAdmin;
         updateDailyLimitCountdownLength = 48 hours;
+        delayedTransferCountdownLength = 48 hours;
+        delayedTransferNonce = 0;
     }
 
     /// @dev Set the MPV contract address.
@@ -183,8 +201,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     returns (bool)
     {
         dailyLimits[msg.sender].spentToday += value;
-        _transfer(msg.sender, to, value);
-        return true;
+        return super.transfer(to, value);
     }
 
     /// @dev Transfer tokens from an account to another account.
@@ -203,7 +220,68 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         return super.transferFrom(from, to, value);
     }
 
-    /* function delayedTransferupdateDailyLimitCountdownLength */
+
+    /// @dev Starts delayedTransferCountdown to execute transfer in 48 hours
+    ///      and allows value to exceed daily transfer limit
+    /// @param to Address to transfer tokens to.
+    /// @param value Amount of tokens to transfer.
+    /// @return transferId The corresponding transferId for delayedTransfers mapping
+    function delayedTransfer(address to, uint256 value)
+    public
+    whitelistedAddress(to)
+    mpvNotPaused
+    returns (uint256 transferId)
+    {
+        transferId = delayedTransferNonce++;
+        DelayedTransfer storage delayedTransfer = delayedTransfers[transferId];
+        delayedTransfer.from = msg.sender;
+        delayedTransfer.to = to;
+        delayedTransfer.value = value;
+        delayedTransfer.countdownStart = now;
+        delayedTransfer.transferMethod = TransferMethod.Transfer;
+    }
+
+    /// @dev Starts delayedTransferCountdown to execute transfer in 48 hours
+    ///      and allows value to exceed daily transfer limit
+    /// @param from Address to transfer tokens from.
+    /// @param to Address to transfer tokens to.
+    /// @param value Amount of tokens to transfer.
+    /// @return transferId The corresponding transferId for delayedTransfers mapping
+    function delayedTransferFrom(address from, address to, uint256 value)
+    public
+    whitelistedAddress(to)
+    mpvNotPaused
+    returns (uint256 transferId)
+    {
+        transferId = delayedTransferNonce++;
+        DelayedTransfer storage delayedTransfer = delayedTransfers[transferId];
+        delayedTransfer.from = from;
+        delayedTransfer.to = to;
+        delayedTransfer.value = value;
+        delayedTransfer.countdownStart = now;
+        delayedTransfer.transferMethod = TransferMethod.TransferFrom;
+    }
+
+    /// @dev Executes delayedTransfer given countdown has expired and recipient
+    ///      is a whitelisted address
+    /// @param success boolean
+    function executeDelayedTransfer(uint256 transferId)
+    public
+    mpvNotPaused
+    returns (bool success)
+    {
+        DelayedTransfer storage delayedTransfer = delayedTransfers[transferId];
+        require(whitelist.isWhitelisted(delayedTransfer.to));
+        require(delayedTransfer.countdownStart.add(delayedTransferCountdownLength) < now);
+
+        if (delayedTransfer.transferMethod == TransferMethod.Transfer) {
+            return super.transfer(delayedTransfer.to, delayedTransfer.value);
+        } else if (delayedTransfer.transferMethod == TransferMethod.TransferFrom) {
+            return super.transferFrom(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value);
+        } else {
+            return false;
+        }
+    }
 
     /// @dev Mint new tokens.
     /// @param account Address to send newly minted tokens to.

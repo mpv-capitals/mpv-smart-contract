@@ -1,6 +1,7 @@
-const { shouldFail } = require('openzeppelin-test-helpers')
+const { shouldFail, time } = require('openzeppelin-test-helpers')
 const { mine } = require('./helpers')
 require('chai').should()
+const moment = require('moment')
 
 const MPVToken = artifacts.require('MPVToken')
 const Whitelist = artifacts.require('Whitelist')
@@ -93,6 +94,54 @@ contract('MPVToken', accounts => {
       await mine(60 * 60 * 48 + 1)
       await token.transferFrom(accounts[1], accounts[0], 500 * MULTIPLIER)
       await shouldFail(token.transferFrom(accounts[1], accounts[0], 501 * MULTIPLIER))
+    })
+  })
+
+  describe('delayedTransfer()', () => {
+    beforeEach(async () => {
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await token.updateDailyLimit(50 * MULTIPLIER)
+      await mine(60 * 60 * 48 + 1)
+      await token.transfer(accounts[1], 20 * MULTIPLIER)
+    })
+
+    it('creates a DelayedTransfer structure with the correct values', async () => {
+      const largeTransferAmt = 60 * MULTIPLIER
+      const txId = await token.delayedTransfer.call(accounts[1], largeTransferAmt)
+      await token.delayedTransfer(accounts[1], largeTransferAmt)
+      const delayedTransfer = await token.delayedTransfers(txId)
+
+      expect(delayedTransfer.from).to.equal(accounts[0])
+      expect(delayedTransfer.to).to.equal(accounts[1])
+      expect(delayedTransfer.value.toNumber()).to.equal(largeTransferAmt)
+      expect(delayedTransfer.transferMethod.toNumber()).to.equal(0)
+      expect(delayedTransfer.countdownStart.toNumber())
+        .to.be.closeTo((await time.latest()).toNumber(), 1)
+    })
+  })
+
+  describe('delayedTransferFrom()', () => {
+    beforeEach(async () => {
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await token.updateDailyLimit(50 * MULTIPLIER)
+      await mine(60 * 60 * 48 + 1)
+      await token.transfer(accounts[1], 20 * MULTIPLIER)
+    })
+
+    it('creates a DelayedTransfer structure with the correct values', async () => {
+      const largeTransferAmt = 70 * MULTIPLIER
+      const txId = await token.delayedTransferFrom.call(accounts[0], accounts[1], largeTransferAmt)
+      await token.delayedTransferFrom(accounts[0], accounts[1], largeTransferAmt)
+      const delayedTransfer = await token.delayedTransfers(txId)
+
+      expect(delayedTransfer.from).to.equal(accounts[0])
+      expect(delayedTransfer.to).to.equal(accounts[1])
+      expect(delayedTransfer.value.toNumber()).to.equal(largeTransferAmt)
+      expect(delayedTransfer.transferMethod.toNumber()).to.equal(1)
+      expect(delayedTransfer.countdownStart.toNumber())
+        .to.be.closeTo((await time.latest()).toNumber(), 1)
     })
   })
 
