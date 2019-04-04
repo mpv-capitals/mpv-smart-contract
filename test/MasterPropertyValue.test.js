@@ -62,11 +62,10 @@ async function initContracts (accounts) {
     mpv.address
   )
 
-  const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4
   await mpvToken.initialize(
     'Master Property Value',
     'MPV',
-    4,
+    18,
     whitelist.address,
     mpv.address,
     mintingAdminRole.address,

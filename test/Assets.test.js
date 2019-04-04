@@ -12,9 +12,9 @@ const RedemptionAdminRole = artifacts.require('RedemptionAdminRole')
 const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiSigWalletMock')
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
-const MULTIPLIER = 10 ** 4
-const REDEMPTION_FEE = 0.1 * MULTIPLIER
-const DAILY_LIMIT = 1000 * MULTIPLIER
+const BN = n => new web3.utils.BN(n)
+const MULTIPLIER = BN(10).pow(BN(18))
+const REDEMPTION_FEE = MULTIPLIER.div(BN(10)) // 0.1
 
 contract('Assets', accounts => {
   let whitelist, masterPropertyValue // needed for token setup
@@ -55,10 +55,10 @@ contract('Assets', accounts => {
       // initialize assets contract with accessible basicOwnerMultSig for testing
       const multiSig = accounts[1]
       const assetsB = await initializeAssets(multiSig)
-      expect((await assetsB.redemptionFee()).toNumber()).to.equal(REDEMPTION_FEE)
+      expect((await assetsB.redemptionFee()).toString()).to.equal(REDEMPTION_FEE.toString())
       await assetsB.setRedemptionFee(500, { from: multiSig })
-      const newFee = (await assetsB.redemptionFee()).toNumber()
-      newFee.should.equal(500)
+      const newFee = (await assetsB.redemptionFee())
+      expect(newFee.toNumber()).to.equal(500)
     })
   })
 
@@ -108,14 +108,14 @@ contract('Assets', accounts => {
       newAsset = {
         id: 1,
         notarizationId: '0xabcd',
-        tokens: 100 * MULTIPLIER,
+        tokens: BN(100).mul(MULTIPLIER).toString(),
         status: 1,
         owner: accounts[0],
         timestamp: now,
       }
       await assets.add(newAsset)
-      await mintTokens(accounts[0], 200 * MULTIPLIER)
-      await mpvToken.approve(assets.address, 200 * MULTIPLIER, { from: accounts[0] })
+      await mintTokens(accounts[0], BN(200).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, (200 * MULTIPLIER).toString(), { from: accounts[0] })
     })
 
     it('sets the asset status to LOCKED', async () => {
@@ -127,8 +127,8 @@ contract('Assets', accounts => {
     })
 
     it('reverts if the account does not have the proper balance approved', async () => {
-      await mintTokens(accounts[1], 100 * MULTIPLIER) // amount doesn't cover fee
-      await mpvToken.approve(assets.address, 100 * MULTIPLIER, { from: accounts[1] })
+      await mintTokens(accounts[1], BN(100).mul(MULTIPLIER).toString()) // amount doesn't cover fee
+      await mpvToken.approve(assets.address, BN(100).mul(MULTIPLIER).toString(), { from: accounts[1] })
       await shouldFail(assets.requestRedemption(1, { from: accounts[1] }))
     })
 
@@ -136,7 +136,7 @@ contract('Assets', accounts => {
       const invalidAsset = {
         id: 2,
         notarizationId: '0xabcd',
-        tokens: 100 * MULTIPLIER,
+        tokens: (100 * MULTIPLIER).toString(),
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
@@ -147,35 +147,35 @@ contract('Assets', accounts => {
     })
 
     it('transfers the fee and asset token value amount from the account', async () => {
-      const totalCost = 1001000
-      const previousAcctBalance = (await mpvToken.balanceOf(accounts[0])).toNumber()
+      const totalCost = REDEMPTION_FEE.add(BN(100).mul(MULTIPLIER))
+      const previousAcctBalance = (await mpvToken.balanceOf(accounts[0]))
       await assets.requestRedemption(1, { from: accounts[0] })
-      const newAcctBalance = (await mpvToken.balanceOf(accounts[0])).toNumber()
-      expect(previousAcctBalance - newAcctBalance).to.equal(totalCost)
+      const newAcctBalance = (await mpvToken.balanceOf(accounts[0]))
+      expect(previousAcctBalance.sub(newAcctBalance).toString()).to.equal(totalCost.toString())
     })
 
     it('locks the asset token value in assets contract under the account address', async () => {
-      const previousAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
+      const previousAssetsBalance = (await mpvToken.balanceOf(assets.address))
       const previousLockedTokens = await assets.redemptionTokenLocks(1)
 
       await assets.requestRedemption(1, { from: accounts[0] })
 
-      const newAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
+      const newAssetsBalance = (await mpvToken.balanceOf(assets.address))
       const newLockedTokens = await assets.redemptionTokenLocks(1)
 
-      expect(newAssetsBalance - previousAssetsBalance).to.equal(newAsset.tokens)
+      expect(newAssetsBalance.sub(previousAssetsBalance).toString()).to.equal(newAsset.tokens.toString())
       expect(previousLockedTokens.amount.toNumber()).to.equal(0)
-      expect(newLockedTokens.amount.toNumber()).to.equal(newAsset.tokens)
+      expect(newLockedTokens.amount.toString()).to.equal(newAsset.tokens)
       expect(newLockedTokens.account).to.equal(accounts[0])
     })
 
     it('transfers the redemption fee to the redemptionFeeReceiverWallet', async () => {
-      const fee = (await assets.redemptionFee()).toNumber()
-      const previousTokenBalance = (await mpvToken.balanceOf(redemptionFeeReceiverWallet)).toNumber()
+      const fee = (await assets.redemptionFee())
+      const previousTokenBalance = (await mpvToken.balanceOf(redemptionFeeReceiverWallet))
 
       await assets.requestRedemption(1, { from: accounts[0] })
-      const newTokenBalance = (await mpvToken.balanceOf(redemptionFeeReceiverWallet)).toNumber()
-      expect(newTokenBalance - previousTokenBalance).to.equal(fee)
+      const newTokenBalance = (await mpvToken.balanceOf(redemptionFeeReceiverWallet))
+      expect(newTokenBalance.sub(previousTokenBalance).toString()).to.equal(fee.toString())
     })
 
     it('adds the transaction to the redemptionMultiSig', async () => {
@@ -202,21 +202,21 @@ contract('Assets', accounts => {
       newAssets = [{
         id: 6,
         notarizationId: '0xabcd',
-        tokens: 100 * MULTIPLIER,
+        tokens: BN(100).mul(MULTIPLIER).toString(),
         status: 1,
         owner: accounts[0],
         timestamp: now,
       }, {
         id: 7,
         notarizationId: '0xabcd',
-        tokens: 100 * MULTIPLIER,
+        tokens: BN(100).mul(MULTIPLIER).toString(),
         status: 1,
         owner: accounts[0],
         timestamp: now,
       }]
       await assets.addList(newAssets)
-      await mintTokens(accounts[0], 400 * MULTIPLIER)
-      await mpvToken.approve(assets.address, 400 * MULTIPLIER, { from: accounts[0] })
+      await mintTokens(accounts[0], BN(400).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, BN(400).mul(MULTIPLIER).toString(), { from: accounts[0] })
     })
 
     it('sets the assets\' status to LOCKED', async () => {
@@ -239,14 +239,14 @@ contract('Assets', accounts => {
       newAsset = {
         id: 1,
         notarizationId: '0xabcd',
-        tokens: 100 * MULTIPLIER,
+        tokens: BN(100).mul(MULTIPLIER).toString(),
         status: 1,
         owner: accounts[0],
         timestamp: now,
       }
       await assets.add(newAsset)
-      await mintTokens(accounts[0], 200 * MULTIPLIER)
-      await mpvToken.approve(assets.address, 200 * MULTIPLIER, { from: accounts[0] })
+      await mintTokens(accounts[0], BN(200).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, BN(200).mul(MULTIPLIER).toString(), { from: accounts[0] })
       await assets.requestRedemption(1, { from: accounts[0] })
     })
 
@@ -261,22 +261,22 @@ contract('Assets', accounts => {
     it('transfers the redemption token amount back to the requesting account', async () => {
       const refund = newAsset.tokens
 
-      const previousAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
-      const previousAcctBalance = (await mpvToken.balanceOf(redeemer)).toNumber()
+      const previousAssetsBalance = (await mpvToken.balanceOf(assets.address))
+      const previousAcctBalance = (await mpvToken.balanceOf(redeemer))
 
       await assets.cancelRedemption(1)
 
-      const currentAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
-      const currentAcctBalance = (await mpvToken.balanceOf(redeemer)).toNumber()
+      const currentAssetsBalance = (await mpvToken.balanceOf(assets.address))
+      const currentAcctBalance = (await mpvToken.balanceOf(redeemer))
 
-      expect(previousAssetsBalance - currentAssetsBalance).to.equal(refund)
-      expect(currentAcctBalance - previousAcctBalance).to.equal(refund)
+      expect(previousAssetsBalance.sub(currentAssetsBalance).toString()).to.equal(refund)
+      expect(currentAcctBalance.sub(previousAcctBalance).toString()).to.equal(refund)
     })
 
     it('deletes the redemptionTokenLock info', async () => {
       let redemptionTokenLock = await assets.redemptionTokenLocks(1)
       expect(redemptionTokenLock.account).to.equal(redeemer)
-      expect(redemptionTokenLock.amount.toNumber()).to.equal(newAsset.tokens)
+      expect(redemptionTokenLock.amount.toString()).to.equal(newAsset.tokens)
 
       await assets.cancelRedemption(1)
 
@@ -290,7 +290,7 @@ contract('Assets', accounts => {
       const enlistedAsset = {
         id: 2,
         notarizationId: '0xabcd',
-        tokens: 100 * MULTIPLIER,
+        tokens: BN(100).mul(MULTIPLIER).toString(),
         status: 1,
         owner: accounts[0],
         timestamp: moment().unix(),
@@ -309,14 +309,14 @@ contract('Assets', accounts => {
       newAsset = {
         id: 1,
         notarizationId: '0xabcd',
-        tokens: 100 * MULTIPLIER,
+        tokens: BN(100).mul(MULTIPLIER).toString(),
         status: 1,
         owner: accounts[0],
         timestamp: now,
       }
       await assets.add(newAsset)
-      await mintTokens(accounts[0], 200 * MULTIPLIER)
-      await mpvToken.approve(assets.address, 200 * MULTIPLIER, { from: accounts[0] })
+      await mintTokens(accounts[0], BN(200).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, BN(200).mul(MULTIPLIER).toString(), { from: accounts[0] })
       await assets.requestRedemption(1, { from: accounts[0] })
     })
 
@@ -331,22 +331,22 @@ contract('Assets', accounts => {
     it('transfers the redemption token amount back to the requesting account', async () => {
       const refund = newAsset.tokens
 
-      const previousAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
-      const previousAcctBalance = (await mpvToken.balanceOf(redeemer)).toNumber()
+      const previousAssetsBalance = (await mpvToken.balanceOf(assets.address))
+      const previousAcctBalance = (await mpvToken.balanceOf(redeemer))
 
       await redemptionAdminRole.rejectRedemption(1)
 
-      const currentAssetsBalance = (await mpvToken.balanceOf(assets.address)).toNumber()
-      const currentAcctBalance = (await mpvToken.balanceOf(redeemer)).toNumber()
+      const currentAssetsBalance = (await mpvToken.balanceOf(assets.address))
+      const currentAcctBalance = (await mpvToken.balanceOf(redeemer))
 
-      expect(previousAssetsBalance - currentAssetsBalance).to.equal(refund)
-      expect(currentAcctBalance - previousAcctBalance).to.equal(refund)
+      expect(previousAssetsBalance.sub(currentAssetsBalance).toString()).to.equal(refund)
+      expect(currentAcctBalance.sub(previousAcctBalance).toString()).to.equal(refund)
     })
 
     it('deletes the redemptionTokenLock info', async () => {
       let redemptionTokenLock = await assets.redemptionTokenLocks(1)
       expect(redemptionTokenLock.account).to.equal(redeemer)
-      expect(redemptionTokenLock.amount.toNumber()).to.equal(newAsset.tokens)
+      expect(redemptionTokenLock.amount.toString()).to.equal(newAsset.tokens)
 
       await redemptionAdminRole.rejectRedemption(1)
 
@@ -360,7 +360,7 @@ contract('Assets', accounts => {
       const enlistedAsset = {
         id: 2,
         notarizationId: '0xabcd',
-        tokens: 100 * MULTIPLIER,
+        tokens: BN(100).mul(MULTIPLIER).toString(),
         status: 1,
         owner: accounts[0],
         timestamp: moment().unix(),
@@ -381,14 +381,14 @@ contract('Assets', accounts => {
       const newAsset = {
         id: 1,
         notarizationId: '0xabcd',
-        tokens: 100 * MULTIPLIER,
+        tokens: BN(100).mul(MULTIPLIER).toString(),
         status: 1,
         owner: accounts[0],
         timestamp: now,
       }
       await assets.add(newAsset)
-      await mintTokens(accounts[0], 200 * MULTIPLIER)
-      await mpvToken.approve(assets.address, 200 * MULTIPLIER, { from: accounts[0] })
+      await mintTokens(accounts[0], BN(200).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, BN(200).mul(MULTIPLIER).toString(), { from: accounts[0] })
       await assets.requestRedemption(1, { from: accounts[0] })
       await redemptionAdminMultiSig.confirmTransaction(0)
       mine(60 * 60 * 48 + 1)
@@ -468,7 +468,7 @@ contract('Assets', accounts => {
     await mpvToken.initialize(
       'Master Property Value',
       'MPV',
-      4,
+      18,
       whitelist.address,
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
@@ -480,7 +480,7 @@ contract('Assets', accounts => {
   async function initializeAssets (basicOwnerMultiSig) {
     const assets = await Assets.new()
     await assets.initialize(
-      REDEMPTION_FEE,
+      REDEMPTION_FEE.toString(),
       redemptionFeeReceiverWallet,
       accounts[0], // mintingAdminRole
       redemptionAdminRole.address,

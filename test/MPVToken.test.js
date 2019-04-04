@@ -8,7 +8,8 @@ const MasterPropertyValueMock = artifacts.require('MasterPropertyValueMock')
 const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiSigWalletMock')
 const BasicOwnerMultiSigWalletMock = artifacts.require('BasicOwnerMultiSigWalletMock')
 
-const MULTIPLIER = 10 ** 4
+const BN = n => new web3.utils.BN(n)
+const MULTIPLIER = BN(10).pow(BN(18))
 
 contract('MPVToken', accounts => {
   let token, whitelist, masterPropertyValue
@@ -24,11 +25,10 @@ contract('MPVToken', accounts => {
       masterPropertyValue.address
     )
     token = await MPVToken.new()
-    const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4
     await token.initialize(
       'Master Property Value',
       'MPV',
-      4,
+      18,
       whitelist.address,
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
@@ -42,8 +42,8 @@ contract('MPVToken', accounts => {
 
   describe('transfer()', () => {
     beforeEach(async () => {
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], (BN(10000).mul(MULTIPLIER)).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], (BN(10000).mul(MULTIPLIER)).toString())
     })
 
     it('sends tokens to whitelisted addresses', async () => {
@@ -60,19 +60,19 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if transfer breaches daily limit', async () => {
-      await token.updateDailyLimit(1000 * MULTIPLIER)
+      await token.updateDailyLimit((BN(1000).mul(MULTIPLIER)).toString())
       await mine(60 * 60 * 48 + 1)
-      await token.transfer(accounts[1], 500 * MULTIPLIER)
-      await shouldFail(token.transfer(accounts[1], 501 * MULTIPLIER))
+      await token.transfer(accounts[1], BN(500).mul(MULTIPLIER).toString())
+      await shouldFail(token.transfer(accounts[1], BN(501).mul(MULTIPLIER).toString()))
     })
   })
 
   describe('transferFrom()', () => {
     beforeEach(async () => {
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
-      await token.approve(accounts[0], 10000 * MULTIPLIER, { from: accounts[1] })
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER))
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER))
+      await token.approve(accounts[0], BN(10000).mul(MULTIPLIER), { from: accounts[1] })
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER))
     })
 
     it('sends tokens to whitelisted addresses', async () => {
@@ -89,22 +89,22 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if transfer breaches daily limit', async () => {
-      await token.updateDailyLimit(1000 * MULTIPLIER, { from: accounts[1] })
+      await token.updateDailyLimit(BN(1000).mul(MULTIPLIER), { from: accounts[1] })
       await mine(60 * 60 * 48 + 1)
-      await token.transferFrom(accounts[1], accounts[0], 500 * MULTIPLIER)
-      await shouldFail(token.transferFrom(accounts[1], accounts[0], 501 * MULTIPLIER))
+      await token.transferFrom(accounts[1], accounts[0], BN(500).mul(MULTIPLIER))
+      await shouldFail(token.transferFrom(accounts[1], accounts[0], BN(501).mul(MULTIPLIER)))
     })
   })
 
   describe('mint()', () => {
     it('mints new tokens if called by masterPropertyValue', async () => {
       const mintAmount = 500
-      const previousTokenSupply = (await token.totalSupply()).toNumber()
+      const previousTokenSupply = (await token.totalSupply())
 
       await masterPropertyValue.mock_callMint(token.address, accounts[0], mintAmount)
 
-      const newTokenSupply = (await token.totalSupply()).toNumber()
-      newTokenSupply.should.equal(previousTokenSupply + mintAmount)
+      const newTokenSupply = (await token.totalSupply())
+      expect(newTokenSupply.toString()).to.equal(previousTokenSupply.add(BN(mintAmount)).toString())
     })
 
     it('reverts if called by address other than the mintingAdmin', async () => {
@@ -123,12 +123,12 @@ contract('MPVToken', accounts => {
 
     it('burns tokens if called by redemptionAdmin', async () => {
       const burnAmount = 300
-      const previousTokenSupply = (await token.totalSupply()).toNumber()
+      const previousTokenSupply = (await token.totalSupply())
 
       await masterPropertyValue.mock_callBurn(token.address, accounts[0], burnAmount)
 
       const newTokenSupply = (await token.totalSupply()).toNumber()
-      newTokenSupply.should.equal(previousTokenSupply - burnAmount)
+      expect(newTokenSupply.toString()).to.equal(previousTokenSupply.sub(BN(burnAmount)).toString())
     })
 
     it('reverts if called by address other than the redemptionAdmin', async () => {
@@ -138,8 +138,8 @@ contract('MPVToken', accounts => {
 
   describe('detectTransferRestriction()', () => {
     beforeEach(async () => {
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER).toString())
     })
 
     describe('regarding whitelisted accounts', () => {
@@ -154,16 +154,16 @@ contract('MPVToken', accounts => {
         expect(
           (await token.detectTransferRestriction(
             accounts[0], whitelistedAcct,
-            11 * MULTIPLIER)).toNumber()
-          ).to.equal(0)
+            BN(11).mul(MULTIPLIER))).toNumber()
+        ).to.equal(0)
       })
 
       it('returns 1 if sending to a nonwhitelisted account', async () => {
         expect(
           (await token.detectTransferRestriction(
             accounts[0], nonWhitelistedAcct,
-            11 * MULTIPLIER)).toNumber()
-          ).to.equal(1)
+            BN(11).mul(MULTIPLIER))).toNumber()
+        ).to.equal(1)
       })
     })
 
@@ -171,23 +171,23 @@ contract('MPVToken', accounts => {
       let dailyLimit
 
       before(async () => {
-        dailyLimit = 50 * MULTIPLIER
+        dailyLimit = BN(50).mul(MULTIPLIER)
       })
 
       it('returns 0 if there is no daily limit', async () => {
-        await token.transfer(accounts[1], 40 * MULTIPLIER)
+        await token.transfer(accounts[1], BN(40).mul(MULTIPLIER))
         expect(
           (await token.detectTransferRestriction(
             accounts[0], accounts[1],
-            11 * MULTIPLIER)).toNumber()
-          ).to.equal(0)
+            BN(11).mul(MULTIPLIER))).toNumber()
+        ).to.equal(0)
       })
 
       describe('when new daily limit', () => {
         beforeEach(async () => {
           await token.updateDailyLimit(dailyLimit)
           await mine(60 * 60 * 48 + 1)
-          await token.transfer(accounts[1], 40 * MULTIPLIER)
+          await token.transfer(accounts[1], BN(40).mul(MULTIPLIER))
           await mine(60 * 60 * 24 + 1)
         })
 
@@ -195,16 +195,16 @@ contract('MPVToken', accounts => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
-              11 * MULTIPLIER)).toNumber()
-            ).to.equal(0)
+              BN(11).mul(MULTIPLIER))).toNumber()
+          ).to.equal(0)
         })
 
         it('returns 2 if transfer value exceeds daily limit', async () => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
-              51 * MULTIPLIER)).toNumber()
-            ).to.equal(2)
+              BN(51).mul(MULTIPLIER))).toNumber()
+          ).to.equal(2)
         })
       })
 
@@ -212,36 +212,35 @@ contract('MPVToken', accounts => {
         beforeEach(async () => {
           await token.updateDailyLimit(dailyLimit)
           await mine(60 * 60 * 48 + 1)
-          await token.transfer(accounts[1], 40 * MULTIPLIER)
+          await token.transfer(accounts[1], BN(40).mul(MULTIPLIER))
         })
 
         it('returns 0 if value + previous transfers does not exceed daily limit', async () => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
-              10 * MULTIPLIER)).toNumber()
-            ).to.equal(0)
+              BN(10).mul(MULTIPLIER))).toNumber()
+          ).to.equal(0)
         })
 
         it('returns 2 if value + previous transfers exceeds daily limit', async () => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
-              11 * MULTIPLIER)).toNumber()
-            ).to.equal(2)
+              BN(11).mul(MULTIPLIER))).toNumber()
+          ).to.equal(2)
         })
       })
     })
   })
 
   describe('messageForTransferRestriction()', () => {
-    let validTransferMsg, dailyLimitMsg, invalidCodeMsg, whitelistMsg
+    let validTransferMsg, dailyLimitMsg, whitelistMsg
 
     before(async () => {
       validTransferMsg = 'Valid transfer'
-      whitelistMsg     = 'Invalid transfer: nonwhitelisted recipient'
-      dailyLimitMsg    = 'Invalid transfer: exceeds daily limit'
-      invalidCodeMsg   = 'Invalid restrictionCode'
+      whitelistMsg = 'Invalid transfer: nonwhitelisted recipient'
+      dailyLimitMsg = 'Invalid transfer: exceeds daily limit'
     })
 
     it('returns the correct message for input 0', async () => {
