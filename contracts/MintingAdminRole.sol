@@ -105,7 +105,7 @@ contract MintingAdminRole is Initializable {
 
     /// @dev Set minting action countdown length.
     /// @param newCountdown New countdown length.
-    function setMintingActionCountdown(
+    function updateMintingActionCountdown(
         uint256 newCountdown
     )
     public

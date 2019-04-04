@@ -50,7 +50,10 @@ contract Pausable is Initializable {
         pausableAdmin = msg.sender;
     }
 
-    function setPausableAdmin(
+    /// @dev Set a new admin authorized to pause the contract. Transaction has
+    /// to be sent by the current pausable admin.
+    /// @param admin Address of new admin.
+    function updatePausableAdmin(
         address admin
     ) public onlyPausableAdmin {
         pausableAdmin = admin;
