@@ -70,7 +70,8 @@ async function initContracts (accounts) {
     whitelist.address,
     mpv.address,
     mintingAdminRole.address,
-    redemptionAdminRole.address
+    redemptionAdminRole.address,
+    accounts[5]
   )
 
   await assets.initialize(

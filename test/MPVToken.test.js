@@ -12,7 +12,7 @@ const BasicOwnerMultiSigWalletMock = artifacts.require('BasicOwnerMultiSigWallet
 const MULTIPLIER = 10 ** 4
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract.only('MPVToken', accounts => {
+contract('MPVToken', accounts => {
   let token, whitelist, masterPropertyValue, superOwnerMultiSig
 
   beforeEach(async () => {
@@ -101,7 +101,10 @@ contract.only('MPVToken', accounts => {
   })
 
   describe('delayedTransfer()', () => {
+    let largeTransferAmt
+
     beforeEach(async () => {
+      largeTransferAmt = 70 * MULTIPLIER
       await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
       await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
       await token.updateDailyLimit(50 * MULTIPLIER)
@@ -122,10 +125,18 @@ contract.only('MPVToken', accounts => {
       expect(delayedTransfer.countdownStart.toNumber())
         .to.be.closeTo((await time.latest()).toNumber(), 1)
     })
+
+    it('emits a DelayedTransferInitiated event', async () => {
+      const { logs } = await token.delayedTransfer(accounts[1], largeTransferAmt)
+      expect(logs[0].event).to.equal('DelayedTransferInitiated')
+    })
   })
 
   describe('delayedTransferFrom()', () => {
+    let largeTransferAmt
+
     beforeEach(async () => {
+      largeTransferAmt = 70 * MULTIPLIER
       await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
       await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
       await masterPropertyValue.mock_callMint(token.address, accounts[2], 10000 * MULTIPLIER)
@@ -135,7 +146,6 @@ contract.only('MPVToken', accounts => {
     })
 
     it('creates a DelayedTransfer structure with the correct values', async () => {
-      const largeTransferAmt = 70 * MULTIPLIER
       const txId = await token.delayedTransferFrom.call(accounts[0], accounts[1], largeTransferAmt)
       await token.delayedTransferFrom(accounts[0], accounts[1], largeTransferAmt)
       const delayedTransfer = await token.delayedTransfers(txId)
@@ -146,6 +156,11 @@ contract.only('MPVToken', accounts => {
       expect(delayedTransfer.transferMethod.toNumber()).to.equal(1)
       expect(delayedTransfer.countdownStart.toNumber())
         .to.be.closeTo((await time.latest()).toNumber(), 1)
+    })
+
+    it('emits a DelayedTransferInitiated event', async () => {
+      const { logs } = await token.delayedTransferFrom(accounts[0], accounts[1], largeTransferAmt)
+      expect(logs[0].event).to.equal('DelayedTransferInitiated')
     })
   })
 
@@ -341,7 +356,7 @@ contract.only('MPVToken', accounts => {
     })
   })
 
-  describe.only('updateUpdateDailyLimitCountdownLength()', () => {
+  describe('updateUpdateDailyLimitCountdownLength()', () => {
     it('updates the updateDailyLimitCountdownLength', async () => {
       expect((await token.updateDailyLimitCountdownLength()).toNumber())
         .to.equal(60 * 60 * 48)
@@ -362,7 +377,7 @@ contract.only('MPVToken', accounts => {
     })
   })
 
-  describe.only('updatedelayedTransferCountdownLength()', () => {
+  describe('updatedelayedTransferCountdownLength()', () => {
     it('updates the delayedTransferCountdownLength', async () => {
       expect((await token.delayedTransferCountdownLength()).toNumber())
         .to.equal(60 * 60 * 48)

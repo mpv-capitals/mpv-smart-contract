@@ -473,6 +473,7 @@ contract('Assets', accounts => {
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
       redemptionAdminRole.address, // redemptionAdmin
+      accounts[5] // superOwnerMultiSig
     )
     return mpvToken
   }

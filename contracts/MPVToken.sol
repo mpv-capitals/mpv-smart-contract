@@ -13,18 +13,29 @@ import "./MasterPropertyValue.sol";
  */
 contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
+  /*
+   *  Events
+   */
     event DailyLimitUpdatePending(address account, uint256 currentDailyLimit, uint256 updatedDailyLimit);
     event DailyLimitUpdateCancelled(address account, uint256 dailyLimit);
+    event DailyLimitUpdated(address indexed sender, uint256 indexed dailyLimit);
     event DailyLimitUpdateFulfilled(address account, uint256 newDailyLimit);
     event DelayedTransferCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
-    event UpdateDailyLimitCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
-    /*
-     *  Events
-     */
-    event MPVUpdated(address indexed sender, address indexed addr);
+
+    event DelayedTransferInitiated(
+      address from,
+      address to,
+      uint256 value,
+      address sender,
+      uint256 countdownStart,
+      TransferMethod transferMethod
+    );
+
     event MintingAdminUpdated(address indexed sender, address indexed admin);
+    event MPVUpdated(address indexed sender, address indexed addr);
     event RedemptionAdminUpdated(address indexed sender, address indexed admin);
-    event DailyLimitUpdated(address indexed sender, uint256 indexed dailyLimit);
+    event UpdateDailyLimitCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
+
 
     /*
      *  Storage
@@ -273,6 +284,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         delayedTransfer.value = value;
         delayedTransfer.countdownStart = now;
         delayedTransfer.transferMethod = TransferMethod.Transfer;
+        emit DelayedTransferInitiated(msg.sender, to, value, address(0), delayedTransfer.countdownStart, TransferMethod.Transfer);
     }
 
     /// @dev Starts delayedTransferCountdown to execute transfer in 48 hours
@@ -295,6 +307,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         delayedTransfer.value = value;
         delayedTransfer.countdownStart = now;
         delayedTransfer.transferMethod = TransferMethod.TransferFrom;
+        emit DelayedTransferInitiated(from, to, value, msg.sender, delayedTransfer.countdownStart, TransferMethod.Transfer);
     }
 
     /// @dev Executes delayedTransfer given countdown has expired and recipient
