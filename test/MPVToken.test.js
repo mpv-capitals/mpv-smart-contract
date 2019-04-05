@@ -12,10 +12,11 @@ const BasicOwnerMultiSigWalletMock = artifacts.require('BasicOwnerMultiSigWallet
 const MULTIPLIER = 10 ** 4
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
-contract('MPVToken', accounts => {
-  let token, whitelist, masterPropertyValue
+contract.only('MPVToken', accounts => {
+  let token, whitelist, masterPropertyValue, superOwnerMultiSig
 
   beforeEach(async () => {
+    superOwnerMultiSig = accounts[5]
     masterPropertyValue = await MasterPropertyValueMock.new()
     const multiSig = await OperationAdminMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
     const basicOwnerMultiSig = await BasicOwnerMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
@@ -34,7 +35,8 @@ contract('MPVToken', accounts => {
       whitelist.address,
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
-      masterPropertyValue.address // redemptionAdmin
+      masterPropertyValue.address, // redemptionAdmin
+      superOwnerMultiSig
     )
 
     await whitelist.addWhitelisted(accounts[0])
@@ -336,6 +338,48 @@ contract('MPVToken', accounts => {
 
     it('reverts if called by address other than the redemptionAdmin', async () => {
       await shouldFail(token.burn(accounts[0], 300, { from: accounts[0] }))
+    })
+  })
+
+  describe.only('updateUpdateDailyLimitCountdownLength()', () => {
+    it('updates the updateDailyLimitCountdownLength', async () => {
+      expect((await token.updateDailyLimitCountdownLength()).toNumber())
+        .to.equal(60 * 60 * 48)
+      await token.updateUpdateDailyLimitCountdownLength(15, { from: superOwnerMultiSig})
+      expect((await token.updateDailyLimitCountdownLength()).toNumber())
+        .to.equal(15)
+    })
+
+    it('reverts if sent by address other than superOwnerMultiSig', async () => {
+      shouldFail(token.updateUpdateDailyLimitCountdownLength(15))
+    })
+
+    it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
+      const { logs } = await token.updateUpdateDailyLimitCountdownLength(
+        10, { from: superOwnerMultiSig}
+      )
+      expect(logs[0].event).to.equal('UpdateDailyLimitCountdownLengthUpdated')
+    })
+  })
+
+  describe.only('updatedelayedTransferCountdownLength()', () => {
+    it('updates the delayedTransferCountdownLength', async () => {
+      expect((await token.delayedTransferCountdownLength()).toNumber())
+        .to.equal(60 * 60 * 48)
+      await token.updateDelayedTransferCountdownLength(15, { from: superOwnerMultiSig})
+      expect((await token.delayedTransferCountdownLength()).toNumber())
+        .to.equal(15)
+    })
+
+    it('reverts if sent by address other than superOwnerMultiSig', async () => {
+      shouldFail(token.updateDelayedTransferCountdownLength(15))
+    })
+
+    it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
+      const { logs } = await token.updateDelayedTransferCountdownLength(
+        10, { from: superOwnerMultiSig}
+      )
+      expect(logs[0].event).to.equal('DelayedTransferCountdownLengthUpdated')
     })
   })
 

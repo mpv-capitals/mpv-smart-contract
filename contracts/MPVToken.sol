@@ -16,6 +16,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     event DailyLimitUpdatePending(address account, uint256 currentDailyLimit, uint256 updatedDailyLimit);
     event DailyLimitUpdateCancelled(address account, uint256 dailyLimit);
     event DailyLimitUpdateFulfilled(address account, uint256 newDailyLimit);
+    event DelayedTransferCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
+    event UpdateDailyLimitCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
     /*
      *  Events
      */
@@ -31,6 +33,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     MasterPropertyValue public masterPropertyValue;
     address public mintingAdmin;
     address public redemptionAdmin;
+    address public superOwnerMultiSig;
     uint256 public updateDailyLimitCountdownLength;
     uint256 public delayedTransferCountdownLength;
     uint256 public delayedTransferNonce;
@@ -89,6 +92,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         _;
     }
 
+    /// @dev Requires the sender to be the super owner multiSig contract.
+    modifier onlySuperOwnerMultiSig() {
+        require(superOwnerMultiSig == msg.sender);
+        _;
+    }
+
     /// @dev Requires that the main MPV contract is not paused.
     modifier mpvNotPaused() {
         require(masterPropertyValue.paused() == false);
@@ -119,7 +128,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         Whitelist _whitelist,
         MasterPropertyValue _masterPropertyValue,
         address _mintingAdmin,
-        address _redemptionAdmin
+        address _redemptionAdmin,
+        address _superOwnerMultiSig
     )
     public
     initializer
@@ -129,6 +139,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         masterPropertyValue = _masterPropertyValue;
         mintingAdmin = _mintingAdmin;
         redemptionAdmin = _redemptionAdmin;
+        superOwnerMultiSig = _superOwnerMultiSig;
         updateDailyLimitCountdownLength = 48 hours;
         delayedTransferCountdownLength = 48 hours;
         delayedTransferNonce = 0;
@@ -165,6 +176,28 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     {
         redemptionAdmin = _redemptionAdmin;
         emit RedemptionAdminUpdated(msg.sender, _redemptionAdmin);
+    }
+
+    /// @dev Update the updateDailyLimitCountdownLength
+    /// @param updatedCountdownLength Address of redemption admin role contract.
+    function updateUpdateDailyLimitCountdownLength(uint256 updatedCountdownLength)
+    public
+    onlySuperOwnerMultiSig
+    mpvNotPaused
+    {
+        updateDailyLimitCountdownLength = updatedCountdownLength;
+        emit UpdateDailyLimitCountdownLengthUpdated(msg.sender, updatedCountdownLength);
+    }
+
+    /// @dev Update the delayedTransferCountdownLength
+    /// @param updatedCountdownLength Address of redemption admin role contract.
+    function updateDelayedTransferCountdownLength(uint256 updatedCountdownLength)
+    public
+    onlySuperOwnerMultiSig
+    mpvNotPaused
+    {
+        delayedTransferCountdownLength = updatedCountdownLength;
+        emit DelayedTransferCountdownLengthUpdated(msg.sender, updatedCountdownLength);
     }
 
     /// @dev Sets new daily limit for sender account after countdown resolves
