@@ -1,7 +1,6 @@
 const { shouldFail, time } = require('openzeppelin-test-helpers')
 const { mine } = require('./helpers')
 require('chai').should()
-const moment = require('moment')
 
 const MPVToken = artifacts.require('MPVToken')
 const Whitelist = artifacts.require('Whitelist')
@@ -27,7 +26,6 @@ contract('MPVToken', accounts => {
       masterPropertyValue.address
     )
     token = await MPVToken.new()
-    const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4
     await token.initialize(
       'Master Property Value',
       'MPV',
@@ -142,7 +140,7 @@ contract('MPVToken', accounts => {
       await masterPropertyValue.mock_callMint(token.address, accounts[2], 10000 * MULTIPLIER)
       await token.updateDailyLimit(50 * MULTIPLIER)
       await mine(60 * 60 * 48 + 1)
-      await token.transfer(accounts[1], 20 * MULTIPLIER, { from: accounts[2]} )
+      await token.transfer(accounts[1], 20 * MULTIPLIER, { from: accounts[2] })
     })
 
     it('creates a DelayedTransfer structure with the correct values', async () => {
@@ -171,7 +169,7 @@ contract('MPVToken', accounts => {
       await masterPropertyValue.mock_callMint(token.address, accounts[2], 10000 * MULTIPLIER)
       await token.updateDailyLimit(50 * MULTIPLIER)
       await mine(60 * 60 * 48 + 1)
-      await token.transfer(accounts[1], 20 * MULTIPLIER, { from: accounts[2]} )
+      await token.transfer(accounts[1], 20 * MULTIPLIER, { from: accounts[2] })
     })
 
     describe('when transferMethod is Transfer', () => {
@@ -185,13 +183,13 @@ contract('MPVToken', accounts => {
 
       it('transfers the value from -> to', async () => {
         await mine(60 * 60 * 48 + 1)
-        previousToBalance = (await token.balanceOf(accounts[1])).toNumber()
-        previousFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+        const previousToBalance = (await token.balanceOf(accounts[1])).toNumber()
+        const previousFromBalance = (await token.balanceOf(accounts[0])).toNumber()
 
         await token.executeDelayedTransfer(txId)
 
-        currentToBalance = (await token.balanceOf(accounts[1])).toNumber()
-        currentFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+        const currentToBalance = (await token.balanceOf(accounts[1])).toNumber()
+        const currentFromBalance = (await token.balanceOf(accounts[0])).toNumber()
 
         expect(currentToBalance - previousToBalance).to.equal(transferAmt)
         expect(previousFromBalance - currentFromBalance).to.equal(transferAmt)
@@ -229,20 +227,20 @@ contract('MPVToken', accounts => {
       it('sends the value from -> to', async () => {
         await mine(60 * 60 * 48 + 1)
         await token.approve(accounts[2], transferAmt)
-        previousToBalance = (await token.balanceOf(accounts[1])).toNumber()
-        previousFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+        const previousToBalance = (await token.balanceOf(accounts[1])).toNumber()
+        const previousFromBalance = (await token.balanceOf(accounts[0])).toNumber()
 
-        await token.executeDelayedTransfer(txId, {from: accounts[2]})
+        await token.executeDelayedTransfer(txId, { from: accounts[2] })
 
-        currentToBalance = (await token.balanceOf(accounts[1])).toNumber()
-        currentFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+        const currentToBalance = (await token.balanceOf(accounts[1])).toNumber()
+        const currentFromBalance = (await token.balanceOf(accounts[0])).toNumber()
 
         expect(currentToBalance - previousToBalance).to.equal(transferAmt)
         expect(previousFromBalance - currentFromBalance).to.equal(transferAmt)
       })
 
       it('reverts if executing address has no allownance from "to"', async () => {
-        shouldFail(token.executeDelayedTransfer(txId, {from: accounts[2]}))
+        shouldFail(token.executeDelayedTransfer(txId, { from: accounts[2] }))
       })
 
       it('reverts if countdown is not set', async () => {
@@ -360,7 +358,7 @@ contract('MPVToken', accounts => {
     it('updates the updateDailyLimitCountdownLength', async () => {
       expect((await token.updateDailyLimitCountdownLength()).toNumber())
         .to.equal(60 * 60 * 48)
-      await token.updateUpdateDailyLimitCountdownLength(15, { from: superOwnerMultiSig})
+      await token.updateUpdateDailyLimitCountdownLength(15, { from: superOwnerMultiSig })
       expect((await token.updateDailyLimitCountdownLength()).toNumber())
         .to.equal(15)
     })
@@ -371,7 +369,7 @@ contract('MPVToken', accounts => {
 
     it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
       const { logs } = await token.updateUpdateDailyLimitCountdownLength(
-        10, { from: superOwnerMultiSig}
+        10, { from: superOwnerMultiSig }
       )
       expect(logs[0].event).to.equal('UpdateDailyLimitCountdownLengthUpdated')
     })
@@ -381,7 +379,7 @@ contract('MPVToken', accounts => {
     it('updates the delayedTransferCountdownLength', async () => {
       expect((await token.delayedTransferCountdownLength()).toNumber())
         .to.equal(60 * 60 * 48)
-      await token.updateDelayedTransferCountdownLength(15, { from: superOwnerMultiSig})
+      await token.updateDelayedTransferCountdownLength(15, { from: superOwnerMultiSig })
       expect((await token.delayedTransferCountdownLength()).toNumber())
         .to.equal(15)
     })
@@ -392,7 +390,7 @@ contract('MPVToken', accounts => {
 
     it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
       const { logs } = await token.updateDelayedTransferCountdownLength(
-        10, { from: superOwnerMultiSig}
+        10, { from: superOwnerMultiSig }
       )
       expect(logs[0].event).to.equal('DelayedTransferCountdownLengthUpdated')
     })
@@ -417,7 +415,7 @@ contract('MPVToken', accounts => {
           (await token.detectTransferRestriction(
             accounts[0], whitelistedAcct,
             11 * MULTIPLIER)).toNumber()
-          ).to.equal(0)
+        ).to.equal(0)
       })
 
       it('returns 1 if sending to a nonwhitelisted account', async () => {
@@ -425,7 +423,7 @@ contract('MPVToken', accounts => {
           (await token.detectTransferRestriction(
             accounts[0], nonWhitelistedAcct,
             11 * MULTIPLIER)).toNumber()
-          ).to.equal(1)
+        ).to.equal(1)
       })
     })
 
@@ -442,7 +440,7 @@ contract('MPVToken', accounts => {
           (await token.detectTransferRestriction(
             accounts[0], accounts[1],
             11 * MULTIPLIER)).toNumber()
-          ).to.equal(0)
+        ).to.equal(0)
       })
 
       describe('when new daily limit', () => {
@@ -458,7 +456,7 @@ contract('MPVToken', accounts => {
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               11 * MULTIPLIER)).toNumber()
-            ).to.equal(0)
+          ).to.equal(0)
         })
 
         it('returns 2 if transfer value exceeds daily limit', async () => {
@@ -466,7 +464,7 @@ contract('MPVToken', accounts => {
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               51 * MULTIPLIER)).toNumber()
-            ).to.equal(2)
+          ).to.equal(2)
         })
       })
 
@@ -482,7 +480,7 @@ contract('MPVToken', accounts => {
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               10 * MULTIPLIER)).toNumber()
-            ).to.equal(0)
+          ).to.equal(0)
         })
 
         it('returns 2 if value + previous transfers exceeds daily limit', async () => {
@@ -490,20 +488,19 @@ contract('MPVToken', accounts => {
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               11 * MULTIPLIER)).toNumber()
-            ).to.equal(2)
+          ).to.equal(2)
         })
       })
     })
   })
 
   describe('messageForTransferRestriction()', () => {
-    let validTransferMsg, dailyLimitMsg, invalidCodeMsg, whitelistMsg
+    let validTransferMsg, dailyLimitMsg, whitelistMsg
 
     before(async () => {
       validTransferMsg = 'Valid transfer'
-      whitelistMsg     = 'Invalid transfer: nonwhitelisted recipient'
-      dailyLimitMsg    = 'Invalid transfer: exceeds daily limit'
-      invalidCodeMsg   = 'Invalid restrictionCode'
+      whitelistMsg = 'Invalid transfer: nonwhitelisted recipient'
+      dailyLimitMsg = 'Invalid transfer: exceeds daily limit'
     })
 
     it('returns the correct message for input 0', async () => {

@@ -14,7 +14,6 @@ const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiS
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const MULTIPLIER = 10 ** 4
 const REDEMPTION_FEE = 0.1 * MULTIPLIER
-const DAILY_LIMIT = 1000 * MULTIPLIER
 
 contract('Assets', accounts => {
   let whitelist, masterPropertyValue // needed for token setup
