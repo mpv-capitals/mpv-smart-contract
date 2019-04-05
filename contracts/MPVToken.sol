@@ -117,7 +117,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     /// @dev Set the MPV contract address.
     /// @param _masterPropertyValue Address of main MPV contract.
-    function setMPV(address _masterPropertyValue)
+    function updateMPV(address _masterPropertyValue)
     public
     mpvAccessOnly(msg.sender)
     mpvNotPaused
@@ -128,7 +128,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     /// @dev Set the minting admin role contract address.
     /// @param _mintingAdmin Address of minting admin role contract.
-    function setMintingAdmin(address _mintingAdmin)
+    function updateMintingAdmin(address _mintingAdmin)
     public
     onlyMintingAdmin
     mpvNotPaused
@@ -139,7 +139,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     /// @dev Set the redemption admin role contract address.
     /// @param _redemptionAdmin Address of redemption admin role contract.
-    function setRedemptionAdmin(address _redemptionAdmin)
+    function updateRedemptionAdmin(address _redemptionAdmin)
     public
     onlyRedemptionAdmin
     mpvNotPaused

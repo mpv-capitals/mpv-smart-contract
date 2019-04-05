@@ -79,7 +79,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     /// @dev Sets an account to be the new admin. Transaction must be sent
     /// from the current admin account.
     /// @param _admin Address of new admin account.
-    function setAdmin(address _admin)
+    function updateAdmin(address _admin)
     public
     onlyAdmin
     {
@@ -90,7 +90,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     /// @dev Sets an account to be the new transactor account. Transaction must
     /// be sent from the current admin account.
     /// @param _transactor Address of new transactor account.
-    function setTransactor(address _transactor)
+    function updateTransactor(address _transactor)
     public
     onlyAdmin
     {

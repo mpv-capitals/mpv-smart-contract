@@ -192,7 +192,7 @@ contract Assets is Initializable {
     /// @dev Set the redemption fee amount. Transaction has to be sent by
     /// the basic owner multisig contract.
     /// @param fee New fee amount.
-    function setRedemptionFee(uint256 fee)
+    function updateRedemptionFee(uint256 fee)
     public
     onlyBasicOwnerMultiSig
     mpvNotPaused
@@ -204,7 +204,7 @@ contract Assets is Initializable {
     /// @dev Set the redemption fee receiver wallet address. Transaction has
     /// to be sent by the basic owner multisig contract.
     /// @param wallet Address of new wallet.
-    function setRedemptionFeeReceiverWallet(address wallet)
+    function updateRedemptionFeeReceiverWallet(address wallet)
     public
     onlyBasicOwnerMultiSig
     {

@@ -62,7 +62,7 @@ contract SuperOwnerRole is Initializable {
     /// @dev Set the countdown length from when there's a transfer limit change.
     /// Transaction has to be sent by the super owner multisig.
     /// @param newCountdown New countdown length.
-    function setTransferLimitChangeCountdownLength(
+    function updateTransferLimitChangeCountdownLength(
         uint256 newCountdown
     )
     public
@@ -76,7 +76,7 @@ contract SuperOwnerRole is Initializable {
     /// @dev Set the delayed transfer countdown length. Transaction has to be
     /// sent by the super owner multisig.
     /// @param newCountdown New countdown length.
-    function setDelayedTransferCountdown(
+    function updateDelayedTransferCountdownLength(
         uint256 newCountdown
     )
     public
@@ -90,7 +90,7 @@ contract SuperOwnerRole is Initializable {
     /// @dev Set the countdown length for the whitelist removal action.
     /// Transaction has to be sent by the super owner multisig.
     /// @param newCountdown New countdown length.
-    function setWhitelistRemovalActionCountdown(
+    function updateWhitelistRemovalActionCountdownLength(
         uint256 newCountdown
     )
     public
@@ -104,7 +104,7 @@ contract SuperOwnerRole is Initializable {
     /// @dev Set the countdown length for the action of burning of tokens.
     /// Transaction has to be sent by the super owner multisig.
     /// @param newCountdown New countdown length.
-    function setBurningActionCountdown(
+    function updateBurningActionCountdownLength(
         uint256 newCountdown
     )
     public
