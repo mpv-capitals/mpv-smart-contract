@@ -49,6 +49,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     struct DelayedTransfer {
         address from;
         address to;
+        address sender;
         uint256 value;
         uint256 countdownStart;
         TransferMethod transferMethod;
@@ -257,6 +258,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         DelayedTransfer storage delayedTransfer = delayedTransfers[transferId];
         delayedTransfer.from = from;
         delayedTransfer.to = to;
+        delayedTransfer.sender = msg.sender;
         delayedTransfer.value = value;
         delayedTransfer.countdownStart = now;
         delayedTransfer.transferMethod = TransferMethod.TransferFrom;
@@ -264,7 +266,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
     /// @dev Executes delayedTransfer given countdown has expired and recipient
     ///      is a whitelisted address
-    /// @param success boolean
+    /// @param transferId The corresponding transferId
+    /// @return success boolean
     function executeDelayedTransfer(uint256 transferId)
     public
     mpvNotPaused
@@ -275,12 +278,29 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         require(delayedTransfer.countdownStart.add(delayedTransferCountdownLength) < now);
 
         if (delayedTransfer.transferMethod == TransferMethod.Transfer) {
-            return super.transfer(delayedTransfer.to, delayedTransfer.value);
+             super.transfer(delayedTransfer.to, delayedTransfer.value);
+             delete delayedTransfers[transferId];
+             return true;
         } else if (delayedTransfer.transferMethod == TransferMethod.TransferFrom) {
-            return super.transferFrom(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value);
-        } else {
-            return false;
+            super.transferFrom(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value);
+            delete delayedTransfers[transferId];
+            return true;
         }
+    }
+
+    /// @dev Cancels a delayedTransfer if called by the initiator of the transfer
+    ///      or the owner of the funds
+    /// @param transferId The corresponding transferId
+    /// @return success boolean
+    function cancelDelayedTransfer(uint256 transferId)
+    public
+    mpvNotPaused
+    returns (bool success)
+    {
+        DelayedTransfer storage delayedTransfer = delayedTransfers[transferId];
+        require(msg.sender == delayedTransfer.from || msg.sender == delayedTransfer.sender);
+        delete delayedTransfers[transferId];
+        return true;
     }
 
     /// @dev Mint new tokens.
