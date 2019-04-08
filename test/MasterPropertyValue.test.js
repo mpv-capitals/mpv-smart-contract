@@ -5,8 +5,6 @@ const { Status, mine } = require('./helpers')
 
 require('chai').should()
 
-// TODO: refactor tests and use solidity mocks
-
 const MPV = artifacts.require('MasterPropertyValue')
 const MPVToken = artifacts.require('MPVToken')
 const Assets = artifacts.require('Assets')
@@ -65,7 +63,7 @@ async function initContracts (accounts) {
   await mpvToken.initialize(
     'Master Property Value',
     'MPV',
-    4,
+    18,
     whitelist.address,
     mpv.address,
     mintingAdminRole.address,

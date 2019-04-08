@@ -23,12 +23,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     event DelayedTransferCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
 
     event DelayedTransferInitiated(
-      address from,
-      address to,
-      uint256 value,
-      address sender,
-      uint256 countdownStart,
-      TransferMethod transferMethod
+        address from,
+        address to,
+        uint256 value,
+        address sender,
+        uint256 countdownStart,
+        TransferMethod transferMethod
     );
 
     event MintingAdminUpdated(address indexed sender, address indexed admin);
@@ -122,8 +122,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     }
 
     /*
-     *  Public functions
-     */
+    *  Public functions
+    */
     /// @dev Initialize function sets initial storage values.
     /// @param name Name of token.
     /// @param symbol Symbol of token.
@@ -226,12 +226,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /// @dev Cancels dailyLimit update for sender if countdown hasn't
     ///      yet expired
     function cancelDailyLimitUpdate() public {
-      DailyLimitInfo storage limitInfo = dailyLimits[msg.sender];
+        DailyLimitInfo storage limitInfo = dailyLimits[msg.sender];
 
-      require(limitInfo.countdownStart + updateDailyLimitCountdownLength < now);
-      limitInfo.countdownStart = 0;
-      limitInfo.updatedDailyLimit = 0;
-      emit DailyLimitUpdateCancelled(msg.sender, limitInfo.dailyLimit);
+        require(limitInfo.countdownStart + updateDailyLimitCountdownLength < now);
+        limitInfo.countdownStart = 0;
+        limitInfo.updatedDailyLimit = 0;
+        emit DailyLimitUpdateCancelled(msg.sender, limitInfo.dailyLimit);
     }
 
     /// @dev Transfer tokens to another account.
@@ -265,7 +265,6 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         return super.transferFrom(from, to, value);
     }
 
-
     /// @dev Starts delayedTransferCountdown to execute transfer in 48 hours
     ///      and allows value to exceed daily transfer limit
     /// @param to Address to transfer tokens to.
@@ -284,7 +283,14 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         delayedTransfer.value = value;
         delayedTransfer.countdownStart = now;
         delayedTransfer.transferMethod = TransferMethod.Transfer;
-        emit DelayedTransferInitiated(msg.sender, to, value, address(0), delayedTransfer.countdownStart, TransferMethod.Transfer);
+        emit DelayedTransferInitiated(
+            msg.sender,
+            to,
+            value,
+            address(0),
+            delayedTransfer.countdownStart,
+            TransferMethod.Transfer
+        );
     }
 
     /// @dev Starts delayedTransferCountdown to execute transfer in 48 hours
@@ -307,7 +313,14 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         delayedTransfer.value = value;
         delayedTransfer.countdownStart = now;
         delayedTransfer.transferMethod = TransferMethod.TransferFrom;
-        emit DelayedTransferInitiated(from, to, value, msg.sender, delayedTransfer.countdownStart, TransferMethod.Transfer);
+        emit DelayedTransferInitiated(
+            from,
+            to,
+            value,
+            msg.sender,
+            delayedTransfer.countdownStart,
+            TransferMethod.Transfer
+        );
     }
 
     /// @dev Executes delayedTransfer given countdown has expired and recipient
@@ -324,7 +337,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         require(delayedTransfer.countdownStart.add(delayedTransferCountdownLength) < now);
 
         if (delayedTransfer.transferMethod == TransferMethod.Transfer) {
-             super.transfer(delayedTransfer.to, delayedTransfer.value);
+            super.transfer(delayedTransfer.to, delayedTransfer.value);
         } else if (delayedTransfer.transferMethod == TransferMethod.TransferFrom) {
             super.transferFrom(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value);
         }
@@ -373,55 +386,55 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /*
      *  ERC1404 Implementation
      */
-     /// @dev View function that allows a quick check on daily limits
-     /// @param from Address to transfer tokens from.
-     /// @param to Address to transfer tokens to.
-     /// @param value Amount of tokens to transfer.
-     /// @return Returns uint8 0 on valid transfer any other number on invalid transfer
-     function detectTransferRestriction(
-         address from,
-         address to,
-         uint256 value
-      ) public view returns (uint8 returnValue)
-      {
-          DailyLimitInfo storage limitInfo = dailyLimits[from];
+    /// @dev View function that allows a quick check on daily limits
+    /// @param from Address to transfer tokens from.
+    /// @param to Address to transfer tokens to.
+    /// @param value Amount of tokens to transfer.
+    /// @return Returns uint8 0 on valid transfer any other number on invalid transfer
+    function detectTransferRestriction(
+        address from,
+        address to,
+        uint256 value
+    ) public view returns (uint8 returnValue)
+    {
+        DailyLimitInfo storage limitInfo = dailyLimits[from];
 
-          if (!whitelist.isWhitelisted(to)) {
+        if (!whitelist.isWhitelisted(to)) {
             return 1;
-          }
+        }
 
-          // if daily limit exists
-          if (limitInfo.dailyLimit != 0){
+        // if daily limit exists
+        if (limitInfo.dailyLimit != 0){
             // if new day, only check current transfer value
             if (now > limitInfo.lastDay + 24 hours) {
                 if (value > limitInfo.dailyLimit) {
-                  return 2;
+                    return 2;
                 }
-            // if daily period not over, check against previous transfers
+                // if daily period not over, check against previous transfers
             } else if (!_isUnderLimit(limitInfo, value)) {
-              return 2;
+                return 2;
             }
-          }
+        }
 
-          return 0;
-      }
+        return 0;
+    }
 
-      /// @dev Translates uint8 restriction code to a human readable string
-      //  @param restrictionCode valid code for transfer restrictions
-      /// @return human readable transfer restriction error
-      function messageForTransferRestriction (
-          uint8 restrictionCode
-      ) public view returns (string memory) {
-          if (restrictionCode == 0)
-              return 'Valid transfer';
-          if (restrictionCode == 1)
-              return 'Invalid transfer: nonwhitelisted recipient';
-          if (restrictionCode == 2) {
-              return 'Invalid transfer: exceeds daily limit';
-          } else {
-              revert('Invalid restrictionCode');
-          }
-      }
+    /// @dev Translates uint8 restriction code to a human readable string
+    //  @param restrictionCode valid code for transfer restrictions
+    /// @return human readable transfer restriction error
+    function messageForTransferRestriction (
+        uint8 restrictionCode
+    ) public view returns (string memory) {
+        if (restrictionCode == 0)
+            return "Valid transfer";
+        if (restrictionCode == 1)
+            return "Invalid transfer: nonwhitelisted recipient";
+        if (restrictionCode == 2) {
+            return "Invalid transfer: exceeds daily limit";
+        } else {
+            revert("Invalid restrictionCode");
+        }
+    }
 
     /*
      *  Internal functions
@@ -459,9 +472,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     returns(bool)
     {
         return (
-          // 0 == no daily limit
-          limitInfo.dailyLimit == 0 ||
-          limitInfo.spentToday + amount <= limitInfo.dailyLimit
+            // 0 == no daily limit
+            limitInfo.dailyLimit == 0 ||
+            limitInfo.spentToday + amount <= limitInfo.dailyLimit
         );
     }
 }

@@ -8,8 +8,9 @@ const MasterPropertyValueMock = artifacts.require('MasterPropertyValueMock')
 const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiSigWalletMock')
 const BasicOwnerMultiSigWalletMock = artifacts.require('BasicOwnerMultiSigWalletMock')
 
-const MULTIPLIER = 10 ** 4
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+const BN = n => new web3.utils.BN(n)
+const MULTIPLIER = BN(10).pow(BN(18))
 
 contract('MPVToken', accounts => {
   let token, whitelist, masterPropertyValue, superOwnerMultiSig
@@ -29,7 +30,7 @@ contract('MPVToken', accounts => {
     await token.initialize(
       'Master Property Value',
       'MPV',
-      4,
+      18,
       whitelist.address,
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
@@ -44,8 +45,8 @@ contract('MPVToken', accounts => {
 
   describe('transfer()', () => {
     beforeEach(async () => {
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], (BN(10000).mul(MULTIPLIER)).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], (BN(10000).mul(MULTIPLIER)).toString())
     })
 
     it('sends tokens to whitelisted addresses', async () => {
@@ -62,19 +63,19 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if transfer breaches daily limit', async () => {
-      await token.updateDailyLimit(1000 * MULTIPLIER)
+      await token.updateDailyLimit((BN(1000).mul(MULTIPLIER)).toString())
       await mine(60 * 60 * 48 + 1)
-      await token.transfer(accounts[1], 500 * MULTIPLIER)
-      await shouldFail(token.transfer(accounts[1], 501 * MULTIPLIER))
+      await token.transfer(accounts[1], BN(500).mul(MULTIPLIER).toString())
+      await shouldFail(token.transfer(accounts[1], BN(501).mul(MULTIPLIER).toString()))
     })
   })
 
   describe('transferFrom()', () => {
     beforeEach(async () => {
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
-      await token.approve(accounts[0], 10000 * MULTIPLIER, { from: accounts[1] })
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER))
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER))
+      await token.approve(accounts[0], BN(10000).mul(MULTIPLIER), { from: accounts[1] })
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER))
     })
 
     it('sends tokens to whitelisted addresses', async () => {
@@ -91,10 +92,10 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if transfer breaches daily limit', async () => {
-      await token.updateDailyLimit(1000 * MULTIPLIER, { from: accounts[1] })
+      await token.updateDailyLimit(BN(1000).mul(MULTIPLIER), { from: accounts[1] })
       await mine(60 * 60 * 48 + 1)
-      await token.transferFrom(accounts[1], accounts[0], 500 * MULTIPLIER)
-      await shouldFail(token.transferFrom(accounts[1], accounts[0], 501 * MULTIPLIER))
+      await token.transferFrom(accounts[1], accounts[0], BN(500).mul(MULTIPLIER))
+      await shouldFail(token.transferFrom(accounts[1], accounts[0], BN(501).mul(MULTIPLIER)))
     })
   })
 
@@ -102,30 +103,30 @@ contract('MPVToken', accounts => {
     let largeTransferAmt
 
     beforeEach(async () => {
-      largeTransferAmt = 70 * MULTIPLIER
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
-      await token.updateDailyLimit(50 * MULTIPLIER)
+      largeTransferAmt = BN(70).mul(MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER).toString())
+      await token.updateDailyLimit(BN(50).mul(MULTIPLIER).toString())
       await mine(60 * 60 * 48 + 1)
-      await token.transfer(accounts[1], 20 * MULTIPLIER)
+      await token.transfer(accounts[1], BN(20).mul(MULTIPLIER).toString())
     })
 
     it('creates a DelayedTransfer structure with the correct values', async () => {
-      const largeTransferAmt = 60 * MULTIPLIER
-      const txId = await token.delayedTransfer.call(accounts[1], largeTransferAmt)
+      const largeTransferAmt = BN(60).mul(MULTIPLIER)
+      const txId = await token.delayedTransfer.call(accounts[1], largeTransferAmt.toString())
       await token.delayedTransfer(accounts[1], largeTransferAmt)
       const delayedTransfer = await token.delayedTransfers(txId)
 
       expect(delayedTransfer.from).to.equal(accounts[0])
       expect(delayedTransfer.to).to.equal(accounts[1])
-      expect(delayedTransfer.value.toNumber()).to.equal(largeTransferAmt)
+      expect(delayedTransfer.value.toString()).to.equal(largeTransferAmt.toString())
       expect(delayedTransfer.transferMethod.toNumber()).to.equal(0)
       expect(delayedTransfer.countdownStart.toNumber())
         .to.be.closeTo((await time.latest()).toNumber(), 1)
     })
 
     it('emits a DelayedTransferInitiated event', async () => {
-      const { logs } = await token.delayedTransfer(accounts[1], largeTransferAmt)
+      const { logs } = await token.delayedTransfer(accounts[1], largeTransferAmt.toString())
       expect(logs[0].event).to.equal('DelayedTransferInitiated')
     })
   })
@@ -134,13 +135,13 @@ contract('MPVToken', accounts => {
     let largeTransferAmt
 
     beforeEach(async () => {
-      largeTransferAmt = 70 * MULTIPLIER
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[2], 10000 * MULTIPLIER)
-      await token.updateDailyLimit(50 * MULTIPLIER)
+      largeTransferAmt = BN(70).mul(MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[2], BN(10000).mul(MULTIPLIER).toString())
+      await token.updateDailyLimit(BN(50).mul(MULTIPLIER).toString())
       await mine(60 * 60 * 48 + 1)
-      await token.transfer(accounts[1], 20 * MULTIPLIER, { from: accounts[2] })
+      await token.transfer(accounts[1], BN(20).mul(MULTIPLIER).toString(), { from: accounts[2] })
     })
 
     it('creates a DelayedTransfer structure with the correct values', async () => {
@@ -150,49 +151,49 @@ contract('MPVToken', accounts => {
 
       expect(delayedTransfer.from).to.equal(accounts[0])
       expect(delayedTransfer.to).to.equal(accounts[1])
-      expect(delayedTransfer.value.toNumber()).to.equal(largeTransferAmt)
+      expect(delayedTransfer.value.toString()).to.equal(largeTransferAmt.toString())
       expect(delayedTransfer.transferMethod.toNumber()).to.equal(1)
       expect(delayedTransfer.countdownStart.toNumber())
         .to.be.closeTo((await time.latest()).toNumber(), 1)
     })
 
     it('emits a DelayedTransferInitiated event', async () => {
-      const { logs } = await token.delayedTransferFrom(accounts[0], accounts[1], largeTransferAmt)
+      const { logs } = await token.delayedTransferFrom(accounts[0], accounts[1], largeTransferAmt.toString())
       expect(logs[0].event).to.equal('DelayedTransferInitiated')
     })
   })
 
   describe('executeDelayedTransfer()', () => {
     beforeEach(async () => {
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[2], 10000 * MULTIPLIER)
-      await token.updateDailyLimit(50 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[2], BN(10000).mul(MULTIPLIER).toString())
+      await token.updateDailyLimit(BN(50).mul(MULTIPLIER).toString())
       await mine(60 * 60 * 48 + 1)
-      await token.transfer(accounts[1], 20 * MULTIPLIER, { from: accounts[2] })
+      await token.transfer(accounts[1], BN(20).mul(MULTIPLIER).toString(), { from: accounts[2] })
     })
 
     describe('when transferMethod is Transfer', () => {
       let txId, transferAmt
 
       beforeEach(async () => {
-        transferAmt = 60 * MULTIPLIER
+        transferAmt = BN(60).mul(MULTIPLIER)
         txId = await token.delayedTransfer.call(accounts[1], transferAmt)
         await token.delayedTransfer(accounts[1], transferAmt)
       })
 
       it('transfers the value from -> to', async () => {
         await mine(60 * 60 * 48 + 1)
-        const previousToBalance = (await token.balanceOf(accounts[1])).toNumber()
-        const previousFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+        const previousToBalance = (await token.balanceOf(accounts[1]))
+        const previousFromBalance = (await token.balanceOf(accounts[0]))
 
         await token.executeDelayedTransfer(txId)
 
-        const currentToBalance = (await token.balanceOf(accounts[1])).toNumber()
-        const currentFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+        const currentToBalance = (await token.balanceOf(accounts[1]))
+        const currentFromBalance = (await token.balanceOf(accounts[0]))
 
-        expect(currentToBalance - previousToBalance).to.equal(transferAmt)
-        expect(previousFromBalance - currentFromBalance).to.equal(transferAmt)
+        expect(currentToBalance.sub(previousToBalance).toString()).to.equal(transferAmt.toString())
+        expect(previousFromBalance.sub(currentFromBalance).toString()).to.equal(transferAmt.toString())
       })
 
       it('returns true', async () => {
@@ -215,28 +216,28 @@ contract('MPVToken', accounts => {
       let txId, transferAmt
 
       beforeEach(async () => {
-        transferAmt = 60 * MULTIPLIER
+        transferAmt = BN(60).mul(MULTIPLIER)
         txId = await token.delayedTransferFrom.call(
-          accounts[0], accounts[1], transferAmt
+          accounts[0], accounts[1], transferAmt.toString()
         )
         await token.delayedTransferFrom(
-          accounts[0], accounts[1], transferAmt
+          accounts[0], accounts[1], transferAmt.toString()
         )
       })
 
       it('sends the value from -> to', async () => {
         await mine(60 * 60 * 48 + 1)
         await token.approve(accounts[2], transferAmt)
-        const previousToBalance = (await token.balanceOf(accounts[1])).toNumber()
-        const previousFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+        const previousToBalance = (await token.balanceOf(accounts[1]))
+        const previousFromBalance = (await token.balanceOf(accounts[0]))
 
         await token.executeDelayedTransfer(txId, { from: accounts[2] })
 
-        const currentToBalance = (await token.balanceOf(accounts[1])).toNumber()
-        const currentFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+        const currentToBalance = (await token.balanceOf(accounts[1]))
+        const currentFromBalance = (await token.balanceOf(accounts[0]))
 
-        expect(currentToBalance - previousToBalance).to.equal(transferAmt)
-        expect(previousFromBalance - currentFromBalance).to.equal(transferAmt)
+        expect(currentToBalance.sub(previousToBalance).toString()).to.equal(transferAmt.toString())
+        expect(previousFromBalance.sub(currentFromBalance).toString()).to.equal(transferAmt.toString())
       })
 
       it('reverts if executing address has no allownance from "to"', async () => {
@@ -260,7 +261,7 @@ contract('MPVToken', accounts => {
 
     describe('when TransferMethod is Transfer', () => {
       beforeEach(async () => {
-        transferAmt = 60 * MULTIPLIER
+        transferAmt = BN(60).mul(MULTIPLIER)
         txId = await token.delayedTransfer.call(
           accounts[1], transferAmt
         )
@@ -286,7 +287,7 @@ contract('MPVToken', accounts => {
 
     describe('when TransferMethod is TransferFrom', () => {
       beforeEach(async () => {
-        transferAmt = 60 * MULTIPLIER
+        transferAmt = BN(60).mul(MULTIPLIER)
         txId = await token.delayedTransferFrom.call(
           accounts[0], accounts[1], transferAmt, { from: accounts[3] }
         )
@@ -317,12 +318,12 @@ contract('MPVToken', accounts => {
   describe('mint()', () => {
     it('mints new tokens if called by masterPropertyValue', async () => {
       const mintAmount = 500
-      const previousTokenSupply = (await token.totalSupply()).toNumber()
+      const previousTokenSupply = (await token.totalSupply())
 
       await masterPropertyValue.mock_callMint(token.address, accounts[0], mintAmount)
 
-      const newTokenSupply = (await token.totalSupply()).toNumber()
-      newTokenSupply.should.equal(previousTokenSupply + mintAmount)
+      const newTokenSupply = (await token.totalSupply())
+      expect(newTokenSupply.toString()).to.equal(previousTokenSupply.add(BN(mintAmount)).toString())
     })
 
     it('reverts if called by address other than the mintingAdmin', async () => {
@@ -341,12 +342,12 @@ contract('MPVToken', accounts => {
 
     it('burns tokens if called by redemptionAdmin', async () => {
       const burnAmount = 300
-      const previousTokenSupply = (await token.totalSupply()).toNumber()
+      const previousTokenSupply = (await token.totalSupply())
 
       await masterPropertyValue.mock_callBurn(token.address, accounts[0], burnAmount)
 
       const newTokenSupply = (await token.totalSupply()).toNumber()
-      newTokenSupply.should.equal(previousTokenSupply - burnAmount)
+      expect(newTokenSupply.toString()).to.equal(previousTokenSupply.sub(BN(burnAmount)).toString())
     })
 
     it('reverts if called by address other than the redemptionAdmin', async () => {
@@ -398,8 +399,8 @@ contract('MPVToken', accounts => {
 
   describe('detectTransferRestriction()', () => {
     beforeEach(async () => {
-      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
-      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER).toString())
     })
 
     describe('regarding whitelisted accounts', () => {
@@ -414,7 +415,7 @@ contract('MPVToken', accounts => {
         expect(
           (await token.detectTransferRestriction(
             accounts[0], whitelistedAcct,
-            11 * MULTIPLIER)).toNumber()
+            BN(11).mul(MULTIPLIER))).toNumber()
         ).to.equal(0)
       })
 
@@ -422,7 +423,7 @@ contract('MPVToken', accounts => {
         expect(
           (await token.detectTransferRestriction(
             accounts[0], nonWhitelistedAcct,
-            11 * MULTIPLIER)).toNumber()
+            BN(11).mul(MULTIPLIER))).toNumber()
         ).to.equal(1)
       })
     })
@@ -431,15 +432,15 @@ contract('MPVToken', accounts => {
       let dailyLimit
 
       before(async () => {
-        dailyLimit = 50 * MULTIPLIER
+        dailyLimit = BN(50).mul(MULTIPLIER)
       })
 
       it('returns 0 if there is no daily limit', async () => {
-        await token.transfer(accounts[1], 40 * MULTIPLIER)
+        await token.transfer(accounts[1], BN(40).mul(MULTIPLIER))
         expect(
           (await token.detectTransferRestriction(
             accounts[0], accounts[1],
-            11 * MULTIPLIER)).toNumber()
+            BN(11).mul(MULTIPLIER))).toNumber()
         ).to.equal(0)
       })
 
@@ -447,7 +448,7 @@ contract('MPVToken', accounts => {
         beforeEach(async () => {
           await token.updateDailyLimit(dailyLimit)
           await mine(60 * 60 * 48 + 1)
-          await token.transfer(accounts[1], 40 * MULTIPLIER)
+          await token.transfer(accounts[1], BN(40).mul(MULTIPLIER))
           await mine(60 * 60 * 24 + 1)
         })
 
@@ -455,7 +456,7 @@ contract('MPVToken', accounts => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
-              11 * MULTIPLIER)).toNumber()
+              BN(11).mul(MULTIPLIER))).toNumber()
           ).to.equal(0)
         })
 
@@ -463,7 +464,7 @@ contract('MPVToken', accounts => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
-              51 * MULTIPLIER)).toNumber()
+              BN(51).mul(MULTIPLIER))).toNumber()
           ).to.equal(2)
         })
       })
@@ -472,14 +473,14 @@ contract('MPVToken', accounts => {
         beforeEach(async () => {
           await token.updateDailyLimit(dailyLimit)
           await mine(60 * 60 * 48 + 1)
-          await token.transfer(accounts[1], 40 * MULTIPLIER)
+          await token.transfer(accounts[1], BN(40).mul(MULTIPLIER))
         })
 
         it('returns 0 if value + previous transfers does not exceed daily limit', async () => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
-              10 * MULTIPLIER)).toNumber()
+              BN(10).mul(MULTIPLIER))).toNumber()
           ).to.equal(0)
         })
 
@@ -487,7 +488,7 @@ contract('MPVToken', accounts => {
           expect(
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
-              11 * MULTIPLIER)).toNumber()
+              BN(11).mul(MULTIPLIER))).toNumber()
           ).to.equal(2)
         })
       })
