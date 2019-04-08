@@ -325,13 +325,11 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
         if (delayedTransfer.transferMethod == TransferMethod.Transfer) {
              super.transfer(delayedTransfer.to, delayedTransfer.value);
-             delete delayedTransfers[transferId];
-             return true;
         } else if (delayedTransfer.transferMethod == TransferMethod.TransferFrom) {
             super.transferFrom(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value);
-            delete delayedTransfers[transferId];
-            return true;
         }
+        delete delayedTransfers[transferId];
+        return true;
     }
 
     /// @dev Cancels a delayedTransfer if called by the initiator of the transfer

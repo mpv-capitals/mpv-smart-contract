@@ -240,7 +240,7 @@ contract('MPVToken', accounts => {
       })
 
       it('reverts if executing address has no allownance from "to"', async () => {
-        shouldFail(token.executeDelayedTransfer(txId, { from: accounts[2] }))
+        await shouldFail(token.executeDelayedTransfer(txId, { from: accounts[2] }))
       })
 
       it('reverts if countdown is not set', async () => {
@@ -364,7 +364,7 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if sent by address other than superOwnerMultiSig', async () => {
-      shouldFail(token.updateUpdateDailyLimitCountdownLength(15))
+      await shouldFail(token.updateUpdateDailyLimitCountdownLength(15))
     })
 
     it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
@@ -385,7 +385,7 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if sent by address other than superOwnerMultiSig', async () => {
-      shouldFail(token.updateDelayedTransferCountdownLength(15))
+      await shouldFail(token.updateDelayedTransferCountdownLength(15))
     })
 
     it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
