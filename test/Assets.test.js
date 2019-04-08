@@ -47,29 +47,29 @@ contract('Assets', accounts => {
       mpvToken.address,
       masterPropertyValue.address
     )
-    await redemptionAdminMultiSig.setTransactor(assets.address)
+    await redemptionAdminMultiSig.updateTransactor(assets.address)
   })
 
-  describe('setRedemptionFee()', () => {
+  describe('updateRedemptionFee()', () => {
     it('properly sets redemptionFee to the given value', async () => {
       // initialize assets contract with accessible basicOwnerMultSig for testing
       const multiSig = accounts[1]
       const assetsB = await initializeAssets(multiSig)
       expect((await assetsB.redemptionFee()).toString()).to.equal(REDEMPTION_FEE.toString())
-      await assetsB.setRedemptionFee(500, { from: multiSig })
-      const newFee = (await assetsB.redemptionFee())
-      expect(newFee.toNumber()).to.equal(500)
+      await assetsB.updateRedemptionFee(500, { from: multiSig })
+      const newFee = (await assetsB.redemptionFee()).toNumber()
+      newFee.should.equal(500)
     })
   })
 
-  describe('setRedemptionFeeReceiverWallet()', () => {
+  describe('updateRedemptionFeeReceiverWallet()', () => {
     it('properly sets setRedemptionFeeReceiverWallet to the given value', async () => {
       // initialize assets contract with accessible basicOwnerMultSig for testing
       const multiSig = accounts[1]
       const assetsB = await initializeAssets(multiSig)
       const defaultAddr = await assetsB.redemptionFeeReceiverWallet()
       defaultAddr.should.equal(redemptionFeeReceiverWallet)
-      await assetsB.setRedemptionFeeReceiverWallet(accounts[5], {
+      await assetsB.updateRedemptionFeeReceiverWallet(accounts[5], {
         from: multiSig,
       })
       const newAddr = await assetsB.redemptionFeeReceiverWallet()
@@ -473,6 +473,7 @@ contract('Assets', accounts => {
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
       redemptionAdminRole.address, // redemptionAdmin
+      accounts[5] // superOwnerMultiSig
     )
     return mpvToken
   }

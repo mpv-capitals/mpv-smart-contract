@@ -5,8 +5,6 @@ const { Status, mine } = require('./helpers')
 
 require('chai').should()
 
-// TODO: refactor tests and use solidity mocks
-
 const MPV = artifacts.require('MasterPropertyValue')
 const MPVToken = artifacts.require('MPVToken')
 const Assets = artifacts.require('Assets')
@@ -69,7 +67,8 @@ async function initContracts (accounts) {
     whitelist.address,
     mpv.address,
     mintingAdminRole.address,
-    redemptionAdminRole.address
+    redemptionAdminRole.address,
+    accounts[5]
   )
 
   await assets.initialize(
@@ -109,14 +108,14 @@ async function initContracts (accounts) {
     whitelist.address,
   )
 
-  await superOwnerMultiSig.setAdmin(superOwnerMultiSig.address)
-  await basicOwnerMultiSig.setAdmin(superOwnerMultiSig.address)
-  await operationAdminMultiSig.setAdmin(basicOwnerMultiSig.address)
-  await mintingAdminMultiSig.setTransactor(mintingAdminRole.address)
-  await mintingAdminMultiSig.setAdmin(basicOwnerMultiSig.address)
-  await redemptionAdminMultiSig.setTransactor(assets.address)
-  await redemptionAdminMultiSig.setAdmin(basicOwnerMultiSig.address)
-  await mpv.setPausableAdmin(superOwnerMultiSig.address)
+  await superOwnerMultiSig.updateAdmin(superOwnerMultiSig.address)
+  await basicOwnerMultiSig.updateAdmin(superOwnerMultiSig.address)
+  await operationAdminMultiSig.updateAdmin(basicOwnerMultiSig.address)
+  await mintingAdminMultiSig.updateTransactor(mintingAdminRole.address)
+  await mintingAdminMultiSig.updateAdmin(basicOwnerMultiSig.address)
+  await redemptionAdminMultiSig.updateTransactor(assets.address)
+  await redemptionAdminMultiSig.updateAdmin(basicOwnerMultiSig.address)
+  await mpv.updatePausableAdmin(superOwnerMultiSig.address)
 }
 
 contract('MasterPropertyValue', accounts => {
@@ -276,7 +275,7 @@ contract('MasterPropertyValue', accounts => {
       const newWallet = '0x0000000000000000000000000000000000000000'
 
       const data = encodeCall(
-        'setRedemptionFeeReceiverWallet',
+        'updateRedemptionFeeReceiverWallet',
         ['address'],
         [newWallet]
       )
@@ -296,7 +295,7 @@ contract('MasterPropertyValue', accounts => {
       const newCountdown = 60 * 60 * 24
 
       const data = encodeCall(
-        'setTransferLimitChangeCountdownLength',
+        'updateTransferLimitChangeCountdownLength',
         ['uint256'],
         [newCountdown]
       )
@@ -313,7 +312,7 @@ contract('MasterPropertyValue', accounts => {
       const newCountdown = 60 * 60 * 24
 
       const data = encodeCall(
-        'setTransferLimitChangeCountdownLength',
+        'updateTransferLimitChangeCountdownLength',
         ['uint256'],
         [newCountdown]
       )
@@ -330,7 +329,7 @@ contract('MasterPropertyValue', accounts => {
       const newCountdown = 60 * 60 * 24
 
       const data = encodeCall(
-        'setWhitelistRemovalActionCountdown',
+        'updateWhitelistRemovalActionCountdownLength',
         ['uint256'],
         [newCountdown]
       )
@@ -347,7 +346,7 @@ contract('MasterPropertyValue', accounts => {
       const newCountdown = 60 * 60 * 24
 
       const data = encodeCall(
-        'setDelayedTransferCountdown',
+        'updateDelayedTransferCountdownLength',
         ['uint256'],
         [newCountdown]
       )
@@ -415,7 +414,7 @@ contract('MasterPropertyValue', accounts => {
 
       const newRedemptionFee = 0.5 * (10 ** 4)
       const data = encodeCall(
-        'setRedemptionFee',
+        'updateRedemptionFee',
         ['uint256'],
         [newRedemptionFee]
       )
@@ -433,7 +432,7 @@ contract('MasterPropertyValue', accounts => {
       const newWallet = '0x1111111111111111111111111111111111111111'
 
       const data = encodeCall(
-        'setRedemptionFeeReceiverWallet',
+        'updateRedemptionFeeReceiverWallet',
         ['address'],
         [newWallet]
       )
@@ -707,7 +706,7 @@ contract('MasterPropertyValue', accounts => {
       await initContracts(accounts)
 
       let data = encodeCall(
-        'setMintingActionCountdown',
+        'updateMintingActionCountdownLength',
         ['uint256'],
         [1]
       )
