@@ -13,16 +13,29 @@ import "./MasterPropertyValue.sol";
  */
 contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
+  /*
+   *  Events
+   */
     event DailyLimitUpdatePending(address account, uint256 currentDailyLimit, uint256 updatedDailyLimit);
     event DailyLimitUpdateCancelled(address account, uint256 dailyLimit);
-    event DailyLimitUpdateFulfilled(address account, uint256 newDailyLimit);
-    /*
-     *  Events
-     */
-    event MPVUpdated(address indexed sender, address indexed addr);
-    event MintingAdminUpdated(address indexed sender, address indexed admin);
-    event RedemptionAdminUpdated(address indexed sender, address indexed admin);
     event DailyLimitUpdated(address indexed sender, uint256 indexed dailyLimit);
+    event DailyLimitUpdateFulfilled(address account, uint256 newDailyLimit);
+    event DelayedTransferCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
+
+    event DelayedTransferInitiated(
+      address from,
+      address to,
+      uint256 value,
+      address sender,
+      uint256 countdownStart,
+      TransferMethod transferMethod
+    );
+
+    event MintingAdminUpdated(address indexed sender, address indexed admin);
+    event MPVUpdated(address indexed sender, address indexed addr);
+    event RedemptionAdminUpdated(address indexed sender, address indexed admin);
+    event UpdateDailyLimitCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
+
 
     /*
      *  Storage
@@ -31,8 +44,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     MasterPropertyValue public masterPropertyValue;
     address public mintingAdmin;
     address public redemptionAdmin;
-    uint256 public countdownLength;
+    address public superOwnerMultiSig;
+    uint256 public updateDailyLimitCountdownLength;
+    uint256 public delayedTransferCountdownLength;
+    uint256 public delayedTransferNonce;
     mapping(address => DailyLimitInfo) public dailyLimits;
+    mapping(uint256 => DelayedTransfer) public delayedTransfers;
 
     /// @dev Daily limit info structure.
     struct DailyLimitInfo {
@@ -41,6 +58,20 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         uint256 dailyLimit;
         uint256 countdownStart;
         uint256 updatedDailyLimit;
+    }
+
+    struct DelayedTransfer {
+        address from;
+        address to;
+        address sender;
+        uint256 value;
+        uint256 countdownStart;
+        TransferMethod transferMethod;
+    }
+
+    enum TransferMethod {
+        Transfer,
+        TransferFrom
     }
 
     /*
@@ -69,6 +100,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /// @dev Requires the sender to be the redemption admin role contract.
     modifier onlyRedemptionAdmin() {
         require(redemptionAdmin == msg.sender);
+        _;
+    }
+
+    /// @dev Requires the sender to be the super owner multiSig contract.
+    modifier onlySuperOwnerMultiSig() {
+        require(superOwnerMultiSig == msg.sender);
         _;
     }
 
@@ -102,7 +139,8 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         Whitelist _whitelist,
         MasterPropertyValue _masterPropertyValue,
         address _mintingAdmin,
-        address _redemptionAdmin
+        address _redemptionAdmin,
+        address _superOwnerMultiSig
     )
     public
     initializer
@@ -112,7 +150,10 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         masterPropertyValue = _masterPropertyValue;
         mintingAdmin = _mintingAdmin;
         redemptionAdmin = _redemptionAdmin;
-        countdownLength = 48 hours;
+        superOwnerMultiSig = _superOwnerMultiSig;
+        updateDailyLimitCountdownLength = 48 hours;
+        delayedTransferCountdownLength = 48 hours;
+        delayedTransferNonce = 0;
     }
 
     /// @dev Set the MPV contract address.
@@ -148,6 +189,28 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         emit RedemptionAdminUpdated(msg.sender, _redemptionAdmin);
     }
 
+    /// @dev Update the updateDailyLimitCountdownLength
+    /// @param updatedCountdownLength Address of redemption admin role contract.
+    function updateUpdateDailyLimitCountdownLength(uint256 updatedCountdownLength)
+    public
+    onlySuperOwnerMultiSig
+    mpvNotPaused
+    {
+        updateDailyLimitCountdownLength = updatedCountdownLength;
+        emit UpdateDailyLimitCountdownLengthUpdated(msg.sender, updatedCountdownLength);
+    }
+
+    /// @dev Update the delayedTransferCountdownLength
+    /// @param updatedCountdownLength Address of redemption admin role contract.
+    function updateDelayedTransferCountdownLength(uint256 updatedCountdownLength)
+    public
+    onlySuperOwnerMultiSig
+    mpvNotPaused
+    {
+        delayedTransferCountdownLength = updatedCountdownLength;
+        emit DelayedTransferCountdownLengthUpdated(msg.sender, updatedCountdownLength);
+    }
+
     /// @dev Sets new daily limit for sender account after countdown resolves
     /// @param updatedDailyLimit Updated dailyLimit
     function updateDailyLimit(uint256 updatedDailyLimit)
@@ -165,7 +228,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function cancelDailyLimitUpdate() public {
       DailyLimitInfo storage limitInfo = dailyLimits[msg.sender];
 
-      require(limitInfo.countdownStart + countdownLength < now);
+      require(limitInfo.countdownStart + updateDailyLimitCountdownLength < now);
       limitInfo.countdownStart = 0;
       limitInfo.updatedDailyLimit = 0;
       emit DailyLimitUpdateCancelled(msg.sender, limitInfo.dailyLimit);
@@ -183,8 +246,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     returns (bool)
     {
         dailyLimits[msg.sender].spentToday += value;
-        _transfer(msg.sender, to, value);
-        return true;
+        return super.transfer(to, value);
     }
 
     /// @dev Transfer tokens from an account to another account.
@@ -201,6 +263,88 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     {
         dailyLimits[from].spentToday += value;
         return super.transferFrom(from, to, value);
+    }
+
+
+    /// @dev Starts delayedTransferCountdown to execute transfer in 48 hours
+    ///      and allows value to exceed daily transfer limit
+    /// @param to Address to transfer tokens to.
+    /// @param value Amount of tokens to transfer.
+    /// @return transferId The corresponding transferId for delayedTransfers mapping
+    function delayedTransfer(address to, uint256 value)
+    public
+    whitelistedAddress(to)
+    mpvNotPaused
+    returns (uint256 transferId)
+    {
+        transferId = delayedTransferNonce++;
+        DelayedTransfer storage delayedTransfer = delayedTransfers[transferId];
+        delayedTransfer.from = msg.sender;
+        delayedTransfer.to = to;
+        delayedTransfer.value = value;
+        delayedTransfer.countdownStart = now;
+        delayedTransfer.transferMethod = TransferMethod.Transfer;
+        emit DelayedTransferInitiated(msg.sender, to, value, address(0), delayedTransfer.countdownStart, TransferMethod.Transfer);
+    }
+
+    /// @dev Starts delayedTransferCountdown to execute transfer in 48 hours
+    ///      and allows value to exceed daily transfer limit
+    /// @param from Address to transfer tokens from.
+    /// @param to Address to transfer tokens to.
+    /// @param value Amount of tokens to transfer.
+    /// @return transferId The corresponding transferId for delayedTransfers mapping
+    function delayedTransferFrom(address from, address to, uint256 value)
+    public
+    whitelistedAddress(to)
+    mpvNotPaused
+    returns (uint256 transferId)
+    {
+        transferId = delayedTransferNonce++;
+        DelayedTransfer storage delayedTransfer = delayedTransfers[transferId];
+        delayedTransfer.from = from;
+        delayedTransfer.to = to;
+        delayedTransfer.sender = msg.sender;
+        delayedTransfer.value = value;
+        delayedTransfer.countdownStart = now;
+        delayedTransfer.transferMethod = TransferMethod.TransferFrom;
+        emit DelayedTransferInitiated(from, to, value, msg.sender, delayedTransfer.countdownStart, TransferMethod.Transfer);
+    }
+
+    /// @dev Executes delayedTransfer given countdown has expired and recipient
+    ///      is a whitelisted address
+    /// @param transferId The corresponding transferId
+    /// @return success boolean
+    function executeDelayedTransfer(uint256 transferId)
+    public
+    mpvNotPaused
+    returns (bool success)
+    {
+        DelayedTransfer storage delayedTransfer = delayedTransfers[transferId];
+        require(whitelist.isWhitelisted(delayedTransfer.to));
+        require(delayedTransfer.countdownStart.add(delayedTransferCountdownLength) < now);
+
+        if (delayedTransfer.transferMethod == TransferMethod.Transfer) {
+             super.transfer(delayedTransfer.to, delayedTransfer.value);
+        } else if (delayedTransfer.transferMethod == TransferMethod.TransferFrom) {
+            super.transferFrom(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value);
+        }
+        delete delayedTransfers[transferId];
+        return true;
+    }
+
+    /// @dev Cancels a delayedTransfer if called by the initiator of the transfer
+    ///      or the owner of the funds
+    /// @param transferId The corresponding transferId
+    /// @return success boolean
+    function cancelDelayedTransfer(uint256 transferId)
+    public
+    mpvNotPaused
+    returns (bool success)
+    {
+        DelayedTransfer storage delayedTransfer = delayedTransfers[transferId];
+        require(msg.sender == delayedTransfer.from || msg.sender == delayedTransfer.sender);
+        delete delayedTransfers[transferId];
+        return true;
     }
 
     /// @dev Mint new tokens.
@@ -299,7 +443,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
         if (
             limitInfo.countdownStart != 0 &&
-            now > limitInfo.countdownStart + countdownLength
+            now > limitInfo.countdownStart + updateDailyLimitCountdownLength
         ) {
             limitInfo.countdownStart = 0;
             limitInfo.dailyLimit = limitInfo.updatedDailyLimit;

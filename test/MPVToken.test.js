@@ -1,4 +1,4 @@
-const { shouldFail } = require('openzeppelin-test-helpers')
+const { shouldFail, time } = require('openzeppelin-test-helpers')
 const { mine } = require('./helpers')
 require('chai').should()
 
@@ -9,11 +9,13 @@ const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiS
 const BasicOwnerMultiSigWalletMock = artifacts.require('BasicOwnerMultiSigWalletMock')
 
 const MULTIPLIER = 10 ** 4
+const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 
 contract('MPVToken', accounts => {
-  let token, whitelist, masterPropertyValue
+  let token, whitelist, masterPropertyValue, superOwnerMultiSig
 
   beforeEach(async () => {
+    superOwnerMultiSig = accounts[5]
     masterPropertyValue = await MasterPropertyValueMock.new()
     const multiSig = await OperationAdminMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
     const basicOwnerMultiSig = await BasicOwnerMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
@@ -24,7 +26,6 @@ contract('MPVToken', accounts => {
       masterPropertyValue.address
     )
     token = await MPVToken.new()
-    const dailyLimit = 1000 * (10 ** 4) // wei value given token.decimal = 4
     await token.initialize(
       'Master Property Value',
       'MPV',
@@ -32,7 +33,8 @@ contract('MPVToken', accounts => {
       whitelist.address,
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
-      masterPropertyValue.address // redemptionAdmin
+      masterPropertyValue.address, // redemptionAdmin
+      superOwnerMultiSig
     )
 
     await whitelist.addWhitelisted(accounts[0])
@@ -96,6 +98,222 @@ contract('MPVToken', accounts => {
     })
   })
 
+  describe('delayedTransfer()', () => {
+    let largeTransferAmt
+
+    beforeEach(async () => {
+      largeTransferAmt = 70 * MULTIPLIER
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await token.updateDailyLimit(50 * MULTIPLIER)
+      await mine(60 * 60 * 48 + 1)
+      await token.transfer(accounts[1], 20 * MULTIPLIER)
+    })
+
+    it('creates a DelayedTransfer structure with the correct values', async () => {
+      const largeTransferAmt = 60 * MULTIPLIER
+      const txId = await token.delayedTransfer.call(accounts[1], largeTransferAmt)
+      await token.delayedTransfer(accounts[1], largeTransferAmt)
+      const delayedTransfer = await token.delayedTransfers(txId)
+
+      expect(delayedTransfer.from).to.equal(accounts[0])
+      expect(delayedTransfer.to).to.equal(accounts[1])
+      expect(delayedTransfer.value.toNumber()).to.equal(largeTransferAmt)
+      expect(delayedTransfer.transferMethod.toNumber()).to.equal(0)
+      expect(delayedTransfer.countdownStart.toNumber())
+        .to.be.closeTo((await time.latest()).toNumber(), 1)
+    })
+
+    it('emits a DelayedTransferInitiated event', async () => {
+      const { logs } = await token.delayedTransfer(accounts[1], largeTransferAmt)
+      expect(logs[0].event).to.equal('DelayedTransferInitiated')
+    })
+  })
+
+  describe('delayedTransferFrom()', () => {
+    let largeTransferAmt
+
+    beforeEach(async () => {
+      largeTransferAmt = 70 * MULTIPLIER
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[2], 10000 * MULTIPLIER)
+      await token.updateDailyLimit(50 * MULTIPLIER)
+      await mine(60 * 60 * 48 + 1)
+      await token.transfer(accounts[1], 20 * MULTIPLIER, { from: accounts[2] })
+    })
+
+    it('creates a DelayedTransfer structure with the correct values', async () => {
+      const txId = await token.delayedTransferFrom.call(accounts[0], accounts[1], largeTransferAmt)
+      await token.delayedTransferFrom(accounts[0], accounts[1], largeTransferAmt)
+      const delayedTransfer = await token.delayedTransfers(txId)
+
+      expect(delayedTransfer.from).to.equal(accounts[0])
+      expect(delayedTransfer.to).to.equal(accounts[1])
+      expect(delayedTransfer.value.toNumber()).to.equal(largeTransferAmt)
+      expect(delayedTransfer.transferMethod.toNumber()).to.equal(1)
+      expect(delayedTransfer.countdownStart.toNumber())
+        .to.be.closeTo((await time.latest()).toNumber(), 1)
+    })
+
+    it('emits a DelayedTransferInitiated event', async () => {
+      const { logs } = await token.delayedTransferFrom(accounts[0], accounts[1], largeTransferAmt)
+      expect(logs[0].event).to.equal('DelayedTransferInitiated')
+    })
+  })
+
+  describe('executeDelayedTransfer()', () => {
+    beforeEach(async () => {
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[1], 10000 * MULTIPLIER)
+      await masterPropertyValue.mock_callMint(token.address, accounts[2], 10000 * MULTIPLIER)
+      await token.updateDailyLimit(50 * MULTIPLIER)
+      await mine(60 * 60 * 48 + 1)
+      await token.transfer(accounts[1], 20 * MULTIPLIER, { from: accounts[2] })
+    })
+
+    describe('when transferMethod is Transfer', () => {
+      let txId, transferAmt
+
+      beforeEach(async () => {
+        transferAmt = 60 * MULTIPLIER
+        txId = await token.delayedTransfer.call(accounts[1], transferAmt)
+        await token.delayedTransfer(accounts[1], transferAmt)
+      })
+
+      it('transfers the value from -> to', async () => {
+        await mine(60 * 60 * 48 + 1)
+        const previousToBalance = (await token.balanceOf(accounts[1])).toNumber()
+        const previousFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+
+        await token.executeDelayedTransfer(txId)
+
+        const currentToBalance = (await token.balanceOf(accounts[1])).toNumber()
+        const currentFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+
+        expect(currentToBalance - previousToBalance).to.equal(transferAmt)
+        expect(previousFromBalance - currentFromBalance).to.equal(transferAmt)
+      })
+
+      it('returns true', async () => {
+        await mine(60 * 60 * 48 + 1)
+        expect(await token.executeDelayedTransfer.call(txId)).to.equal(true)
+      })
+
+      it('reverts if countdown is not set', async () => {
+        await shouldFail(token.executeDelayedTransfer(txId))
+      })
+
+      it('reverts if from is a zero address', async () => {
+        await mine(60 * 60 * 48 + 1)
+        await token.cancelDelayedTransfer(txId)
+        await shouldFail(token.executeDelayedTransfer(txId))
+      })
+    })
+
+    describe('when transferMethod is TransferFrom', async () => {
+      let txId, transferAmt
+
+      beforeEach(async () => {
+        transferAmt = 60 * MULTIPLIER
+        txId = await token.delayedTransferFrom.call(
+          accounts[0], accounts[1], transferAmt
+        )
+        await token.delayedTransferFrom(
+          accounts[0], accounts[1], transferAmt
+        )
+      })
+
+      it('sends the value from -> to', async () => {
+        await mine(60 * 60 * 48 + 1)
+        await token.approve(accounts[2], transferAmt)
+        const previousToBalance = (await token.balanceOf(accounts[1])).toNumber()
+        const previousFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+
+        await token.executeDelayedTransfer(txId, { from: accounts[2] })
+
+        const currentToBalance = (await token.balanceOf(accounts[1])).toNumber()
+        const currentFromBalance = (await token.balanceOf(accounts[0])).toNumber()
+
+        expect(currentToBalance - previousToBalance).to.equal(transferAmt)
+        expect(previousFromBalance - currentFromBalance).to.equal(transferAmt)
+      })
+
+      it('reverts if executing address has no allownance from "to"', async () => {
+        await shouldFail(token.executeDelayedTransfer(txId, { from: accounts[2] }))
+      })
+
+      it('reverts if countdown is not set', async () => {
+        await shouldFail(token.executeDelayedTransfer(txId))
+      })
+
+      it('reverts if from is a zero address', async () => {
+        await mine(60 * 60 * 48 + 1)
+        await token.cancelDelayedTransfer(txId)
+        await shouldFail(token.executeDelayedTransfer(txId))
+      })
+    })
+  })
+
+  describe('cancelDelayedTransfer', () => {
+    let txId, transferAmt
+
+    describe('when TransferMethod is Transfer', () => {
+      beforeEach(async () => {
+        transferAmt = 60 * MULTIPLIER
+        txId = await token.delayedTransfer.call(
+          accounts[1], transferAmt
+        )
+        await token.delayedTransfer(
+          accounts[1], transferAmt
+        )
+      })
+
+      it('deletes the delayedTransfer if sent by "from" for Transfer', async () => {
+        expect((await token.delayedTransfers(txId)).to).to.equal(accounts[1])
+        await token.cancelDelayedTransfer(txId)
+        expect((await token.delayedTransfers(txId)).to).to.equal(ZERO_ADDR)
+      })
+
+      it('reverts if cancelled by address other than "from" for Transfer', async () => {
+        await shouldFail(token.cancelDelayedTransfer(txId, { from: accounts[2] }))
+      })
+
+      it('returns true on successful cancellation', async () => {
+        expect(await token.cancelDelayedTransfer.call(txId)).to.equal(true)
+      })
+    })
+
+    describe('when TransferMethod is TransferFrom', () => {
+      beforeEach(async () => {
+        transferAmt = 60 * MULTIPLIER
+        txId = await token.delayedTransferFrom.call(
+          accounts[0], accounts[1], transferAmt, { from: accounts[3] }
+        )
+        await token.delayedTransferFrom(
+          accounts[0], accounts[1], transferAmt, { from: accounts[3] }
+        )
+        await token.approve(accounts[3], transferAmt)
+      })
+
+      it('deletes the delayedTransfer if sent by "from" for TransferFrom', async () => {
+        expect((await token.delayedTransfers(txId)).to).to.equal(accounts[1])
+        await token.cancelDelayedTransfer(txId)
+        expect((await token.delayedTransfers(txId)).to).to.equal(ZERO_ADDR)
+      })
+
+      it('deletes the delayedTransfer if sent by sender for TransferFrom', async () => {
+        expect((await token.delayedTransfers(txId)).to).to.equal(accounts[1])
+        await token.cancelDelayedTransfer(txId, { from: accounts[3] })
+        expect((await token.delayedTransfers(txId)).to).to.equal(ZERO_ADDR)
+      })
+
+      it('reverts if cancelled by address other than "from" or "sender"', async () => {
+        await shouldFail(token.cancelDelayedTransfer(txId, { from: accounts[1] }))
+      })
+    })
+  })
+
   describe('mint()', () => {
     it('mints new tokens if called by masterPropertyValue', async () => {
       const mintAmount = 500
@@ -136,6 +354,48 @@ contract('MPVToken', accounts => {
     })
   })
 
+  describe('updateUpdateDailyLimitCountdownLength()', () => {
+    it('updates the updateDailyLimitCountdownLength', async () => {
+      expect((await token.updateDailyLimitCountdownLength()).toNumber())
+        .to.equal(60 * 60 * 48)
+      await token.updateUpdateDailyLimitCountdownLength(15, { from: superOwnerMultiSig })
+      expect((await token.updateDailyLimitCountdownLength()).toNumber())
+        .to.equal(15)
+    })
+
+    it('reverts if sent by address other than superOwnerMultiSig', async () => {
+      await shouldFail(token.updateUpdateDailyLimitCountdownLength(15))
+    })
+
+    it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
+      const { logs } = await token.updateUpdateDailyLimitCountdownLength(
+        10, { from: superOwnerMultiSig }
+      )
+      expect(logs[0].event).to.equal('UpdateDailyLimitCountdownLengthUpdated')
+    })
+  })
+
+  describe('updatedelayedTransferCountdownLength()', () => {
+    it('updates the delayedTransferCountdownLength', async () => {
+      expect((await token.delayedTransferCountdownLength()).toNumber())
+        .to.equal(60 * 60 * 48)
+      await token.updateDelayedTransferCountdownLength(15, { from: superOwnerMultiSig })
+      expect((await token.delayedTransferCountdownLength()).toNumber())
+        .to.equal(15)
+    })
+
+    it('reverts if sent by address other than superOwnerMultiSig', async () => {
+      await shouldFail(token.updateDelayedTransferCountdownLength(15))
+    })
+
+    it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
+      const { logs } = await token.updateDelayedTransferCountdownLength(
+        10, { from: superOwnerMultiSig }
+      )
+      expect(logs[0].event).to.equal('DelayedTransferCountdownLengthUpdated')
+    })
+  })
+
   describe('detectTransferRestriction()', () => {
     beforeEach(async () => {
       await masterPropertyValue.mock_callMint(token.address, accounts[0], 10000 * MULTIPLIER)
@@ -155,7 +415,7 @@ contract('MPVToken', accounts => {
           (await token.detectTransferRestriction(
             accounts[0], whitelistedAcct,
             11 * MULTIPLIER)).toNumber()
-          ).to.equal(0)
+        ).to.equal(0)
       })
 
       it('returns 1 if sending to a nonwhitelisted account', async () => {
@@ -163,7 +423,7 @@ contract('MPVToken', accounts => {
           (await token.detectTransferRestriction(
             accounts[0], nonWhitelistedAcct,
             11 * MULTIPLIER)).toNumber()
-          ).to.equal(1)
+        ).to.equal(1)
       })
     })
 
@@ -180,7 +440,7 @@ contract('MPVToken', accounts => {
           (await token.detectTransferRestriction(
             accounts[0], accounts[1],
             11 * MULTIPLIER)).toNumber()
-          ).to.equal(0)
+        ).to.equal(0)
       })
 
       describe('when new daily limit', () => {
@@ -196,7 +456,7 @@ contract('MPVToken', accounts => {
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               11 * MULTIPLIER)).toNumber()
-            ).to.equal(0)
+          ).to.equal(0)
         })
 
         it('returns 2 if transfer value exceeds daily limit', async () => {
@@ -204,7 +464,7 @@ contract('MPVToken', accounts => {
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               51 * MULTIPLIER)).toNumber()
-            ).to.equal(2)
+          ).to.equal(2)
         })
       })
 
@@ -220,7 +480,7 @@ contract('MPVToken', accounts => {
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               10 * MULTIPLIER)).toNumber()
-            ).to.equal(0)
+          ).to.equal(0)
         })
 
         it('returns 2 if value + previous transfers exceeds daily limit', async () => {
@@ -228,20 +488,19 @@ contract('MPVToken', accounts => {
             (await token.detectTransferRestriction(
               accounts[0], accounts[1],
               11 * MULTIPLIER)).toNumber()
-            ).to.equal(2)
+          ).to.equal(2)
         })
       })
     })
   })
 
   describe('messageForTransferRestriction()', () => {
-    let validTransferMsg, dailyLimitMsg, invalidCodeMsg, whitelistMsg
+    let validTransferMsg, dailyLimitMsg, whitelistMsg
 
     before(async () => {
       validTransferMsg = 'Valid transfer'
-      whitelistMsg     = 'Invalid transfer: nonwhitelisted recipient'
-      dailyLimitMsg    = 'Invalid transfer: exceeds daily limit'
-      invalidCodeMsg   = 'Invalid restrictionCode'
+      whitelistMsg = 'Invalid transfer: nonwhitelisted recipient'
+      dailyLimitMsg = 'Invalid transfer: exceeds daily limit'
     })
 
     it('returns the correct message for input 0', async () => {
