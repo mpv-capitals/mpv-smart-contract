@@ -73,7 +73,7 @@ async function initContracts (accounts) {
     mpv.address,
     mintingAdminRole.address,
     redemptionAdminRole.address,
-    accounts[5]
+    accounts[5] // super owner multisig
   )
 
   await assets.initialize(

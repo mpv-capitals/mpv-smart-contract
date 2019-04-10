@@ -1,11 +1,11 @@
 {
   "contracts": {
     "Assets": {
-      "address": "0x91Acb772Bbf5C69604526705Ae19E0a2e7a144cD",
+      "address": "0xC4bC1f775dB36c07b0bC506cbB83fCe12E182053",
       "constructorCode": "608060405234801561001057600080fd5b5061406f806100206000396000f3fe",
-      "bodyBytecodeHash": "3017f647089e100e9cda1cf49b5a1633e8ec912bd77ff7f6fbc966da85a138ba",
-      "localBytecodeHash": "958e2011aaa235a62e49ff8eaf45547ad9b46a86e957be4e2d902dc926ed0844",
-      "deployedBytecodeHash": "958e2011aaa235a62e49ff8eaf45547ad9b46a86e957be4e2d902dc926ed0844",
+      "bodyBytecodeHash": "3d092aeeb72b859c608b56e0314e4b95e5d03151e21039c62cdbf23ffdb8f512",
+      "localBytecodeHash": "46e1db3f2790c19a1c0c3f1976659538c507783dbf645f910494836868969dd5",
+      "deployedBytecodeHash": "46e1db3f2790c19a1c0c3f1976659538c507783dbf645f910494836868969dd5",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -145,7 +145,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5977,
+          "astId": 5969,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -153,7 +153,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5979,
+          "astId": 5971,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -161,7 +161,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6028,
+          "astId": 6020,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -283,11 +283,38 @@
         "hasSelfDestruct": false,
         "hasDelegateCall": false,
         "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [
+          {
+            "contract": "Assets",
+            "path": "contracts/Assets.sol",
+            "label": "assets",
+            "astId": 494,
+            "type": "t_mapping<t_struct<Assets.Asset>>",
+            "src": "1728:40:1"
+          },
+          {
+            "contract": "Assets",
+            "path": "contracts/Assets.sol",
+            "label": "redemptionTokenLocks",
+            "astId": 498,
+            "type": "t_mapping<t_struct<Assets.RedemptionTokenLock>>",
+            "src": "1774:68:1"
+          },
+          {
+            "contract": "Assets",
+            "path": "contracts/Assets.sol",
+            "label": "pendingAssets",
+            "astId": 501,
+            "type": "t_array:dyn<t_struct<Assets.Asset>>",
+            "src": "1848:28:1"
+          }
+        ],
+        "storageDiff": []
       }
     },
     "BasicOwnerMultiSigWallet": {
-      "address": "0x0199B81c5cE39c83F8365465525695E78D404571",
+      "address": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24",
       "constructorCode": "608060405234801561001057600080fd5b506133ef806100206000396000f3fe",
       "bodyBytecodeHash": "d0808f7d336556718c5ca3ed52b8de04055103646bf0e05164ea112b8c542b3b",
       "localBytecodeHash": "e18f2f7c3448c395fb0e1402200bf6a15871d6195dee71c398946dbb8f51729c",
@@ -478,7 +505,7 @@
       }
     },
     "BasicOwnerRole": {
-      "address": "0x43f0dC84172933956e5D8B0c3642f67A644973A7",
+      "address": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601",
       "constructorCode": "608060405234801561001057600080fd5b5061057c806100206000396000f3fe",
       "bodyBytecodeHash": "303b4482a9140d8efc2084951c2d45ec645cd0efadac56ce52e1512660ce08f1",
       "localBytecodeHash": "945be512a7e13f671f728d0b3947ede9db6c1adaeac50a02278fefde72b1a783",
@@ -558,11 +585,11 @@
       }
     },
     "MasterPropertyValue": {
-      "address": "0x468685Db89b0F40fD44b498e905282d9aEB838b1",
-      "constructorCode": "608060405234801561001057600080fd5b50610c36806100206000396000f3fe",
-      "bodyBytecodeHash": "b184c151f70c11927a9178c23a2f7cfadfa4b736e06951847d2a00dd9c576803",
-      "localBytecodeHash": "d4aaaf7aaea0777f9af5576aa98dab162b003bf4e7b57ac431244d44d2f75266",
-      "deployedBytecodeHash": "d4aaaf7aaea0777f9af5576aa98dab162b003bf4e7b57ac431244d44d2f75266",
+      "address": "0xFD3C3E25E7E30921Bf1B4D1D55fbb97Bc43Ac8B8",
+      "constructorCode": "608060405234801561001057600080fd5b50610b8d806100206000396000f3fe",
+      "bodyBytecodeHash": "ac363431f57fa74225dc6a74136282a705007d50438fd16cae99f564778b923f",
+      "localBytecodeHash": "1e364ed7ea32610ad22c434ff93e185ef3e7ec4135052fa02793f9380f8c6fa8",
+      "deployedBytecodeHash": "1e364ed7ea32610ad22c434ff93e185ef3e7ec4135052fa02793f9380f8c6fa8",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -592,7 +619,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5977,
+          "astId": 5969,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -600,7 +627,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5979,
+          "astId": 5971,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -608,7 +635,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6028,
+          "astId": 6020,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -616,7 +643,7 @@
           "contract": "Pausable",
           "path": "contracts/Pausable.sol",
           "label": "_paused",
-          "astId": 4412,
+          "astId": 4404,
           "type": "t_bool",
           "src": "361:20:9"
         },
@@ -624,7 +651,7 @@
           "contract": "Pausable",
           "path": "contracts/Pausable.sol",
           "label": "pausableAdmin",
-          "astId": 4414,
+          "astId": 4406,
           "type": "t_address",
           "src": "387:28:9"
         },
@@ -658,11 +685,13 @@
         "hasSelfDestruct": false,
         "hasDelegateCall": false,
         "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [],
+        "storageDiff": []
       }
     },
     "MintingAdminMultiSigWallet": {
-      "address": "0x2159Cf23264D7bA6e1ff4CB9a9fBcB52D832AF2f",
+      "address": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550",
       "constructorCode": "608060405234801561001057600080fd5b506133ef806100206000396000f3fe",
       "bodyBytecodeHash": "d0808f7d336556718c5ca3ed52b8de04055103646bf0e05164ea112b8c542b3b",
       "localBytecodeHash": "e18f2f7c3448c395fb0e1402200bf6a15871d6195dee71c398946dbb8f51729c",
@@ -853,11 +882,11 @@
       }
     },
     "MintingAdminRole": {
-      "address": "0xCD214A1768e7CeE5eB98360002A469C46d9bA148",
+      "address": "0xf75993f165aE953a1A5cF8eB3Cde89C46a5c52Ca",
       "constructorCode": "608060405234801561001057600080fd5b50612c6d806100206000396000f3fe",
-      "bodyBytecodeHash": "29ca487ef7a4d49dec863b42445f4e0871e6b93409cbb6ef6541656db1410da1",
-      "localBytecodeHash": "86d4740beba584c019fd47416d5560a1276222b8840ef665d628f1775c20429d",
-      "deployedBytecodeHash": "86d4740beba584c019fd47416d5560a1276222b8840ef665d628f1775c20429d",
+      "bodyBytecodeHash": "ea16396661cb6377f67067b7eac837ad472ac16cf457f6391e663ced6848fd1c",
+      "localBytecodeHash": "42c470d9ef9b5fd880e4f62e29018e064bce68a625c84f4b8d25465d75226f30",
+      "deployedBytecodeHash": "42c470d9ef9b5fd880e4f62e29018e064bce68a625c84f4b8d25465d75226f30",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -887,7 +916,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5977,
+          "astId": 5969,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -895,7 +924,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5979,
+          "astId": 5971,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -903,7 +932,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6028,
+          "astId": 6020,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -911,7 +940,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "multiSig",
-          "astId": 3888,
+          "astId": 3880,
           "type": "t_address",
           "src": "961:31:7"
         },
@@ -919,7 +948,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "assets",
-          "astId": 3890,
+          "astId": 3882,
           "type": "t_address",
           "src": "998:20:7"
         },
@@ -927,7 +956,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "mpvToken",
-          "astId": 3892,
+          "astId": 3884,
           "type": "t_address",
           "src": "1024:24:7"
         },
@@ -935,7 +964,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "superOwnerRole",
-          "astId": 3894,
+          "astId": 3886,
           "type": "t_address",
           "src": "1054:36:7"
         },
@@ -943,7 +972,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "basicOwnerRole",
-          "astId": 3896,
+          "astId": 3888,
           "type": "t_address",
           "src": "1096:36:7"
         },
@@ -951,7 +980,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "mintingReceiverWallet",
-          "astId": 3898,
+          "astId": 3890,
           "type": "t_address",
           "src": "1138:36:7"
         },
@@ -959,7 +988,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "mintingActionCountdownLength",
-          "astId": 3900,
+          "astId": 3892,
           "type": "t_uint256",
           "src": "1180:43:7"
         },
@@ -967,7 +996,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "mintingCountdownStart",
-          "astId": 3902,
+          "astId": 3894,
           "type": "t_uint256",
           "src": "1229:36:7"
         },
@@ -975,7 +1004,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "pendingAssetsTransactionId",
-          "astId": 3904,
+          "astId": 3896,
           "type": "t_uint256",
           "src": "1271:41:7"
         },
@@ -983,7 +1012,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "masterPropertyValue",
-          "astId": 3906,
+          "astId": 3898,
           "type": "t_address",
           "src": "1318:46:7"
         }
@@ -993,11 +1022,13 @@
         "hasSelfDestruct": false,
         "hasDelegateCall": false,
         "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [],
+        "storageDiff": []
       }
     },
     "MPVToken": {
-      "address": "0xd598a38E5c98Fcb0E1Dee5401D94425F8B0442AE",
+      "address": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7",
       "constructorCode": "608060405234801561001057600080fd5b50614e19806100206000396000f3fe",
       "bodyBytecodeHash": "71d4eefd89345645a90dd89b4421647d3c733b74ef3eafb032a6a07001ef6973",
       "localBytecodeHash": "29b0f725073619ec696e5f031e7a7ee6e68f07904afedecaa9e4a072e7110ede",
@@ -1322,7 +1353,7 @@
       }
     },
     "OperationAdminMultiSigWallet": {
-      "address": "0xc59B1a01D34F6F99f0c2012f9DDFf9F01A407ED0",
+      "address": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C",
       "constructorCode": "608060405234801561001057600080fd5b506133ef806100206000396000f3fe",
       "bodyBytecodeHash": "d0808f7d336556718c5ca3ed52b8de04055103646bf0e05164ea112b8c542b3b",
       "localBytecodeHash": "e18f2f7c3448c395fb0e1402200bf6a15871d6195dee71c398946dbb8f51729c",
@@ -1513,7 +1544,7 @@
       }
     },
     "OperationAdminRole": {
-      "address": "0x792F50edF5Ff24616b8E6Ee40295ff498070ECb0",
+      "address": "0x59d3631c86BbE35EF041872d502F218A39FBa150",
       "constructorCode": "6080604052348015600f57600080fd5b50603580601d6000396000f3fe",
       "bodyBytecodeHash": "8dac28d1a4dedc4aa66341b53c73c0a85dceccb3d817268a19d68900772cbe2d",
       "localBytecodeHash": "0ca259d3b6773b265390a48f5cb98074e5b9da15b028479a6c2cedb0f0dba91a",
@@ -1572,7 +1603,7 @@
       }
     },
     "Pausable": {
-      "address": "0x006201a7289c8e2abDa1a484cc64751b750301b2",
+      "address": "0x0290FB167208Af455bB137780163b7B7a9a10C16",
       "constructorCode": "608060405234801561001057600080fd5b5061062d806100206000396000f3fe",
       "bodyBytecodeHash": "63be6314d4e9c3a57a10b7e1885eab86deed1cecb24b31ebe8385cdb7b9e1849",
       "localBytecodeHash": "81419f9a9e0f11261b111ede93c29b1164f3251883a70ffa26b635e89388743d",
@@ -1652,7 +1683,7 @@
       }
     },
     "RedemptionAdminMultiSigWallet": {
-      "address": "0xd48B82F92280B7416a96b976D3eBa89b9189FBf2",
+      "address": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0",
       "constructorCode": "608060405234801561001057600080fd5b506133ef806100206000396000f3fe",
       "bodyBytecodeHash": "d0808f7d336556718c5ca3ed52b8de04055103646bf0e05164ea112b8c542b3b",
       "localBytecodeHash": "e18f2f7c3448c395fb0e1402200bf6a15871d6195dee71c398946dbb8f51729c",
@@ -1843,7 +1874,7 @@
       }
     },
     "RedemptionAdminRole": {
-      "address": "0x348EB162D3989Af43Cc2E6FadD55106C4ea6884b",
+      "address": "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e",
       "constructorCode": "608060405234801561001057600080fd5b50611268806100206000396000f3fe",
       "bodyBytecodeHash": "de887ddd652257f006c6aabcd15dc8c4c107ad331836984390c1ab461248611a",
       "localBytecodeHash": "8f308b9a2ababd5a6dbe3fcde1152140cb37e662d0852570c449b3dfea91eb4b",
@@ -1969,7 +2000,7 @@
       }
     },
     "SuperOwnerMultiSigWallet": {
-      "address": "0x2E574424DDC2F078486652cb8547B901f40d8d2F",
+      "address": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66",
       "constructorCode": "608060405234801561001057600080fd5b506133ef806100206000396000f3fe",
       "bodyBytecodeHash": "d0808f7d336556718c5ca3ed52b8de04055103646bf0e05164ea112b8c542b3b",
       "localBytecodeHash": "e18f2f7c3448c395fb0e1402200bf6a15871d6195dee71c398946dbb8f51729c",
@@ -2160,7 +2191,7 @@
       }
     },
     "SuperOwnerRole": {
-      "address": "0x06E1d536Ab2364ad4a27eBa59d742EeA2180586b",
+      "address": "0xA57B8a5584442B467b4689F1144D269d096A3daF",
       "constructorCode": "608060405234801561001057600080fd5b50610bc9806100206000396000f3fe",
       "bodyBytecodeHash": "988bd05506bcfa924be02dcfc20618ea21cc01569bf51a2560eb950c5e75de3d",
       "localBytecodeHash": "41f9bf0d5c5f56b38ebe7a043cf56c3e5987b42ebe4a24b434869a4220d6662f",
@@ -2272,7 +2303,7 @@
       }
     },
     "Whitelist": {
-      "address": "0xD83c3bD9DeFde5D25AD71C5d354e3c830dE3d5f8",
+      "address": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec",
       "constructorCode": "608060405234801561001057600080fd5b506111c9806100206000396000f3fe",
       "bodyBytecodeHash": "fcdb6fc6aecc3d38a0c87b97c176a6a34873bf3b686e3f4b4b30521783261c9e",
       "localBytecodeHash": "dbef7292873151b3b112b6552d21f2b35a357800eedadc990d0129ad48f9c797",
@@ -2388,7 +2419,1099 @@
     }
   },
   "solidityLibs": {},
-  "proxies": {},
+  "proxies": {
+    "master-property-value/Assets": [
+      {
+        "address": "0xD86C8F0327494034F60e25074420BcCF560D5610",
+        "version": "0.1.0",
+        "implementation": "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab"
+      },
+      {
+        "address": "0x970e8f18ebfEa0B08810f33a5A40438b9530FBCF",
+        "version": "0.1.0",
+        "implementation": "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab"
+      },
+      {
+        "address": "0xFcCeD5E997E7fb1D0594518D3eD57245bB8ed17E",
+        "version": "0.1.0",
+        "implementation": "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab"
+      },
+      {
+        "address": "0x42D4BA5e542d9FeD87EA657f0295F1968A61c00A",
+        "version": "0.1.0",
+        "implementation": "0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab"
+      },
+      {
+        "address": "0x9C9848fDd94812445E250230aCf271FF9642DeC2",
+        "version": "0.1.0",
+        "implementation": "0xC4bC1f775dB36c07b0bC506cbB83fCe12E182053"
+      }
+    ],
+    "master-property-value/SuperOwnerRole": [
+      {
+        "address": "0x4bf749ec68270027C5910220CEAB30Cc284c7BA2",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x5b9b42d6e4B2e4Bf8d42Eba32D46918e10899B66",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x4339316e04CFfB5961D1c41fEF8E44bfA2A7fBd1",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x25AF99b922857C37282f578F428CB7f34335B379",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0xe5608e4945998aB5E4548Bc95b421E188095DA8E",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x8E7a8d3CAeEbbe9A92faC4db19424218aE6791a3",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x74E33B80BC77cdB5d49861a53913A8301CB72B4D",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0xc21dc5A1b919088F308e0b02243Aaf64c060Dbd0",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x9982bCCb508C19E61cf683307768d3F88Fda55Cc",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x748A34eF527CF8FAC65E4Ab6070b42560FF3aE85",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x79e0ba0C34ED4cc6a493ebCdf11A84491Cb6f5ea",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x466cbd8c8EB83Cd86ec2eE624E76D928507FcA68",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x6082Ac385d4c63be87d5146b3c43E5E826A7341C",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0xb2287CA4A461A9bB73817Fdd38fD14b59b8Fb714",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x69774E9A4a003B3576e27BB0BA687b4267657604",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      },
+      {
+        "address": "0x13A1D278e74bd7d0d206Bfa6F360eb2D9F451c3B",
+        "version": "0.1.0",
+        "implementation": "0xA57B8a5584442B467b4689F1144D269d096A3daF"
+      }
+    ],
+    "master-property-value/BasicOwnerRole": [
+      {
+        "address": "0xaD888d0Ade988EbEe74B8D4F39BF29a8d0fe8A8D",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0xaf5C4C6C7920B4883bC6252e9d9B8fE27187Cf68",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0xdAA71FBBA28C946258DD3d5FcC9001401f72270F",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0xd611F1AF9D056f00F49CB036759De2753EfA82c2",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x1886Fa412064137BDe9Ea996EA2bB85377de8aB6",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x49bC4443E05f7c05A823920CaD1c9EbaAcD7201E",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x6FdB1c9e1a1A8beD2EE22a3d5E62CA330ee88ecb",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x6bf5b6F9b59DF885bD241304C902C5bF7d816fbd",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0xFd8643CeE37DaE121Ca0E84FD2Ceeb49E828B493",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x8feB2EFEC924f90ccbAA05Cdfeb805C3F810EE75",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x467fD9FEA4e77AC79504a23B45631D29e42eaa4A",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0xa69F4c9F17e4C90138c55279aAF1917352D435C7",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x71E02441209d3dd9Ed064A4E4EafAf90D0263088",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x3Cc7B9a386410858B412B00B13264654F68364Ed",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x64d2ec8fA603B3Ad18b7a4529bDae42064994953",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      },
+      {
+        "address": "0x7ffF11d9701d86D945B17E3bc329334bB70248a0",
+        "version": "0.1.0",
+        "implementation": "0xCfEB869F69431e42cdB54A4F4f105C19C080A601"
+      }
+    ],
+    "master-property-value/SuperOwnerMultiSigWallet": [
+      {
+        "address": "0x5017A545b09ab9a30499DE7F431DF0855bCb7275",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x1b88Bdb8269A1aB1372459F5a4eC3663D6f5cCc4",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xCeeFD27e0542aFA926B87d23936c79c276A48277",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xe97DbD7116D168190F8A6E7beB1092c103c53a12",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x3acc15dE35aaB8A94B7D2426E27c887541e4DE6c",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x9e90054F4B6730cffAf1E6f6ea10e1bF9dD26dbb",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x9ce4cd6D7f5e8b14c7a3e8e6A257A86Bd5a6EeA0",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x6793E8E0E8ac22d71c65c2bf82e9B142dEf9eCDb",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xE8e43b5D61C43375aB7b651F1419F2a81C5E6615",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x71e7EC880873af0FE33Ad988F862bE200FdD85cC",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xEdCD6442143188Deb586e182B7900dFb8707Bc27",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x770191B327a9f6cd83B997F68c1ce3c8e6a018dc",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x027e4121d4675465E8029F09511D813c3476Ebf5",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xACF05e2a9b757e70C2900432c9b4E08Fdc54dD53",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x01c4052ac7EEF0cbDdc83F3780149D52D4174776",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x9e8efB8C27f3012493ce315974A64CAcDE6f4ccC",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xA2bF3F0729D9A95599DB31660eb75836a4740c5F",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xdA9FbD039c001e17e404a5bcEbA665e54F44bDE9",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x4c8cF69bfd3361Dcf1795354afB32Ec4a26212F8",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xc080828C1A20E7cb0D20AD5191314e64286989E5",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x27d160115a1E2aA7C4F709dDEB9dABbA82Ba5188",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xba5b7E64bae1f953816B9f3a7de6B5b5378F9Fb8",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0x43192D86e8452957D8076908Dc04ddb6a6B63a61",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      },
+      {
+        "address": "0xCc22fbf05b0C5CE7f6BfB7BbcD6aFEeA1F61dc06",
+        "version": "0.1.0",
+        "implementation": "0x2612Af3A521c2df9EAF28422Ca335b04AdF3ac66"
+      }
+    ],
+    "master-property-value/BasicOwnerMultiSigWallet": [
+      {
+        "address": "0x86072CbFF48dA3C1F01824a6761A03F105BCC697",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x22d5C8BdD4346b390014a07109a8F830094d4abf",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x47a2Db5D68751EeAdFBC44851E84AcDB4F7299Cc",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0xF16165f1046f1B3cDB37dA25E835B986E696313A",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x2c5f3c004878923f55A2a255F89Fe29393177509",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0xfE82e8f24A51E670133f4268cDfc164c49FC3b37",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0xb592244aa6477eBDDc14475aaeF921cdDcC0170f",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x68b86Cd90A44C805b1cCF4808b29C9c7cf73FDFF",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0xC3Ef4965B788cc4b905084d01F2eb7D4b6E93ABF",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0xc22Ffa318051d8aF4E5f2E2732d7049486fcE093",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x81920CAF1F99Bb0f7D72Fdfba840cff21d63CcC5",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x84b085c0d4B4D6fbf6490f8246Bc5cD317d2d4cD",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x8b9e409a817c7dC1a42C3DDe9E85dcBFF602c0fC",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x85cd1F9550CdF662944bEc3E58021f8dbE6fE878",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x8E225686FdDB86DA290860C764Cf178ba02FDA0B",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x97bd553f21B175F7CC00819cC6494a7FbA344180",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0xe3eEC5619ec9189E5d27F258Ca68A5c85136E4A6",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x9095b8e8a5a4E7Fcb7F569dDc325eAB089732B26",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x3c3d89322de3aC6D5BCBD10801BbB2C68f5AC5f1",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x3B2d33aC0B76462c8Eb58548ed7db68BC826F15E",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x59a13b07fE44Aa7221Fd6C55A3E8df26d4E37a65",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x55Db01E043a48bc0d11037c51E3911A9Eb8dbe24",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x405fC0EE23C7fcd0a41A864505Fe8c969ca3eF6A",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      },
+      {
+        "address": "0x60E7d8d59ebCF15cCa9f238A67379655BD812860",
+        "version": "0.1.0",
+        "implementation": "0x5b1869D9A4C187F2EAa108f3062412ecf0526b24"
+      }
+    ],
+    "master-property-value/MintingAdminMultiSigWallet": [
+      {
+        "address": "0xFF6049B87215476aBf744eaA3a476cBAd46fB1cA",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x7414e38377D6DAf6045626EC8a8ABB8a1BC4B97a",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x988B6CFBf3332FF98FFBdED665b1F53a61f92612",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0xD13ebb5C39fB00C06122827E1cbD389930C9E0E3",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x2f3efA6bbDC5fAf4dC1a600765c7B7829e47bE10",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0xb4fFe5983B0B748124577Af4d16953bd096b6897",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0xdC78afe9cFDe0576Ff236667DC8c380615c24Ca9",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x0d3C71782055bD88A71b611972152d6e984EDF79",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x04CbD650c829299FDedCE903eada37FbDbA3b50f",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x8be8DFCDC90F50562b5022DE1f8D83fe93b0b055",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0xd99748782d7643b00C36a4Bb296C4A099dF98Ff3",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0xDf3Cf8b9978c9c5639E06da3bfF5014ab5c055d1",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0xcCf27643fa6C4FC844a8945b7c2F8bd562153649",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0xFd6e1d4eaDbc80322F62e7148AD223596A005238",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x29fa1c214B7242b704063F2Ec52494f4639A9cc3",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x768b5Faed6DC69816f33377d214ffaf00dcDd0cf",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0xfC059aBD0407c6cBF2bD76C940FDa27B51f1187d",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x8ab4aFFe16B8986f4e049F24A7F67701312E2B8D",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x126CF548F9110Ed46FA3021E8AEAaC2Ba4538896",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0xD44d92D878Bb19649bE73702E514560743B3CF86",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x8cc94094329e2397f176b9a3415a9A6EB66F3746",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x4D32ECeC25d722C983f974134d649a20e78B1417",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x4A1D2A5060C782049Ef966d9412f1239E95183b7",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      },
+      {
+        "address": "0x5Aa1721fbF48f6ee7A9122D385248f5C59E774F1",
+        "version": "0.1.0",
+        "implementation": "0xC89Ce4735882C9F0f0FE26686c53074E09B0D550"
+      }
+    ],
+    "master-property-value/OperationAdminMultiSigWallet": [
+      {
+        "address": "0xA586074FA4Fe3E546A132a16238abe37951D41fE",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xB9bdBAEc07751F6d54d19A6B9995708873F3DE18",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xeea2Fc1D255Fd28aA15c6c2324Ad40B03267f9c5",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x8914a9E5C5E234fDC3Ce9dc155ec19F43947ab59",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x966d3e76E7a890A2d7B9AE1E370dC219E920F9D4",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xFF5181e2210AB92a5c9db93729Bc47332555B9E9",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xB349FB172D6D5f693b0aA1C6eEc4c61cFd6846f4",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xe93e3B649d4E01e47dd2170CAFEf0651477649Da",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xb111Ded3F2e4012C0B85D930Fda298693D0DA0B2",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xe6dA6E31540239b4a09eC574f147004D50f1b140",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x10fB2Ab116E2Eb3a8B5a1Ca912E05f63c3D969E4",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xC045C7B6B976d24728872d2117073c893d0B09C2",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xf5288515FD1394B814e38293f41dC22ad8085532",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x77D32f6f5F454Fa76f93859f49f9431CeA8c225F",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xD5746777FE34a3562aD3abc1501629ca0190F23B",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xD8d315932b5c5b9B21B14A39f5F12e4b9Bd65571",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x464c94ea90fc7D0D08Bb956cffB9AcfE3AAA5313",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x5C3670E0Ac747b03CD0e3B3165b2fd69e6fB790A",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x102EB6c9895955Ce780508f1e9ee7Ac2bdd1CE57",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xe00b745b5e71337507d43a8584320c4192CA7994",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x718e1497188318aDdf7e38b8318747006541F888",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x0B6fc157C83a9A5a64776E2183959f75180eFF27",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0xFE9550608e2acF01694524b1F94d937DfDe806C2",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      },
+      {
+        "address": "0x5C17F37738B9574e61a65151A68b28e81415444a",
+        "version": "0.1.0",
+        "implementation": "0xe982E462b094850F12AF94d21D470e21bE9D0E9C"
+      }
+    ],
+    "master-property-value/RedemptionAdminMultiSigWallet": [
+      {
+        "address": "0x2D8BE6BF0baA74e0A907016679CaE9190e80dD0A",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x4bf3A7dFB3b76b5B3E169ACE65f888A4b4FCa5Ee",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0xc34175A79ACca40392bECD22ff10fAeBFE780Ae7",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x7231ECd1355a60251eE56Bf81f987969fc9bAe29",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x1aBE68277AE236083947f2551FEe8b885efCA8f5",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x6f84742680311CEF5ba42bc10A71a4708b4561d1",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0xd45A464a2412A2f83498d13635698a041b9dBe9b",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0xEd447aCB0CEb49d77f317dD6D37CB64da7a7E7F8",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0xDd37b2eB92F97dd09cEd1f1d20A73aA340b2311A",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0xB0015714B541A99265f529c7c0d34DA47deCA5b2",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0xDe2f00CCfEefAdD1Ecc87BE765cf46AC901A6AC8",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0xf42Fe9b8e2009be073f1AeDc57a72623AC4F3045",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0xaa8751Df9FC4b9424831Fb361F0C14096FC0C204",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x6AB47d47cF45C4aaA5c7F33c6632390674EfA294",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x70eE878D560D7E17a986872f54B7C58f564B2784",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x72440269630E393d38975Db7fA7Cb4D14e7eC061",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0xcF7F9472FAB9372b34D96FbE1B57966B13951dbf",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x51E8aB3c2885860c34d38922c5a9b54215B8CC9b",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x457f0f599CC62A41B221cC94bC9d5Cf0012D21A8",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x3e5399049a779489000583dD0d14576D0472Fe94",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x1E5Ead93c911450036a8312C25B5211b728F96D5",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x970e1d481CEDbeaeFE776275F0d1b4E1B301bB3b",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x5c6e56EC21Ad546db425180E2534Ae05e88734D3",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      },
+      {
+        "address": "0x4d46f75Be6E98dBA8E8384802a68d550DeB69770",
+        "version": "0.1.0",
+        "implementation": "0x9b1f7F645351AF3631a656421eD2e40f2802E6c0"
+      }
+    ],
+    "master-property-value/Pausable": [
+      {
+        "address": "0xDDb64fE46a91D46ee29420539FC25FD07c5FEa3E",
+        "version": "0.1.0",
+        "implementation": "0x0290FB167208Af455bB137780163b7B7a9a10C16"
+      },
+      {
+        "address": "0x4cFB3F70BF6a80397C2e634e5bDd85BC0bb189EE",
+        "version": "0.1.0",
+        "implementation": "0x0290FB167208Af455bB137780163b7B7a9a10C16"
+      },
+      {
+        "address": "0x94dFeceb91678ec912ef8f14c72721c102ed2Df7",
+        "version": "0.1.0",
+        "implementation": "0x0290FB167208Af455bB137780163b7B7a9a10C16"
+      },
+      {
+        "address": "0x8c634b72fF5d6A9F6a0281EEF36365E4db8bDF8d",
+        "version": "0.1.0",
+        "implementation": "0x0290FB167208Af455bB137780163b7B7a9a10C16"
+      },
+      {
+        "address": "0x46Ec5F3b5d965072023E98f98A02ce46AEe473c6",
+        "version": "0.1.0",
+        "implementation": "0x0290FB167208Af455bB137780163b7B7a9a10C16"
+      },
+      {
+        "address": "0x7744cE2c85DCE57d76b17D374397d84387F450eA",
+        "version": "0.1.0",
+        "implementation": "0x0290FB167208Af455bB137780163b7B7a9a10C16"
+      }
+    ],
+    "master-property-value/RedemptionAdminRole": [
+      {
+        "address": "0xc0b3B62DD0400E4baa721DdEc9B8A384147b23fF",
+        "version": "0.1.0",
+        "implementation": "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e"
+      },
+      {
+        "address": "0x25D02115bd67258a406A0F676147E6C3598a91a9",
+        "version": "0.1.0",
+        "implementation": "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e"
+      },
+      {
+        "address": "0x959306A913D041D4f634310f6aD3789cBF0e9b18",
+        "version": "0.1.0",
+        "implementation": "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e"
+      },
+      {
+        "address": "0xD0424Fe7A844080319f2175e5733bFEbc0c325A8",
+        "version": "0.1.0",
+        "implementation": "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e"
+      },
+      {
+        "address": "0x7D8De2E828361C949644479C537e513F483dA6Fc",
+        "version": "0.1.0",
+        "implementation": "0x67B5656d60a809915323Bf2C40A8bEF15A152e3e"
+      }
+    ],
+    "master-property-value/Whitelist": [
+      {
+        "address": "0xdFccc9C59c7361307d47c558ffA75840B32DbA29",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0xC5aFE31AE505594B190AC71EA689B58139d1C354",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x83EE15DFDDD8b8AD56A73001Ca7A1627c7fe6716",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x3F4E941ef5071a1D09C2eB4a24DA1Fc43F76fcfF",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x393A6a6850e0788e496d73c50a436606e6CcA874",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0xa6f8431C9eEe4Ac2859207aF4004F7a948924c30",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x180D179Bbf473A30183Fe858E8416351D2170Fd2",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0xbCFC9461B73D7Fb423552d6cd594f406F7B0585D",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0xF6aFcd935c28365CCe278Fed78b26Fe2BC9ae518",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x9a74f110586971345A396C74228094A04f5A5eA6",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x46E3D301e211d2A2D3148412FCA5788F3182908d",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x439D0306A0EBD39771781AFB74c1Ae8De29E97Fa",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x53b94F9474c01678040BA7da4bc54DCD8c0Ed0BA",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x0a8c20aadDDDF50AFD1d431342Aaf28E4e757884",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x0937F524C8A7d3D6Af3023875CF6c7f293F3B994",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x0d31fD995E1540CE90Fd98462Cf3284b1693Ad8C",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x32e02F2934824ec085298E2B4e0e07935Ec6DaeC",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x0149578B6d77fA67246045fCAF26e4B57eebb428",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0xf51B62641D4c472E6EC0DB7Ea50382aE66Ff092e",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      },
+      {
+        "address": "0x9c9F37423Ea70c3F212D1d2b81C9C18F7d5bF5fC",
+        "version": "0.1.0",
+        "implementation": "0x26b4AFb60d6C903165150C6F0AA14F8016bE4aec"
+      }
+    ],
+    "master-property-value/MPVToken": [
+      {
+        "address": "0x9A6448b4bab66F952F2431E14562Bcfab7840cE3",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0x49455287eBCC42a875B40724C62519D03e2EDcff",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0x49de73CaB6e369f1F97Def0b95b558cd77c5d6a2",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0x40b13914f9886E234E1e00435E76D558FA8cf5ba",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0xFA64858C14345C0a3aD805E0da64900C4d7ec5e6",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0xE39caEcB7ed0E02194727aA60cF5d8A0fc6b273c",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0x1DbdE3fbc981A0B5E02778286aE623e864e09dCD",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0x1932400a9A132D20c3961E2848DE4bA3Ce8Ff30B",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0x92472cBcfc8E6dB1806374d543a140d49f83D7b5",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0xfeaD3d6e2fA0f92551375fa985006ffc6ac07E18",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0x1c0068C104E9f211161cdf14b93Af6bAA2E845C1",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0x7B83908271437c08EAc9AfBA56d7080b8D94038C",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      },
+      {
+        "address": "0x45F97e4bEe19580807501C32a71D06f7F7c72f4f",
+        "version": "0.1.0",
+        "implementation": "0x9561C133DD8580860B6b7E504bC5Aa500f0f06a7"
+      }
+    ],
+    "master-property-value/MintingAdminRole": [
+      {
+        "address": "0x9745800493fC45ad2Dd122Dc267FB5eAd3e3D1f2",
+        "version": "0.1.0",
+        "implementation": "0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb"
+      },
+      {
+        "address": "0xe67a1e001a30eF1e0EDE04637F1Aceb3F2080604",
+        "version": "0.1.0",
+        "implementation": "0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb"
+      },
+      {
+        "address": "0x4d040B247949a76cB8134203Da822Da50C674557",
+        "version": "0.1.0",
+        "implementation": "0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb"
+      },
+      {
+        "address": "0x0433f2445F5F0Ef09a4Aeab19C6C8F80b4893671",
+        "version": "0.1.0",
+        "implementation": "0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb"
+      },
+      {
+        "address": "0x0dBF0f9288Cb1A22060F17A5B5bdcC260AB7d965",
+        "version": "0.1.0",
+        "implementation": "0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb"
+      },
+      {
+        "address": "0xAe5057BB185fC820219e21bC7382c0DE7A42fE86",
+        "version": "0.1.0",
+        "implementation": "0xf75993f165aE953a1A5cF8eB3Cde89C46a5c52Ca"
+      },
+      {
+        "address": "0xb55C7377F4F902aDC6088Ef5941F7c7EC7F926e5",
+        "version": "0.1.0",
+        "implementation": "0xf75993f165aE953a1A5cF8eB3Cde89C46a5c52Ca"
+      },
+      {
+        "address": "0x00936F571dDD39E5DC13291b3e93C941A208998A",
+        "version": "0.1.0",
+        "implementation": "0xf75993f165aE953a1A5cF8eB3Cde89C46a5c52Ca"
+      }
+    ],
+    "master-property-value/MasterPropertyValue": [
+      {
+        "address": "0xfd30B6e495CC375Bd98d01BD959F741Dd2772d64",
+        "version": "0.1.0",
+        "implementation": "0xFD3C3E25E7E30921Bf1B4D1D55fbb97Bc43Ac8B8"
+      },
+      {
+        "address": "0x07a0af4d3a099e6d97955Ef811132794CB686358",
+        "version": "0.1.0",
+        "implementation": "0xFD3C3E25E7E30921Bf1B4D1D55fbb97Bc43Ac8B8"
+      },
+      {
+        "address": "0xDb1DAdccA7acC905AF7F3336828C36c85dc0f39b",
+        "version": "0.1.0",
+        "implementation": "0xFD3C3E25E7E30921Bf1B4D1D55fbb97Bc43Ac8B8"
+      }
+    ]
+  },
   "zosversion": "2.2",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "proxyAdmin": {
+    "address": "0x21a59654176f2689d12E828B77a783072CD26680"
+  }
 }
