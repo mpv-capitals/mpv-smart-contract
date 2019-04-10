@@ -44,8 +44,8 @@ contract Pausable is Initializable {
     /*
      * Public functions
      */
-    /// @dev Contract constructor sets initial paused state.
-    constructor() public {
+    /// @dev Contract initializer sets initial paused state.
+    function initialize() public initializer {
         _paused = false;
         pausableAdmin = msg.sender;
     }
