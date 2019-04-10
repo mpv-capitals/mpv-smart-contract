@@ -29,12 +29,14 @@ contract('Assets', accounts => {
     whitelistedAccts = [accounts[0], accounts[1], accounts[2]]
     whitelist = await initializeWhitelist(multiSig)
     await whitelist.addWhitelisted(redemptionFeeReceiverWallet)
-    basicOwnerMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
+    basicOwnerMultiSig = await AdministeredMultiSigWallet.new()
+    await basicOwnerMultiSig.initialize([accounts[0]], 1)
   })
 
   beforeEach(async () => {
     // Setup redemptionAdminRole
-    redemptionAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
+    redemptionAdminMultiSig = await AdministeredMultiSigWallet.new()
+    redemptionAdminMultiSig.initialize([accounts[0]], 1)
     redemptionAdminRole = await RedemptionAdminRole.new()
 
     // Initialize token, assets, and redemptionAdminRole

@@ -3,7 +3,17 @@
   "name": "master-property-value",
   "version": "0.1.0",
   "contracts": {
-    "MasterPropertyValue": "MasterPropertyValue"
+    "AdministeredMultiSigWallet": "AdministeredMultiSigWallet",
+    "Assets": "Assets",
+    "BasicOwnerRole": "BasicOwnerRole",
+    "MasterPropertyValue": "MasterPropertyValue",
+    "MintingAdminRole": "MintingAdminRole",
+    "MPVToken": "MPVToken",
+    "OperationAdminRole": "OperationAdminRole",
+    "Pausable": "Pausable",
+    "RedemptionAdminRole": "RedemptionAdminRole",
+    "SuperOwnerRole": "SuperOwnerRole",
+    "Whitelist": "Whitelist"
   },
   "dependencies": {
 

@@ -48,11 +48,16 @@ async function initContracts (accounts) {
   mintingAdminRole = await MintingAdminRole.new()
   redemptionAdminRole = await RedemptionAdminRole.new()
 
-  superOwnerMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
-  basicOwnerMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
-  operationAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
-  mintingAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
-  redemptionAdminMultiSig = await AdministeredMultiSigWallet.new([accounts[0]], 1)
+  superOwnerMultiSig = await AdministeredMultiSigWallet.new()
+  superOwnerMultiSig.initialize([accounts[0]], 1)
+  basicOwnerMultiSig = await AdministeredMultiSigWallet.new()
+  basicOwnerMultiSig.initialize([accounts[0]], 1)
+  operationAdminMultiSig = await AdministeredMultiSigWallet.new()
+  operationAdminMultiSig.initialize([accounts[0]], 1)
+  mintingAdminMultiSig = await AdministeredMultiSigWallet.new()
+  mintingAdminMultiSig.initialize([accounts[0]], 1)
+  redemptionAdminMultiSig = await AdministeredMultiSigWallet.new()
+  redemptionAdminMultiSig.initialize([accounts[0]], 1)
 
   await whitelist.initialize(
     operationAdminMultiSig.address,

@@ -17,7 +17,7 @@ start:
 
 .PHONY: deploy
 deploy:
-	@zos push --network=$(network)
+	@npx zos push --network=$(network)
 
 .PHONY: deploy/deps
 deploy/deps:

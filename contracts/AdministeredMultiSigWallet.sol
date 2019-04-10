@@ -1,5 +1,6 @@
 pragma solidity ^0.5.1;
 
+import "zos-lib/contracts/Initializable.sol";
 import "./BaseMultiSigWallet/BaseMultiSigWallet.sol";
 import "./MasterPropertyValue.sol";
 
@@ -9,7 +10,7 @@ import "./MasterPropertyValue.sol";
  * @dev An Administered MultiSigWallet where an admin account is authorized to
  * submit transactions on behalf of the owner.
  */
-contract AdministeredMultiSigWallet is BaseMultiSigWallet {
+contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
     /*
      *  Events
      */
@@ -66,13 +67,22 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet {
     /*
      *  Public functions
      */
-    /// @dev Contract constructor sets initial owners and required number of confirmations.
+    /// @dev Contract initializer sets initial owners and required number of confirmations.
     /// @param _owners List of initial owners.
     /// @param _required Number of required confirmations.
-    constructor(address[] memory _owners, uint _required)
+    function initialize(
+        address[] memory _owners,
+        uint _required
+    )
     public
-    BaseMultiSigWallet(_owners, _required)
-    {
+    validRequirement(_owners.length, _required)
+    initializer {
+        for (uint i=0; i<_owners.length; i++) {
+            require(!isOwner[_owners[i]] && _owners[i] != address(0));
+            isOwner[_owners[i]] = true;
+        }
+        owners = _owners;
+        required = _required;
         admin = msg.sender;
     }
 
