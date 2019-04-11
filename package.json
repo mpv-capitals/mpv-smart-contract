@@ -13,9 +13,9 @@
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\""
   },
   "dependencies": {
-    "truffle-contract": "^4.0.11"
   },
   "devDependencies": {
+    "truffle-contract": "^4.0.11",
     "chai": "^4.2.0",
     "docusaurus": "^1.8.0",
     "dotenv": "^6.2.0",

@@ -140,7 +140,7 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newOwner]
       )
-      console.log(superOwnerMultiSig.address)
+
       const txId = await superOwnerMultiSig.submitTransaction.call(superOwnerMultiSig.address, 0, data, {
         from: defaultSuperOwner,
       })

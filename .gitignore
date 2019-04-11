@@ -7,3 +7,5 @@ build
 dist
 #.zos.session
 #.zos.dev*
+
+scripts/scratch.js

@@ -77,7 +77,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
     public
     validRequirement(_owners.length, _required)
     initializer {
-        for (uint i=0; i<_owners.length; i++) {
+        for (uint i = 0; i < _owners.length; i++) {
             require(!isOwner[_owners[i]] && _owners[i] != address(0));
             isOwner[_owners[i]] = true;
         }
@@ -156,8 +156,8 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
     }
 
     function submitTransaction(address destination, uint value, bytes memory data)
-        ownerExists(msg.sender)
         public
+        ownerExists(msg.sender)
         returns (uint transactionId)
     {
         return super.submitTransaction(destination, value, data);
