@@ -155,6 +155,14 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
         super.changeRequirement(_required);
     }
 
+    function submitTransaction(address destination, uint value, bytes memory data)
+        ownerExists(msg.sender)
+        public
+        returns (uint transactionId)
+    {
+        return super.submitTransaction(destination, value, data);
+    }
+
     /// @dev Adds a new transaction to the transaction mapping, if transaction
     /// does not exist yet. Transaction has to be sent by transactor account.
     /// @param destination Transaction target address.

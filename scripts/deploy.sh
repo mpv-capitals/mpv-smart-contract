@@ -4,9 +4,17 @@
 # 0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1
 # 0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d
 
+# Example usage
+# $ ./deploy.sh zos.dev-1554994902267.json
+
 # == CONFIG ==
 
-ZosFile=zos.dev-1554904749014.json
+ZosFile="$1"
+if [ -z "$1" ]; then
+  # get zos file if exists
+  ZosFile=$(ls | grep zos.dev-*.json | tr -d '[:cntrl:]'| perl -pe 's/\[[0-9;]*[mGKF]//g')
+fi
+
 Network=development
 SenderAddress=0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1
 RedemptionFeeReceiverWallet="$SenderAddress"
@@ -51,7 +59,9 @@ echo "Whitelist: $WhitelistAddress"
 
 # == INITIALIZERS ==
 
-npx zos create SuperOwnerMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network"
+# npx zos push --network=development
+
+npx zos create SuperOwnerMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network" --from="$SenderAddress"
 npx zos create BasicOwnerMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network"
 npx zos create MintingAdminMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network"
 npx zos create OperationAdminMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network"

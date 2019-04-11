@@ -12,7 +12,9 @@
     "lint:js:fix": "eslint --fix test/*",
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\""
   },
-  "dependencies": {},
+  "dependencies": {
+    "truffle-contract": "^4.0.11"
+  },
   "devDependencies": {
     "chai": "^4.2.0",
     "docusaurus": "^1.8.0",

@@ -19,7 +19,5 @@
     "SuperOwnerRole": "SuperOwnerRole",
     "Whitelist": "Whitelist"
   },
-  "dependencies": {
-
-  }
+  "dependencies": {}
 }
