@@ -19,6 +19,13 @@ start:
 deploy:
 	@npx zos push --network=$(network)
 
+.PHONY: deploy/reset
+deploy/reset:
+	@rm -rf zos.dev*.json
+	@npx zos push --network=$(network)
+	@. scripts/deploy.sh
+	@node scripts/deploy.js
+
 .PHONY: deploy/deps
 deploy/deps:
 	@npx zos push --deploy-dependencies --network=$(network)

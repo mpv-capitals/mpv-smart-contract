@@ -34,10 +34,15 @@ function getProxyAddress(name) {
   return zosProxyAddress
 }
 
-async function getInstance(name) {
+async function getInstance(name, proxy) {
   let MyContract = contract(json[name])
   MyContract.setProvider(provider)
-  let instance = await MyContract.at(getAddress(name))
+  let address = getAddress(name)
+  if (proxy) {
+    address = getProxyAddress(name)
+  }
+  let instance = await MyContract.at(address)
+  console.log(`getInstance(${name})`)
   return instance
 }
 
@@ -52,136 +57,207 @@ function getJson (name) {
   return require(`../build/contracts/${name}.json`)
 }
 
-async function main () {
-  var senderAddress = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
-  var redemptionFeeReceiverWallet = senderAddress
-  var mintingReceiverWallet = senderAddress
+async function initializeContracts () {
+  let senderAddress = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
+  let redemptionFeeReceiverWallet = senderAddress
+  let mintingReceiverWallet = senderAddress
 
-  for (var key in zosJson.contracts) {
-    const { stdout, stderr } = await exec(`npx zos create ${key} --network=development`)
-    console.log(key)
-    console.log('stdout:', stdout)
-    console.log('stderr:', stderr)
+  try {
+    for (let key in zosJson.contracts) {
+      const { stdout, stderr } = await exec(`npx zos create ${key} --network=development`)
+      console.log(key)
+      console.log('stdout:', stdout)
+      console.log('stderr:', stderr)
+    }
+
+    let instance = await getInstance('SuperOwnerMultiSigWallet')
+    await instance.initialize([senderAddress], 1, {
+      from: senderAddress
+    })
+
+    instance = await getInstance('BasicOwnerMultiSigWallet')
+    await instance.initialize([senderAddress], 1, {
+      from: senderAddress
+    })
+
+    instance = await getInstance('MintingAdminMultiSigWallet')
+    await instance.initialize([senderAddress], 1, {
+      from: senderAddress
+    })
+
+    instance = await getInstance('OperationAdminMultiSigWallet')
+    await instance.initialize([senderAddress], 1, {
+      from: senderAddress
+    })
+
+    instance = await getInstance('RedemptionAdminMultiSigWallet')
+    await instance.initialize([senderAddress], 1, {
+      from: senderAddress
+    })
+
+    instance = await getInstance('Whitelist')
+    await instance.initialize(
+      getProxyAddress('OperationAdminMultiSigWallet'),
+      getProxyAddress('BasicOwnerMultiSigWallet'),
+      getProxyAddress('MasterPropertyValue'),
+      {
+      from: senderAddress
+    })
+
+    instance = await getInstance('MPVToken')
+    await instance.initialize(
+      'Master Property Value',
+      'MPV',
+      18,
+      getProxyAddress('Whitelist'),
+      getProxyAddress('MasterPropertyValue'),
+      getProxyAddress('MintingAdminRole'),
+      getProxyAddress('RedemptionAdminRole'),
+      getProxyAddress('SuperOwnerMultiSigWallet'),
+      {
+      from: senderAddress
+    })
+
+    instance = await getInstance('Assets')
+    await instance.initialize(
+      1000,
+      redemptionFeeReceiverWallet,
+      getProxyAddress('MintingAdminRole'),
+      getProxyAddress('RedemptionAdminRole'),
+      getProxyAddress('RedemptionAdminMultiSigWallet'),
+      getProxyAddress('BasicOwnerMultiSigWallet'),
+      getProxyAddress('MPVToken'),
+      getProxyAddress('MasterPropertyValue'),
+      {
+      from: senderAddress
+    })
+
+    instance = await getInstance('SuperOwnerRole')
+    await instance.initialize(
+      getProxyAddress('SuperOwnerMultiSigWallet'),
+      getProxyAddress('MasterPropertyValue'),
+      {
+      from: senderAddress
+    })
+
+    instance = await getInstance('BasicOwnerRole')
+    await instance.initialize(
+      getProxyAddress('BasicOwnerMultiSigWallet'),
+      getProxyAddress('MintingAdminRole'),
+      {
+      from: senderAddress
+    })
+
+    instance = await getInstance('MintingAdminRole')
+    await instance.initialize(
+      getProxyAddress('MintingAdminMultiSigWallet'),
+      getProxyAddress('Assets'),
+      getProxyAddress('MPVToken'),
+      getProxyAddress('SuperOwnerRole'),
+      getProxyAddress('BasicOwnerRole'),
+      mintingReceiverWallet,
+      getProxyAddress('MasterPropertyValue'),
+      {
+      from: senderAddress
+    })
+
+    instance = await getInstance('Pausable')
+    await instance.initialize(
+      {
+      from: senderAddress
+    })
+
+    instance = await getInstance('RedemptionAdminRole')
+    await instance.initialize(
+      getProxyAddress('RedemptionAdminMultiSigWallet'),
+      getProxyAddress('BasicOwnerMultiSigWallet'),
+      getProxyAddress('Assets'),
+      getProxyAddress('MPVToken'),
+      getProxyAddress('MasterPropertyValue'),
+      {
+      from: senderAddress
+    })
+
+    instance = await getInstance('MasterPropertyValue')
+    await instance.initialize(
+      getProxyAddress('MPVToken'),
+      getProxyAddress('Assets'),
+      getProxyAddress('Whitelist'),
+      {
+      from: senderAddress
+    })
+  } catch(err) {
+    console.error(err)
+    console.trace(err)
   }
+}
 
-  let instance = await getInstance('SuperOwnerMultiSigWallet')
-  await instance.initialize([senderAddress], 1, {
-    from: senderAddress
-  })
+async function setAdmins() {
+  let senderAddress = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
+  let superOwnerMultiSig = await getInstance('SuperOwnerMultiSigWallet', true)
+  let basicOwnerMultiSig = await getInstance('BasicOwnerMultiSigWallet', true)
+  let operationAdminMultiSig = await getInstance('OperationAdminMultiSigWallet', true)
+  let mintingAdminMultiSig = await getInstance('MintingAdminMultiSigWallet', true)
+  let mintingAdminRole = await getInstance('MintingAdminRole', true)
+  let assets = await getInstance('Assets')
+  let redemptionAdminMultiSig = await getInstance('RedemptionAdminMultiSigWallet', true)
+  let mpv  = await getInstance('MasterPropertyValue', true)
 
-  instance = await getInstance('BasicOwnerMultiSigWallet')
-  await instance.initialize([senderAddress], 1, {
-    from: senderAddress
-  })
+  try {
+    //const admin = await superOwnerMultiSig.admin.call({from: senderAddress})
+    //console.log('admin', admin)
+    console.log(0)
+    await superOwnerMultiSig.updateAdmin(superOwnerMultiSig.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(1)
+    await basicOwnerMultiSig.updateAdmin(superOwnerMultiSig.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(2)
+    await operationAdminMultiSig.updateAdmin(basicOwnerMultiSig.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(3)
+    await mintingAdminMultiSig.updateTransactor(mintingAdminRole.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(4)
+    await mintingAdminMultiSig.updateAdmin(basicOwnerMultiSig.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(5)
+    await redemptionAdminMultiSig.updateTransactor(assets.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(6)
+    await redemptionAdminMultiSig.updateAdmin(basicOwnerMultiSig.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(7)
+    await mpv.updatePausableAdmin(superOwnerMultiSig.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(8)
+  } catch(err) {
+    console.error(err)
+    console.trace(err)
+  }
+}
 
-  instance = await getInstance('MintingAdminMultiSigWallet')
-  await instance.initialize([senderAddress], 1, {
-    from: senderAddress
-  })
-
-  instance = await getInstance('OperationAdminMultiSigWallet')
-  await instance.initialize([senderAddress], 1, {
-    from: senderAddress
-  })
-
-  instance = await getInstance('RedemptionAdminMultiSigWallet')
-  await instance.initialize([senderAddress], 1, {
-    from: senderAddress
-  })
-
-  instance = await getInstance('Whitelist')
-  await instance.initialize(
-    getAddress('OperationAdminMultiSigWallet'),
-    getAddress('BasicOwnerMultiSigWallet'),
-    getAddress('MasterPropertyValue'),
-    {
-    from: senderAddress
-  })
-
-  instance = await getInstance('MPVToken')
-  await instance.initialize(
-    'Master Property Value',
-    'MPV',
-    18,
-    getAddress('Whitelist'),
-    getAddress('MasterPropertyValue'),
-    getAddress('MintingAdminRole'),
-    getAddress('RedemptionAdminRole'),
-    getAddress('SuperOwnerMultiSigWallet'),
-    {
-    from: senderAddress
-  })
-
-  instance = await getInstance('Assets')
-  await instance.initialize(
-    1000,
-    redemptionFeeReceiverWallet,
-    getAddress('MintingAdminRole'),
-    getAddress('RedemptionAdminRole'),
-    getAddress('RedemptionAdminMultiSigWallet'),
-    getAddress('BasicOwnerMultiSigWallet'),
-    getAddress('MPVToken'),
-    getAddress('MasterPropertyValue'),
-    {
-    from: senderAddress
-  })
-
-  instance = await getInstance('SuperOwnerRole')
-  await instance.initialize(
-    getAddress('SuperOwnerMultiSigWallet'),
-    getAddress('MasterPropertyValue'),
-    {
-    from: senderAddress
-  })
-
-  instance = await getInstance('BasicOwnerRole')
-  await instance.initialize(
-    getAddress('BasicOwnerMultiSigWallet'),
-    getAddress('MintingAdminRole'),
-    {
-    from: senderAddress
-  })
-
-  instance = await getInstance('MintingAdminRole')
-  await instance.initialize(
-    getAddress('MintingAdminMultiSigWallet'),
-    getAddress('Assets'),
-    getAddress('MPVToken'),
-    getAddress('SuperOwnerRole'),
-    getAddress('BasicOwnerRole'),
-    mintingReceiverWallet,
-    getAddress('MasterPropertyValue'),
-    {
-    from: senderAddress
-  })
-
-  instance = await getInstance('Pausable')
-  await instance.initialize(
-    {
-    from: senderAddress
-  })
-
-  instance = await getInstance('RedemptionAdminRole')
-  await instance.initialize(
-    getAddress('RedemptionAdminMultiSigWallet'),
-    getAddress('BasicOwnerMultiSigWallet'),
-    getAddress('Assets'),
-    getAddress('MPVToken'),
-    getAddress('MasterPropertyValue'),
-    {
-    from: senderAddress
-  })
-
-  instance = await getInstance('MasterPropertyValue')
-  await instance.initialize(
-    getAddress('MPVToken'),
-    getAddress('Assets'),
-    getAddress('Whitelist'),
-    {
-    from: senderAddress
-  })
-
+async function main() {
+  //await initializeContracts()
+  await setAdmins()
   process.exit(0)
 }
 
 main()
+

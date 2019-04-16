@@ -13,6 +13,7 @@
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\""
   },
   "dependencies": {
+    "ethereum-input-data-decoder": "^0.1.1"
   },
   "devDependencies": {
     "truffle-contract": "^4.0.11",
