@@ -107,18 +107,34 @@ echo "ProxyWhitelist: $ProxyWhitelistAddress"
 
 npx zos create Whitelist --init initialize --args "$ProxyOperationAdminMultiSigWalletAddress","$ProxyBasicOwnerMultiSigWalletAddress","$MasterPropertyValueAddress" --network="$Network"
 
+ProxyWhitelistAddress=$(contract_proxy_address "Whitelist")
+echo "ProxyWhitelist: $ProxyWhitelistAddress"
+
 npx zos create MPVToken --init initialize --args '"Master Property Value"','"MPV"',18,"$ProxyWhitelistAddress","$MasterPropertyValueAddress","$MintingAdminRoleAddress","$RedemptionAdminRoleAddress","$ProxySuperOwnerMultiSigWalletAddress" --network="$Network"
+
+ProxyMPVTokenAddress=$(contract_proxy_address "MPVToken")
+echo "ProxyMPVToken: $ProxyMPVTokenAddress"
 
 npx zos create Assets --init initialize --args 1000,"$RedemptionFeeReceiverWallet","$MintingAdminRoleAddress","$RedemptionAdminRoleAddress","$ProxyRedemptionAdminMultiSigWalletAddress","$ProxyBasicOwnerMultiSigWalletAddress","$MPVTokenAddress","$MasterPropertyValueAddress" --network="$Network"
 
+ProxyAssetsAddress=$(contract_proxy_address "Assets")
+echo "ProxyAssets: $ProxyAssetsAddress"
+
 npx zos create SuperOwnerRole --init initialize --args "$ProxySuperOwnerMultiSigWalletAddress","$MasterPropertyValueAddress" --network="$Network"
 
-npx zos create BasicOwnerRole --init initialize --args "$ProxyBasicOwnerMultiSigWalletAddress","$MintingAdminRoleAddress" --network="$Network"
+ProxySuperOwnerRoleAddress=$(contract_proxy_address "SuperOwnerRole")
 
-npx zos create MintingAdminRole --init initialize --args "$ProxyMintingAdminMultiSigWalletAddress","$AssetsAddress","$MPVTokenAddress","$SuperOwnerRoleAddress","$BasicOwnerRoleAddress","$MintingReceiverWallet","$MasterPropertyValueAddress" --network="$Network"
+npx zos create BasicOwnerRole --init initialize --args "$ProxyBasicOwnerMultiSigWalletAddress" --network="$Network"
 
-npx zos create MasterPropertyValue --init initialize --args "$MPVTokenAddress","$AssetsAddress","$WhitelistAddress" --network="$Network"
+ProxyBasicOwnerRoleAddress=$(contract_proxy_address "BasicOwnerRole")
+
+echo "$ProxyMintingAdminMultiSigWalletAddress"
+echo "$ProxyAssetsAddress"
+
+npx zos create MintingAdminRole --init initialize --args "$ProxyMintingAdminMultiSigWalletAddress","$ProxyAssetsAddress","$MPVTokenAddress","$ProxySuperOwnerRoleAddress","$ProxyBasicOwnerRoleAddress","$MintingReceiverWallet","$MasterPropertyValueAddress" --network="$Network"
+
+npx zos create MasterPropertyValue --init initialize --args "$MPVTokenAddress","$ProxyAssetsAddress","$WhitelistAddress" --network="$Network"
 
 npx zos create Pausable --init initialize --network="$Network"
 
-npx zos create RedemptionAdminRole --init initialize --args "$ProxyRedemptionAdminMultiSigWalletAddress","$ProxyBasicOwnerMultiSigWalletAddress","$AssetsAddress","$MPVTokenAddress","$MasterPropertyValueAddress" --network="$Network"
+npx zos create RedemptionAdminRole --init initialize --args "$ProxyRedemptionAdminMultiSigWalletAddress","$ProxyBasicOwnerMultiSigWalletAddress","$ProxyAssetsAddress","$MPVTokenAddress","$MasterPropertyValueAddress" --network="$Network"

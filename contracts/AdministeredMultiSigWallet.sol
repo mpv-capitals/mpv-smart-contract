@@ -206,6 +206,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
             confirmations[transactionId][owners[i]] = false;
         }
 
+        transactions[transactionId].executed = false;
         emit RevokeAll(msg.sender, transactionId);
     }
 
@@ -216,5 +217,13 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
     ownerExists(msg.sender)
     {
         super.executeTransaction(transactionId);
+    }
+
+    function isExecuted(uint transactionId)
+    public
+    view
+    returns (bool)
+    {
+        return transactions[transactionId].executed;
     }
 }

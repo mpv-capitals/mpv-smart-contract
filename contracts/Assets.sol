@@ -57,6 +57,7 @@ contract Assets is Initializable {
 
     event RedemptionRejected(uint256 assetId, address account, uint256 refundAmount);
     event RedemptionExecuted(uint256 assetId, address account, uint256 assetValue);
+    event MintingAdminRoleUpdated(address indexed sender, address indexed addr);
 
     /*
      *  Storage
@@ -150,6 +151,12 @@ contract Assets is Initializable {
         _;
     }
 
+    /// @dev Requires that the sender is a basic owner.
+    modifier onlyBasicOwner() {
+        require(basicOwnerMultiSig.hasOwner(msg.sender));
+        _;
+    }
+
     /// @dev Requires that the MPV contract is not paused.
     modifier mpvNotPaused() {
         require(masterPropertyValue.paused() == false);
@@ -187,6 +194,17 @@ contract Assets is Initializable {
         basicOwnerMultiSig = _basicOwnerMultiSig;
         mpvToken = _mpvToken;
         masterPropertyValue = _masterPropertyValue;
+    }
+
+    function updateMintingAdminRole(
+        address _mintingAdminRole
+    )
+    public
+    onlyBasicOwner
+    mpvNotPaused
+    {
+        mintingAdminRole = _mintingAdminRole;
+        emit MintingAdminRoleUpdated(msg.sender, _mintingAdminRole);
     }
 
     /// @dev Set the redemption fee amount. Transaction has to be sent by

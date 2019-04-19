@@ -1,11 +1,11 @@
 {
   "contracts": {
     "Assets": {
-      "address": "0xC3CCB5EF552A865F2fb4d26C86eE558A71857a32",
-      "constructorCode": "608060405234801561001057600080fd5b5061406f806100206000396000f3fe",
-      "bodyBytecodeHash": "6bb3e22a851c824d55dd8a0515b322c49b40566aa2e0722286fa7762e7f329e3",
-      "localBytecodeHash": "2b59a00a77573faf5257b10b7f9f5c415b63f19f3dd1175536b4178e6eb24dfe",
-      "deployedBytecodeHash": "2b59a00a77573faf5257b10b7f9f5c415b63f19f3dd1175536b4178e6eb24dfe",
+      "address": "0x0A9BE2707550b66018c65D57f92494e8e79c18E6",
+      "constructorCode": "608060405234801561001057600080fd5b506142fe806100206000396000f3fe",
+      "bodyBytecodeHash": "e9a347d9243bb776c150b2167bf2bbcc794872ddbcc8cabd68ee8badcfb12fb3",
+      "localBytecodeHash": "af5858dd7071f16fb5629b224496b6c67a5758bc1b78733e6257d194278b456e",
+      "deployedBytecodeHash": "af5858dd7071f16fb5629b224496b6c67a5758bc1b78733e6257d194278b456e",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -31,39 +31,39 @@
           "members": [
             {
               "label": "id",
-              "astId": 550,
+              "astId": 576,
               "type": "t_uint256",
-              "src": "2481:10:1"
+              "src": "2562:10:1"
             },
             {
               "label": "status",
-              "astId": 552,
+              "astId": 578,
               "type": "t_enum<Assets.Status>",
-              "src": "2556:13:1"
+              "src": "2637:13:1"
             },
             {
               "label": "notarizationId",
-              "astId": 554,
+              "astId": 580,
               "type": "t_bytes32",
-              "src": "2654:22:1"
+              "src": "2735:22:1"
             },
             {
               "label": "tokens",
-              "astId": 556,
+              "astId": 582,
               "type": "t_uint256",
-              "src": "2765:14:1"
+              "src": "2846:14:1"
             },
             {
               "label": "owner",
-              "astId": 558,
+              "astId": 584,
               "type": "t_address",
-              "src": "2843:13:1"
+              "src": "2924:13:1"
             },
             {
               "label": "timestamp",
-              "astId": 560,
+              "astId": 586,
               "type": "t_uint256",
-              "src": "2927:17:1"
+              "src": "3008:17:1"
             }
           ]
         },
@@ -102,21 +102,21 @@
           "members": [
             {
               "label": "amount",
-              "astId": 563,
+              "astId": 589,
               "type": "t_uint256",
-              "src": "3130:14:1"
+              "src": "3211:14:1"
             },
             {
               "label": "account",
-              "astId": 565,
+              "astId": 591,
               "type": "t_address",
-              "src": "3211:15:1"
+              "src": "3292:15:1"
             },
             {
               "label": "transactionId",
-              "astId": 567,
+              "astId": 593,
               "type": "t_uint256",
-              "src": "3376:21:1"
+              "src": "3457:21:1"
             }
           ]
         },
@@ -145,7 +145,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -153,7 +153,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -161,7 +161,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -169,113 +169,113 @@
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "assets",
-          "astId": 517,
+          "astId": 543,
           "type": "t_mapping<t_struct<Assets.Asset>>",
-          "src": "1728:40:1"
+          "src": "1809:40:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "redemptionTokenLocks",
-          "astId": 521,
+          "astId": 547,
           "type": "t_mapping<t_struct<Assets.RedemptionTokenLock>>",
-          "src": "1774:68:1"
+          "src": "1855:68:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "pendingAssets",
-          "astId": 524,
+          "astId": 550,
           "type": "t_array:dyn<t_struct<Assets.Asset>>",
-          "src": "1848:28:1"
-        },
-        {
-          "contract": "Assets",
-          "path": "contracts/Assets.sol",
-          "label": "pendingAssetsTransactionId",
-          "astId": 526,
-          "type": "t_uint256",
-          "src": "1882:41:1"
-        },
-        {
-          "contract": "Assets",
-          "path": "contracts/Assets.sol",
-          "label": "redemptionFee",
-          "astId": 528,
-          "type": "t_uint256",
           "src": "1929:28:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
+          "label": "pendingAssetsTransactionId",
+          "astId": 552,
+          "type": "t_uint256",
+          "src": "1963:41:1"
+        },
+        {
+          "contract": "Assets",
+          "path": "contracts/Assets.sol",
+          "label": "redemptionFee",
+          "astId": 554,
+          "type": "t_uint256",
+          "src": "2010:28:1"
+        },
+        {
+          "contract": "Assets",
+          "path": "contracts/Assets.sol",
           "label": "redemptionFeeReceiverWallet",
-          "astId": 530,
+          "astId": 556,
           "type": "t_address",
-          "src": "1963:42:1"
+          "src": "2044:42:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "mintingAdminRole",
-          "astId": 532,
+          "astId": 558,
           "type": "t_address",
-          "src": "2011:31:1"
+          "src": "2092:31:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "redemptionAdminRole",
-          "astId": 534,
+          "astId": 560,
           "type": "t_address",
-          "src": "2048:46:1"
+          "src": "2129:46:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "superOwnerMultiSig",
-          "astId": 536,
+          "astId": 562,
           "type": "t_address",
-          "src": "2100:33:1"
+          "src": "2181:33:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "basicOwnerMultiSig",
-          "astId": 538,
+          "astId": 564,
           "type": "t_address",
-          "src": "2139:41:1"
+          "src": "2220:41:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "redemptionMultiSig",
-          "astId": 540,
+          "astId": 566,
           "type": "t_address",
-          "src": "2186:41:1"
+          "src": "2267:41:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "masterPropertyValue",
-          "astId": 542,
+          "astId": 568,
           "type": "t_address",
-          "src": "2233:46:1"
+          "src": "2314:46:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "mpvToken",
-          "astId": 544,
+          "astId": 570,
           "type": "t_address",
-          "src": "2285:24:1"
+          "src": "2366:24:1"
         },
         {
           "contract": "Assets",
           "path": "contracts/Assets.sol",
           "label": "statusTotalTokens",
-          "astId": 548,
+          "astId": 574,
           "type": "t_mapping<t_uint256>",
-          "src": "2315:53:1"
+          "src": "2396:53:1"
         }
       ],
       "warnings": {
@@ -287,11 +287,11 @@
       }
     },
     "BasicOwnerMultiSigWallet": {
-      "address": "0x82c052Bbea74E8721C2cEd1b35C5bAC20F296180",
-      "constructorCode": "608060405234801561001057600080fd5b5061345f806100206000396000f3fe",
-      "bodyBytecodeHash": "e0611298684e968b8eb607fe8c6809f98aab8d69569ef3588bc2e1eca476cb0f",
-      "localBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
-      "deployedBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
+      "address": "0x9C3c3E020ce13DBF748aE49596b8C1F7CF0aA365",
+      "constructorCode": "608060405234801561001057600080fd5b50613517806100206000396000f3fe",
+      "bodyBytecodeHash": "a9208a47d6c9f0aaeea8a3bb389f28d3e835528981dda8e68560d1856550e9e9",
+      "localBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
+      "deployedBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
       "types": {
         "t_struct<BaseMultiSigWallet.Transaction>": {
           "id": "t_struct<BaseMultiSigWallet.Transaction>",
@@ -300,25 +300,25 @@
           "members": [
             {
               "label": "destination",
-              "astId": 1727,
+              "astId": 1785,
               "type": "t_address",
               "src": "1310:19:2"
             },
             {
               "label": "value",
-              "astId": 1729,
+              "astId": 1787,
               "type": "t_uint256",
               "src": "1339:10:2"
             },
             {
               "label": "data",
-              "astId": 1731,
+              "astId": 1789,
               "type": "t_bytes",
               "src": "1359:10:2"
             },
             {
               "label": "executed",
-              "astId": 1733,
+              "astId": 1791,
               "type": "t_bool",
               "src": "1379:13:2"
             }
@@ -376,7 +376,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactions",
-          "astId": 1708,
+          "astId": 1766,
           "type": "t_mapping<t_struct<BaseMultiSigWallet.Transaction>>",
           "src": "1020:49:2"
         },
@@ -384,7 +384,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "confirmations",
-          "astId": 1714,
+          "astId": 1772,
           "type": "t_mapping<t_bool>",
           "src": "1075:64:2"
         },
@@ -392,7 +392,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "isOwner",
-          "astId": 1718,
+          "astId": 1776,
           "type": "t_mapping<t_bool>",
           "src": "1145:40:2"
         },
@@ -400,7 +400,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "owners",
-          "astId": 1721,
+          "astId": 1779,
           "type": "t_array:dyn<t_address>",
           "src": "1191:23:2"
         },
@@ -408,7 +408,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "required",
-          "astId": 1723,
+          "astId": 1781,
           "type": "t_uint256",
           "src": "1220:20:2"
         },
@@ -416,7 +416,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactionCount",
-          "astId": 1725,
+          "astId": 1783,
           "type": "t_uint256",
           "src": "1246:28:2"
         },
@@ -424,7 +424,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -432,7 +432,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -440,7 +440,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -478,11 +478,11 @@
       }
     },
     "BasicOwnerRole": {
-      "address": "0x15118cf0f444497C6807fa8e6168dD02672F13bD",
-      "constructorCode": "608060405234801561001057600080fd5b5061057c806100206000396000f3fe",
-      "bodyBytecodeHash": "303b4482a9140d8efc2084951c2d45ec645cd0efadac56ce52e1512660ce08f1",
-      "localBytecodeHash": "945be512a7e13f671f728d0b3947ede9db6c1adaeac50a02278fefde72b1a783",
-      "deployedBytecodeHash": "945be512a7e13f671f728d0b3947ede9db6c1adaeac50a02278fefde72b1a783",
+      "address": "0xF6cd4921E3e685C31c30B8907f4e7e7c21AC725B",
+      "constructorCode": "608060405234801561001057600080fd5b50610355806100206000396000f3fe",
+      "bodyBytecodeHash": "0fbc0491aba1471e68b27b08ef1f7708699692cf86b5a2d8c531d408b1ff64ca",
+      "localBytecodeHash": "62f346050f04440671c79e75774aaca0e0c7b08b5be682d82f6ef493c434936a",
+      "deployedBytecodeHash": "62f346050f04440671c79e75774aaca0e0c7b08b5be682d82f6ef493c434936a",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -512,7 +512,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -520,7 +520,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -528,7 +528,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -536,7 +536,7 @@
           "contract": "BasicOwnerRole",
           "path": "contracts/BasicOwnerRole.sol",
           "label": "multiSig",
-          "astId": 2633,
+          "astId": 2691,
           "type": "t_address",
           "src": "283:31:3"
         },
@@ -544,7 +544,7 @@
           "contract": "BasicOwnerRole",
           "path": "contracts/BasicOwnerRole.sol",
           "label": "mintingAdminRole",
-          "astId": 2635,
+          "astId": 2693,
           "type": "t_address",
           "src": "320:40:3"
         }
@@ -558,11 +558,11 @@
       }
     },
     "MasterPropertyValue": {
-      "address": "0xF68f33c1C8AC88106234302D482019adcFf11e47",
+      "address": "0x70AB7A94269adc5ff3e578C3e30237Bcb752EF59",
       "constructorCode": "608060405234801561001057600080fd5b50610b8d806100206000396000f3fe",
-      "bodyBytecodeHash": "50b09fd3484ed4b2305a13966ce5bdf7cf55f438a3ec0900b3339108474d0ee5",
-      "localBytecodeHash": "a9d82f55981e4267205742ab7b37e557a0c03e9b61df3dcfba679380bbf7e0b1",
-      "deployedBytecodeHash": "a9d82f55981e4267205742ab7b37e557a0c03e9b61df3dcfba679380bbf7e0b1",
+      "bodyBytecodeHash": "e07dd580ab1f0bd457576b481a6bfd0425635e076b0034acc90f65e64fc0d643",
+      "localBytecodeHash": "7592aa318dee38e695851ee9c1f9166b2eec3b45d7edb364b9bc12b8cdb5fdc7",
+      "deployedBytecodeHash": "7592aa318dee38e695851ee9c1f9166b2eec3b45d7edb364b9bc12b8cdb5fdc7",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -592,7 +592,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -600,7 +600,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -608,7 +608,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -616,7 +616,7 @@
           "contract": "Pausable",
           "path": "contracts/Pausable.sol",
           "label": "_paused",
-          "astId": 4427,
+          "astId": 4478,
           "type": "t_bool",
           "src": "361:20:9"
         },
@@ -624,7 +624,7 @@
           "contract": "Pausable",
           "path": "contracts/Pausable.sol",
           "label": "pausableAdmin",
-          "astId": 4429,
+          "astId": 4480,
           "type": "t_address",
           "src": "387:28:9"
         },
@@ -632,7 +632,7 @@
           "contract": "MasterPropertyValue",
           "path": "contracts/MasterPropertyValue.sol",
           "label": "mpvToken",
-          "astId": 3819,
+          "astId": 3867,
           "type": "t_address",
           "src": "386:24:6"
         },
@@ -640,7 +640,7 @@
           "contract": "MasterPropertyValue",
           "path": "contracts/MasterPropertyValue.sol",
           "label": "assets",
-          "astId": 3821,
+          "astId": 3869,
           "type": "t_address",
           "src": "416:20:6"
         },
@@ -648,7 +648,7 @@
           "contract": "MasterPropertyValue",
           "path": "contracts/MasterPropertyValue.sol",
           "label": "whitelist",
-          "astId": 3823,
+          "astId": 3871,
           "type": "t_address",
           "src": "442:26:6"
         }
@@ -662,11 +662,11 @@
       }
     },
     "MintingAdminMultiSigWallet": {
-      "address": "0xCdE90AE8F681F4e82cE7808F3fDe58f19f5ae4F0",
-      "constructorCode": "608060405234801561001057600080fd5b5061345f806100206000396000f3fe",
-      "bodyBytecodeHash": "e0611298684e968b8eb607fe8c6809f98aab8d69569ef3588bc2e1eca476cb0f",
-      "localBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
-      "deployedBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
+      "address": "0x995C39ce2751A81dC54B66c0d529de6B37C6277D",
+      "constructorCode": "608060405234801561001057600080fd5b50613517806100206000396000f3fe",
+      "bodyBytecodeHash": "a9208a47d6c9f0aaeea8a3bb389f28d3e835528981dda8e68560d1856550e9e9",
+      "localBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
+      "deployedBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
       "types": {
         "t_struct<BaseMultiSigWallet.Transaction>": {
           "id": "t_struct<BaseMultiSigWallet.Transaction>",
@@ -675,25 +675,25 @@
           "members": [
             {
               "label": "destination",
-              "astId": 1727,
+              "astId": 1785,
               "type": "t_address",
               "src": "1310:19:2"
             },
             {
               "label": "value",
-              "astId": 1729,
+              "astId": 1787,
               "type": "t_uint256",
               "src": "1339:10:2"
             },
             {
               "label": "data",
-              "astId": 1731,
+              "astId": 1789,
               "type": "t_bytes",
               "src": "1359:10:2"
             },
             {
               "label": "executed",
-              "astId": 1733,
+              "astId": 1791,
               "type": "t_bool",
               "src": "1379:13:2"
             }
@@ -751,7 +751,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactions",
-          "astId": 1708,
+          "astId": 1766,
           "type": "t_mapping<t_struct<BaseMultiSigWallet.Transaction>>",
           "src": "1020:49:2"
         },
@@ -759,7 +759,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "confirmations",
-          "astId": 1714,
+          "astId": 1772,
           "type": "t_mapping<t_bool>",
           "src": "1075:64:2"
         },
@@ -767,7 +767,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "isOwner",
-          "astId": 1718,
+          "astId": 1776,
           "type": "t_mapping<t_bool>",
           "src": "1145:40:2"
         },
@@ -775,7 +775,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "owners",
-          "astId": 1721,
+          "astId": 1779,
           "type": "t_array:dyn<t_address>",
           "src": "1191:23:2"
         },
@@ -783,7 +783,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "required",
-          "astId": 1723,
+          "astId": 1781,
           "type": "t_uint256",
           "src": "1220:20:2"
         },
@@ -791,7 +791,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactionCount",
-          "astId": 1725,
+          "astId": 1783,
           "type": "t_uint256",
           "src": "1246:28:2"
         },
@@ -799,7 +799,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -807,7 +807,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -815,7 +815,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -853,11 +853,11 @@
       }
     },
     "MintingAdminRole": {
-      "address": "0x5B08d5D8F341FD7659eB14F23Ae97214FcdBefe6",
-      "constructorCode": "608060405234801561001057600080fd5b50612c6d806100206000396000f3fe",
-      "bodyBytecodeHash": "6b2668337e70b770237d5969d6663f2ba18a24c5961a8915c93780dba69145aa",
-      "localBytecodeHash": "8ff08d99c028cc4e4920f2c75c2af68cbbcf3fc91080e800a387dddebc8e4968",
-      "deployedBytecodeHash": "8ff08d99c028cc4e4920f2c75c2af68cbbcf3fc91080e800a387dddebc8e4968",
+      "address": "0xCDB465C8e087f980f3087DDe6422046b5F818e95",
+      "constructorCode": "608060405234801561001057600080fd5b50612d7e806100206000396000f3fe",
+      "bodyBytecodeHash": "9b772f2bea5b934331316748b203d57cce3cd23df6eb41347424530992ff831e",
+      "localBytecodeHash": "1088d563dc1c315c57d893dcdfdc683009608db11b595c7795f72a3c239a1f87",
+      "deployedBytecodeHash": "1088d563dc1c315c57d893dcdfdc683009608db11b595c7795f72a3c239a1f87",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -887,7 +887,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -895,7 +895,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -903,7 +903,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -911,7 +911,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "multiSig",
-          "astId": 3903,
+          "astId": 3951,
           "type": "t_address",
           "src": "961:31:7"
         },
@@ -919,7 +919,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "assets",
-          "astId": 3905,
+          "astId": 3953,
           "type": "t_address",
           "src": "998:20:7"
         },
@@ -927,7 +927,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "mpvToken",
-          "astId": 3907,
+          "astId": 3955,
           "type": "t_address",
           "src": "1024:24:7"
         },
@@ -935,7 +935,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "superOwnerRole",
-          "astId": 3909,
+          "astId": 3957,
           "type": "t_address",
           "src": "1054:36:7"
         },
@@ -943,7 +943,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "basicOwnerRole",
-          "astId": 3911,
+          "astId": 3959,
           "type": "t_address",
           "src": "1096:36:7"
         },
@@ -951,7 +951,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "mintingReceiverWallet",
-          "astId": 3913,
+          "astId": 3961,
           "type": "t_address",
           "src": "1138:36:7"
         },
@@ -959,7 +959,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "mintingActionCountdownLength",
-          "astId": 3915,
+          "astId": 3963,
           "type": "t_uint256",
           "src": "1180:43:7"
         },
@@ -967,7 +967,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "mintingCountdownStart",
-          "astId": 3917,
+          "astId": 3965,
           "type": "t_uint256",
           "src": "1229:36:7"
         },
@@ -975,7 +975,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "pendingAssetsTransactionId",
-          "astId": 3919,
+          "astId": 3967,
           "type": "t_uint256",
           "src": "1271:41:7"
         },
@@ -983,7 +983,7 @@
           "contract": "MintingAdminRole",
           "path": "contracts/MintingAdminRole.sol",
           "label": "masterPropertyValue",
-          "astId": 3921,
+          "astId": 3969,
           "type": "t_address",
           "src": "1318:46:7"
         }
@@ -997,7 +997,7 @@
       }
     },
     "MPVToken": {
-      "address": "0xf275203b227De8Ec6012AAf11a7bAc024D21179c",
+      "address": "0x3749Ae9F04172FfFFa8Ab5d5eaAa2289e46bA8aB",
       "constructorCode": "608060405234801561001057600080fd5b50614e19806100206000396000f3fe",
       "bodyBytecodeHash": "71d4eefd89345645a90dd89b4421647d3c733b74ef3eafb032a6a07001ef6973",
       "localBytecodeHash": "29b0f725073619ec696e5f031e7a7ee6e68f07904afedecaa9e4a072e7110ede",
@@ -1048,31 +1048,31 @@
           "members": [
             {
               "label": "lastDay",
-              "astId": 2889,
+              "astId": 2937,
               "type": "t_uint256",
               "src": "1963:15:5"
             },
             {
               "label": "spentToday",
-              "astId": 2891,
+              "astId": 2939,
               "type": "t_uint256",
               "src": "1988:18:5"
             },
             {
               "label": "dailyLimit",
-              "astId": 2893,
+              "astId": 2941,
               "type": "t_uint256",
               "src": "2016:18:5"
             },
             {
               "label": "countdownStart",
-              "astId": 2895,
+              "astId": 2943,
               "type": "t_uint256",
               "src": "2044:22:5"
             },
             {
               "label": "updatedDailyLimit",
-              "astId": 2897,
+              "astId": 2945,
               "type": "t_uint256",
               "src": "2076:25:5"
             }
@@ -1091,37 +1091,37 @@
           "members": [
             {
               "label": "from",
-              "astId": 2900,
+              "astId": 2948,
               "type": "t_address",
               "src": "2147:12:5"
             },
             {
               "label": "to",
-              "astId": 2902,
+              "astId": 2950,
               "type": "t_address",
               "src": "2169:10:5"
             },
             {
               "label": "sender",
-              "astId": 2904,
+              "astId": 2952,
               "type": "t_address",
               "src": "2189:14:5"
             },
             {
               "label": "value",
-              "astId": 2906,
+              "astId": 2954,
               "type": "t_uint256",
               "src": "2213:13:5"
             },
             {
               "label": "countdownStart",
-              "astId": 2908,
+              "astId": 2956,
               "type": "t_uint256",
               "src": "2236:22:5"
             },
             {
               "label": "transferMethod",
-              "astId": 2910,
+              "astId": 2958,
               "type": "t_enum<MPVToken.TransferMethod>",
               "src": "2268:29:5"
             }
@@ -1148,7 +1148,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -1156,7 +1156,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -1164,7 +1164,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -1172,7 +1172,7 @@
           "contract": "ERC20",
           "path": "openzeppelin-eth/contracts/token/ERC20/ERC20.sol",
           "label": "_balances",
-          "astId": 5429,
+          "astId": 5480,
           "type": "t_mapping<t_uint256>",
           "src": "774:46:15"
         },
@@ -1180,7 +1180,7 @@
           "contract": "ERC20",
           "path": "openzeppelin-eth/contracts/token/ERC20/ERC20.sol",
           "label": "_allowed",
-          "astId": 5435,
+          "astId": 5486,
           "type": "t_mapping<t_uint256>",
           "src": "827:66:15"
         },
@@ -1188,7 +1188,7 @@
           "contract": "ERC20",
           "path": "openzeppelin-eth/contracts/token/ERC20/ERC20.sol",
           "label": "_totalSupply",
-          "astId": 5437,
+          "astId": 5488,
           "type": "t_uint256",
           "src": "900:28:15"
         },
@@ -1196,7 +1196,7 @@
           "contract": "ERC20",
           "path": "openzeppelin-eth/contracts/token/ERC20/ERC20.sol",
           "label": "______gap",
-          "astId": 5851,
+          "astId": 5902,
           "type": "t_array:50<t_uint256>",
           "src": "7661:29:15"
         },
@@ -1204,7 +1204,7 @@
           "contract": "ERC20Detailed",
           "path": "openzeppelin-eth/contracts/token/ERC20/ERC20Detailed.sol",
           "label": "_name",
-          "astId": 5862,
+          "astId": 5913,
           "type": "t_string",
           "src": "382:20:16"
         },
@@ -1212,7 +1212,7 @@
           "contract": "ERC20Detailed",
           "path": "openzeppelin-eth/contracts/token/ERC20/ERC20Detailed.sol",
           "label": "_symbol",
-          "astId": 5864,
+          "astId": 5915,
           "type": "t_string",
           "src": "408:22:16"
         },
@@ -1220,7 +1220,7 @@
           "contract": "ERC20Detailed",
           "path": "openzeppelin-eth/contracts/token/ERC20/ERC20Detailed.sol",
           "label": "_decimals",
-          "astId": 5866,
+          "astId": 5917,
           "type": "t_uint8",
           "src": "436:23:16"
         },
@@ -1228,7 +1228,7 @@
           "contract": "ERC20Detailed",
           "path": "openzeppelin-eth/contracts/token/ERC20/ERC20Detailed.sol",
           "label": "______gap",
-          "astId": 5918,
+          "astId": 5969,
           "type": "t_array:50<t_uint256>",
           "src": "1097:29:16"
         },
@@ -1236,7 +1236,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "whitelist",
-          "astId": 2865,
+          "astId": 2913,
           "type": "t_address",
           "src": "1429:26:5"
         },
@@ -1244,7 +1244,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "masterPropertyValue",
-          "astId": 2867,
+          "astId": 2915,
           "type": "t_address",
           "src": "1461:46:5"
         },
@@ -1252,7 +1252,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "mintingAdmin",
-          "astId": 2869,
+          "astId": 2917,
           "type": "t_address",
           "src": "1513:27:5"
         },
@@ -1260,7 +1260,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "redemptionAdmin",
-          "astId": 2871,
+          "astId": 2919,
           "type": "t_address",
           "src": "1546:30:5"
         },
@@ -1268,7 +1268,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "superOwnerMultiSig",
-          "astId": 2873,
+          "astId": 2921,
           "type": "t_address",
           "src": "1582:33:5"
         },
@@ -1276,7 +1276,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "updateDailyLimitCountdownLength",
-          "astId": 2875,
+          "astId": 2923,
           "type": "t_uint256",
           "src": "1621:46:5"
         },
@@ -1284,7 +1284,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "delayedTransferCountdownLength",
-          "astId": 2877,
+          "astId": 2925,
           "type": "t_uint256",
           "src": "1673:45:5"
         },
@@ -1292,7 +1292,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "delayedTransferNonce",
-          "astId": 2879,
+          "astId": 2927,
           "type": "t_uint256",
           "src": "1724:35:5"
         },
@@ -1300,7 +1300,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "dailyLimits",
-          "astId": 2883,
+          "astId": 2931,
           "type": "t_mapping<t_struct<MPVToken.DailyLimitInfo>>",
           "src": "1765:53:5"
         },
@@ -1308,7 +1308,7 @@
           "contract": "MPVToken",
           "path": "contracts/MPVToken.sol",
           "label": "delayedTransfers",
-          "astId": 2887,
+          "astId": 2935,
           "type": "t_mapping<t_struct<MPVToken.DelayedTransfer>>",
           "src": "1824:59:5"
         }
@@ -1322,11 +1322,11 @@
       }
     },
     "OperationAdminMultiSigWallet": {
-      "address": "0x071b1b5B563eb5D1Ff426eAf63a147af56e89d66",
-      "constructorCode": "608060405234801561001057600080fd5b5061345f806100206000396000f3fe",
-      "bodyBytecodeHash": "e0611298684e968b8eb607fe8c6809f98aab8d69569ef3588bc2e1eca476cb0f",
-      "localBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
-      "deployedBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
+      "address": "0xf344a93dd88629b13cF436f702c0c30dcF6e1A5B",
+      "constructorCode": "608060405234801561001057600080fd5b50613517806100206000396000f3fe",
+      "bodyBytecodeHash": "a9208a47d6c9f0aaeea8a3bb389f28d3e835528981dda8e68560d1856550e9e9",
+      "localBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
+      "deployedBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
       "types": {
         "t_struct<BaseMultiSigWallet.Transaction>": {
           "id": "t_struct<BaseMultiSigWallet.Transaction>",
@@ -1335,25 +1335,25 @@
           "members": [
             {
               "label": "destination",
-              "astId": 1727,
+              "astId": 1785,
               "type": "t_address",
               "src": "1310:19:2"
             },
             {
               "label": "value",
-              "astId": 1729,
+              "astId": 1787,
               "type": "t_uint256",
               "src": "1339:10:2"
             },
             {
               "label": "data",
-              "astId": 1731,
+              "astId": 1789,
               "type": "t_bytes",
               "src": "1359:10:2"
             },
             {
               "label": "executed",
-              "astId": 1733,
+              "astId": 1791,
               "type": "t_bool",
               "src": "1379:13:2"
             }
@@ -1411,7 +1411,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactions",
-          "astId": 1708,
+          "astId": 1766,
           "type": "t_mapping<t_struct<BaseMultiSigWallet.Transaction>>",
           "src": "1020:49:2"
         },
@@ -1419,7 +1419,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "confirmations",
-          "astId": 1714,
+          "astId": 1772,
           "type": "t_mapping<t_bool>",
           "src": "1075:64:2"
         },
@@ -1427,7 +1427,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "isOwner",
-          "astId": 1718,
+          "astId": 1776,
           "type": "t_mapping<t_bool>",
           "src": "1145:40:2"
         },
@@ -1435,7 +1435,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "owners",
-          "astId": 1721,
+          "astId": 1779,
           "type": "t_array:dyn<t_address>",
           "src": "1191:23:2"
         },
@@ -1443,7 +1443,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "required",
-          "astId": 1723,
+          "astId": 1781,
           "type": "t_uint256",
           "src": "1220:20:2"
         },
@@ -1451,7 +1451,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactionCount",
-          "astId": 1725,
+          "astId": 1783,
           "type": "t_uint256",
           "src": "1246:28:2"
         },
@@ -1459,7 +1459,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -1467,7 +1467,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -1475,7 +1475,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -1513,7 +1513,7 @@
       }
     },
     "OperationAdminRole": {
-      "address": "0x589E15532fdAc3949E34cc2Cb9647d378273226A",
+      "address": "0x5Db873580acb98234Ff6276898688fa1d7e06D46",
       "constructorCode": "6080604052348015600f57600080fd5b50603580601d6000396000f3fe",
       "bodyBytecodeHash": "8dac28d1a4dedc4aa66341b53c73c0a85dceccb3d817268a19d68900772cbe2d",
       "localBytecodeHash": "0ca259d3b6773b265390a48f5cb98074e5b9da15b028479a6c2cedb0f0dba91a",
@@ -1542,7 +1542,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -1550,7 +1550,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -1558,7 +1558,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         }
@@ -1572,7 +1572,7 @@
       }
     },
     "Pausable": {
-      "address": "0xfFC7EA6Bc1Ea786e3f10206Bf9926FDA01041F13",
+      "address": "0xBB91b6F5F31eF187De1DA88196F56c03188876dF",
       "constructorCode": "608060405234801561001057600080fd5b5061062d806100206000396000f3fe",
       "bodyBytecodeHash": "63be6314d4e9c3a57a10b7e1885eab86deed1cecb24b31ebe8385cdb7b9e1849",
       "localBytecodeHash": "81419f9a9e0f11261b111ede93c29b1164f3251883a70ffa26b635e89388743d",
@@ -1606,7 +1606,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -1614,7 +1614,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -1622,7 +1622,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -1630,7 +1630,7 @@
           "contract": "Pausable",
           "path": "contracts/Pausable.sol",
           "label": "_paused",
-          "astId": 4427,
+          "astId": 4478,
           "type": "t_bool",
           "src": "361:20:9"
         },
@@ -1638,7 +1638,7 @@
           "contract": "Pausable",
           "path": "contracts/Pausable.sol",
           "label": "pausableAdmin",
-          "astId": 4429,
+          "astId": 4480,
           "type": "t_address",
           "src": "387:28:9"
         }
@@ -1652,11 +1652,11 @@
       }
     },
     "RedemptionAdminMultiSigWallet": {
-      "address": "0xFab4A7272CC2E28e4cD97a52e40715B6EC4e5351",
-      "constructorCode": "608060405234801561001057600080fd5b5061345f806100206000396000f3fe",
-      "bodyBytecodeHash": "e0611298684e968b8eb607fe8c6809f98aab8d69569ef3588bc2e1eca476cb0f",
-      "localBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
-      "deployedBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
+      "address": "0xc43E8F5B4E32F88b97dCCe12e0308592eAf754Eb",
+      "constructorCode": "608060405234801561001057600080fd5b50613517806100206000396000f3fe",
+      "bodyBytecodeHash": "a9208a47d6c9f0aaeea8a3bb389f28d3e835528981dda8e68560d1856550e9e9",
+      "localBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
+      "deployedBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
       "types": {
         "t_struct<BaseMultiSigWallet.Transaction>": {
           "id": "t_struct<BaseMultiSigWallet.Transaction>",
@@ -1665,25 +1665,25 @@
           "members": [
             {
               "label": "destination",
-              "astId": 1727,
+              "astId": 1785,
               "type": "t_address",
               "src": "1310:19:2"
             },
             {
               "label": "value",
-              "astId": 1729,
+              "astId": 1787,
               "type": "t_uint256",
               "src": "1339:10:2"
             },
             {
               "label": "data",
-              "astId": 1731,
+              "astId": 1789,
               "type": "t_bytes",
               "src": "1359:10:2"
             },
             {
               "label": "executed",
-              "astId": 1733,
+              "astId": 1791,
               "type": "t_bool",
               "src": "1379:13:2"
             }
@@ -1741,7 +1741,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactions",
-          "astId": 1708,
+          "astId": 1766,
           "type": "t_mapping<t_struct<BaseMultiSigWallet.Transaction>>",
           "src": "1020:49:2"
         },
@@ -1749,7 +1749,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "confirmations",
-          "astId": 1714,
+          "astId": 1772,
           "type": "t_mapping<t_bool>",
           "src": "1075:64:2"
         },
@@ -1757,7 +1757,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "isOwner",
-          "astId": 1718,
+          "astId": 1776,
           "type": "t_mapping<t_bool>",
           "src": "1145:40:2"
         },
@@ -1765,7 +1765,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "owners",
-          "astId": 1721,
+          "astId": 1779,
           "type": "t_array:dyn<t_address>",
           "src": "1191:23:2"
         },
@@ -1773,7 +1773,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "required",
-          "astId": 1723,
+          "astId": 1781,
           "type": "t_uint256",
           "src": "1220:20:2"
         },
@@ -1781,7 +1781,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactionCount",
-          "astId": 1725,
+          "astId": 1783,
           "type": "t_uint256",
           "src": "1246:28:2"
         },
@@ -1789,7 +1789,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -1797,7 +1797,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -1805,7 +1805,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -1843,7 +1843,7 @@
       }
     },
     "RedemptionAdminRole": {
-      "address": "0x798F6e1A725230870Fc358AADC3AC1B5650dd58A",
+      "address": "0x1dd310165fb9552b2C4511Ac150f0A35fA9aC0C5",
       "constructorCode": "608060405234801561001057600080fd5b50611268806100206000396000f3fe",
       "bodyBytecodeHash": "de887ddd652257f006c6aabcd15dc8c4c107ad331836984390c1ab461248611a",
       "localBytecodeHash": "8f308b9a2ababd5a6dbe3fcde1152140cb37e662d0852570c449b3dfea91eb4b",
@@ -1883,7 +1883,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -1891,7 +1891,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -1899,7 +1899,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -1907,7 +1907,7 @@
           "contract": "RedemptionAdminRole",
           "path": "contracts/RedemptionAdminRole.sol",
           "label": "multiSig",
-          "astId": 4555,
+          "astId": 4606,
           "type": "t_address",
           "src": "643:31:10"
         },
@@ -1915,7 +1915,7 @@
           "contract": "RedemptionAdminRole",
           "path": "contracts/RedemptionAdminRole.sol",
           "label": "basicOwnerMultiSig",
-          "astId": 4557,
+          "astId": 4608,
           "type": "t_address",
           "src": "680:41:10"
         },
@@ -1923,7 +1923,7 @@
           "contract": "RedemptionAdminRole",
           "path": "contracts/RedemptionAdminRole.sol",
           "label": "assets",
-          "astId": 4559,
+          "astId": 4610,
           "type": "t_address",
           "src": "727:20:10"
         },
@@ -1931,7 +1931,7 @@
           "contract": "RedemptionAdminRole",
           "path": "contracts/RedemptionAdminRole.sol",
           "label": "mpvToken",
-          "astId": 4561,
+          "astId": 4612,
           "type": "t_address",
           "src": "753:24:10"
         },
@@ -1939,7 +1939,7 @@
           "contract": "RedemptionAdminRole",
           "path": "contracts/RedemptionAdminRole.sol",
           "label": "burningActionCountdownLength",
-          "astId": 4563,
+          "astId": 4614,
           "type": "t_uint256",
           "src": "783:43:10"
         },
@@ -1947,7 +1947,7 @@
           "contract": "RedemptionAdminRole",
           "path": "contracts/RedemptionAdminRole.sol",
           "label": "redemptionCountdowns",
-          "astId": 4567,
+          "astId": 4618,
           "type": "t_mapping<t_uint256>",
           "src": "832:55:10"
         },
@@ -1955,7 +1955,7 @@
           "contract": "RedemptionAdminRole",
           "path": "contracts/RedemptionAdminRole.sol",
           "label": "masterPropertyValue",
-          "astId": 4569,
+          "astId": 4620,
           "type": "t_address",
           "src": "893:46:10"
         }
@@ -1969,11 +1969,11 @@
       }
     },
     "SuperOwnerMultiSigWallet": {
-      "address": "0x267639506101BbF4f91127a5211069f5ab70c518",
-      "constructorCode": "608060405234801561001057600080fd5b5061345f806100206000396000f3fe",
-      "bodyBytecodeHash": "e0611298684e968b8eb607fe8c6809f98aab8d69569ef3588bc2e1eca476cb0f",
-      "localBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
-      "deployedBytecodeHash": "53bb328bd720e9a9b6106e63880077b22e91bc163c8f5b3899d8b16488968080",
+      "address": "0xFA2D4e4Ef69E2c1aAB5A77Ce2bA40FE8cDf38E4F",
+      "constructorCode": "608060405234801561001057600080fd5b50613517806100206000396000f3fe",
+      "bodyBytecodeHash": "a9208a47d6c9f0aaeea8a3bb389f28d3e835528981dda8e68560d1856550e9e9",
+      "localBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
+      "deployedBytecodeHash": "6e8692a6fd96024d691bbccbbd083729c4c77a3516a63037ff6dabde565690dc",
       "types": {
         "t_struct<BaseMultiSigWallet.Transaction>": {
           "id": "t_struct<BaseMultiSigWallet.Transaction>",
@@ -1982,25 +1982,25 @@
           "members": [
             {
               "label": "destination",
-              "astId": 1727,
+              "astId": 1785,
               "type": "t_address",
               "src": "1310:19:2"
             },
             {
               "label": "value",
-              "astId": 1729,
+              "astId": 1787,
               "type": "t_uint256",
               "src": "1339:10:2"
             },
             {
               "label": "data",
-              "astId": 1731,
+              "astId": 1789,
               "type": "t_bytes",
               "src": "1359:10:2"
             },
             {
               "label": "executed",
-              "astId": 1733,
+              "astId": 1791,
               "type": "t_bool",
               "src": "1379:13:2"
             }
@@ -2058,7 +2058,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactions",
-          "astId": 1708,
+          "astId": 1766,
           "type": "t_mapping<t_struct<BaseMultiSigWallet.Transaction>>",
           "src": "1020:49:2"
         },
@@ -2066,7 +2066,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "confirmations",
-          "astId": 1714,
+          "astId": 1772,
           "type": "t_mapping<t_bool>",
           "src": "1075:64:2"
         },
@@ -2074,7 +2074,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "isOwner",
-          "astId": 1718,
+          "astId": 1776,
           "type": "t_mapping<t_bool>",
           "src": "1145:40:2"
         },
@@ -2082,7 +2082,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "owners",
-          "astId": 1721,
+          "astId": 1779,
           "type": "t_array:dyn<t_address>",
           "src": "1191:23:2"
         },
@@ -2090,7 +2090,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "required",
-          "astId": 1723,
+          "astId": 1781,
           "type": "t_uint256",
           "src": "1220:20:2"
         },
@@ -2098,7 +2098,7 @@
           "contract": "BaseMultiSigWallet",
           "path": "contracts/BaseMultiSigWallet/BaseMultiSigWallet.sol",
           "label": "transactionCount",
-          "astId": 1725,
+          "astId": 1783,
           "type": "t_uint256",
           "src": "1246:28:2"
         },
@@ -2106,7 +2106,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -2114,7 +2114,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -2122,7 +2122,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -2160,7 +2160,7 @@
       }
     },
     "SuperOwnerRole": {
-      "address": "0xf64E5F0712358B264ff98643b12c940353588c1B",
+      "address": "0x3E0A893199f97AF60005943dB82bD98BFCE3E29f",
       "constructorCode": "608060405234801561001057600080fd5b50610bc9806100206000396000f3fe",
       "bodyBytecodeHash": "988bd05506bcfa924be02dcfc20618ea21cc01569bf51a2560eb950c5e75de3d",
       "localBytecodeHash": "41f9bf0d5c5f56b38ebe7a043cf56c3e5987b42ebe4a24b434869a4220d6662f",
@@ -2194,7 +2194,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -2202,7 +2202,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -2210,7 +2210,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -2218,7 +2218,7 @@
           "contract": "SuperOwnerRole",
           "path": "contracts/SuperOwnerRole.sol",
           "label": "multiSig",
-          "astId": 4797,
+          "astId": 4848,
           "type": "t_address",
           "src": "695:31:11"
         },
@@ -2226,7 +2226,7 @@
           "contract": "SuperOwnerRole",
           "path": "contracts/SuperOwnerRole.sol",
           "label": "transferLimitChangeCountdownLength",
-          "astId": 4799,
+          "astId": 4850,
           "type": "t_uint256",
           "src": "732:49:11"
         },
@@ -2234,7 +2234,7 @@
           "contract": "SuperOwnerRole",
           "path": "contracts/SuperOwnerRole.sol",
           "label": "delayedTransferCountdownLength",
-          "astId": 4801,
+          "astId": 4852,
           "type": "t_uint256",
           "src": "787:45:11"
         },
@@ -2242,7 +2242,7 @@
           "contract": "SuperOwnerRole",
           "path": "contracts/SuperOwnerRole.sol",
           "label": "whitelistRemovalActionCountdownLength",
-          "astId": 4803,
+          "astId": 4854,
           "type": "t_uint256",
           "src": "838:52:11"
         },
@@ -2250,7 +2250,7 @@
           "contract": "SuperOwnerRole",
           "path": "contracts/SuperOwnerRole.sol",
           "label": "burningActionCountdownLength",
-          "astId": 4805,
+          "astId": 4856,
           "type": "t_uint256",
           "src": "896:43:11"
         },
@@ -2258,7 +2258,7 @@
           "contract": "SuperOwnerRole",
           "path": "contracts/SuperOwnerRole.sol",
           "label": "masterPropertyValue",
-          "astId": 4807,
+          "astId": 4858,
           "type": "t_address",
           "src": "945:46:11"
         }
@@ -2272,7 +2272,7 @@
       }
     },
     "Whitelist": {
-      "address": "0xEFb91326395BeA2F44458D553E01776641FDAF78",
+      "address": "0x58Fc8901fd93480aBf1B1Db9aCE962F5Bc660D52",
       "constructorCode": "608060405234801561001057600080fd5b506111c9806100206000396000f3fe",
       "bodyBytecodeHash": "fcdb6fc6aecc3d38a0c87b97c176a6a34873bf3b686e3f4b4b30521783261c9e",
       "localBytecodeHash": "dbef7292873151b3b112b6552d21f2b35a357800eedadc990d0129ad48f9c797",
@@ -2302,7 +2302,7 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 5197,
+              "astId": 5248,
               "type": "t_mapping<t_bool>",
               "src": "150:32:13"
             }
@@ -2325,7 +2325,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 5992,
+          "astId": 6043,
           "type": "t_bool",
           "src": "757:24:18"
         },
@@ -2333,7 +2333,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 5994,
+          "astId": 6045,
           "type": "t_bool",
           "src": "876:25:18"
         },
@@ -2341,7 +2341,7 @@
           "contract": "Initializable",
           "path": "zos-lib/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 6043,
+          "astId": 6094,
           "type": "t_array:50<t_uint256>",
           "src": "1891:29:18"
         },
@@ -2349,7 +2349,7 @@
           "contract": "Whitelist",
           "path": "contracts/Whitelist.sol",
           "label": "_whitelisteds",
-          "astId": 4956,
+          "astId": 5007,
           "type": "t_struct<Roles.Role>",
           "src": "368:32:12"
         },
@@ -2357,7 +2357,7 @@
           "contract": "Whitelist",
           "path": "contracts/Whitelist.sol",
           "label": "operationAdminMultiSig",
-          "astId": 4966,
+          "astId": 5017,
           "type": "t_address",
           "src": "577:45:12"
         },
@@ -2365,7 +2365,7 @@
           "contract": "Whitelist",
           "path": "contracts/Whitelist.sol",
           "label": "basicOwnerMultiSig",
-          "astId": 4968,
+          "astId": 5019,
           "type": "t_address",
           "src": "628:41:12"
         },
@@ -2373,7 +2373,7 @@
           "contract": "Whitelist",
           "path": "contracts/Whitelist.sol",
           "label": "masterPropertyValue",
-          "astId": 4970,
+          "astId": 5021,
           "type": "t_address",
           "src": "675:46:12"
         }
@@ -2391,99 +2391,106 @@
   "proxies": {
     "master-property-value/SuperOwnerMultiSigWallet": [
       {
-        "address": "0xA4d83058aF90eDCE5E3aBCa3C6d51aE461e52348",
+        "address": "0x1d7e37BD53Ab128478330c254BCbAd83eA2e6f53",
         "version": "0.1.0",
-        "implementation": "0x267639506101BbF4f91127a5211069f5ab70c518"
+        "implementation": "0xFA2D4e4Ef69E2c1aAB5A77Ce2bA40FE8cDf38E4F"
       }
     ],
     "master-property-value/BasicOwnerMultiSigWallet": [
       {
-        "address": "0x22E141310790C3ffD21Ecf50CbDA9c1A9eFFbB98",
+        "address": "0xA87675D623605b9E7Fd42cED391986bEE51E7C48",
         "version": "0.1.0",
-        "implementation": "0x82c052Bbea74E8721C2cEd1b35C5bAC20F296180"
+        "implementation": "0x9C3c3E020ce13DBF748aE49596b8C1F7CF0aA365"
       }
     ],
     "master-property-value/MintingAdminMultiSigWallet": [
       {
-        "address": "0xDB9ecE89B6A91023Ffb7C1602BB13241313C0491",
+        "address": "0x3bb309D27807202c44B2f00C2EE04Ea5046B5B5d",
         "version": "0.1.0",
-        "implementation": "0xCdE90AE8F681F4e82cE7808F3fDe58f19f5ae4F0"
+        "implementation": "0x995C39ce2751A81dC54B66c0d529de6B37C6277D"
       }
     ],
     "master-property-value/OperationAdminMultiSigWallet": [
       {
-        "address": "0x25629D87f335313AfbDd74dA23E05D27ABB9fC1B",
+        "address": "0x5cb09572daB6e8eEceB3C554aF229D23F55241ed",
         "version": "0.1.0",
-        "implementation": "0x071b1b5B563eb5D1Ff426eAf63a147af56e89d66"
+        "implementation": "0xf344a93dd88629b13cF436f702c0c30dcF6e1A5B"
       }
     ],
     "master-property-value/RedemptionAdminMultiSigWallet": [
       {
-        "address": "0xBbB6f9367C0ca2Ff05b669E74D8346Fd65B28Ca8",
+        "address": "0x8014E07473F23fd8b20BdC035557Fc5924cFd1af",
         "version": "0.1.0",
-        "implementation": "0xFab4A7272CC2E28e4cD97a52e40715B6EC4e5351"
+        "implementation": "0xc43E8F5B4E32F88b97dCCe12e0308592eAf754Eb"
       }
     ],
     "master-property-value/Whitelist": [
       {
-        "address": "0x1692625f879696738c5b7bdFA644dD8135c44619",
+        "address": "0x0E28793083765fEfE23A6b5F5f72b1cFa9e6E190",
         "version": "0.1.0",
-        "implementation": "0xEFb91326395BeA2F44458D553E01776641FDAF78"
+        "implementation": "0x58Fc8901fd93480aBf1B1Db9aCE962F5Bc660D52"
+      }
+    ],
+    "master-property-value/MPVToken": [
+      {
+        "address": "0x37141d984a8277Dcf93d69541DDeC116524e4174",
+        "version": "0.1.0",
+        "implementation": "0x3749Ae9F04172FfFFa8Ab5d5eaAa2289e46bA8aB"
       }
     ],
     "master-property-value/Assets": [
       {
-        "address": "0x3403CDF30fF66EfF48313a9E19F79eF188E1b254",
+        "address": "0x29c258369a6a3c8Ce2867bB950c32bfA2557CaF5",
         "version": "0.1.0",
-        "implementation": "0xC3CCB5EF552A865F2fb4d26C86eE558A71857a32"
+        "implementation": "0x0A9BE2707550b66018c65D57f92494e8e79c18E6"
       }
     ],
     "master-property-value/SuperOwnerRole": [
       {
-        "address": "0x46b0E50E04D4902665DB30900517F84D5c8EDa2E",
+        "address": "0xFD646653BaE290081CE7db2Fab4d1e37D893b398",
         "version": "0.1.0",
-        "implementation": "0xf64E5F0712358B264ff98643b12c940353588c1B"
+        "implementation": "0x3E0A893199f97AF60005943dB82bD98BFCE3E29f"
       }
     ],
     "master-property-value/BasicOwnerRole": [
       {
-        "address": "0xF6ae1A8bD48307609353388fFB0ab91dC7cc28C1",
+        "address": "0x9Aaf0ABb11662B1A78F31D2c3018CC97B3550859",
         "version": "0.1.0",
-        "implementation": "0x15118cf0f444497C6807fa8e6168dD02672F13bD"
+        "implementation": "0xF6cd4921E3e685C31c30B8907f4e7e7c21AC725B"
       }
     ],
     "master-property-value/MintingAdminRole": [
       {
-        "address": "0x7401ABEf1a526d87cFdca630dA30fBd443EfA653",
+        "address": "0xa1F3936Ec0a31E3352f415F6AA3BB5b9ff0f781B",
         "version": "0.1.0",
-        "implementation": "0x5B08d5D8F341FD7659eB14F23Ae97214FcdBefe6"
+        "implementation": "0xCDB465C8e087f980f3087DDe6422046b5F818e95"
       }
     ],
     "master-property-value/MasterPropertyValue": [
       {
-        "address": "0x39033d82B422eAF9DF2e9B53799586809aCA671B",
+        "address": "0x889075b886B4aC2b776541752c766ECc1d0129a4",
         "version": "0.1.0",
-        "implementation": "0xF68f33c1C8AC88106234302D482019adcFf11e47"
+        "implementation": "0x70AB7A94269adc5ff3e578C3e30237Bcb752EF59"
       }
     ],
     "master-property-value/Pausable": [
       {
-        "address": "0x2F4c905BC399874407C91Ab416a6Ab2D05589672",
+        "address": "0xac2bDF95569d1c04b08fe1E2f7f6b63923A704Fc",
         "version": "0.1.0",
-        "implementation": "0xfFC7EA6Bc1Ea786e3f10206Bf9926FDA01041F13"
+        "implementation": "0xBB91b6F5F31eF187De1DA88196F56c03188876dF"
       }
     ],
     "master-property-value/RedemptionAdminRole": [
       {
-        "address": "0x4F2e7A845cDbe0a6957C30D9051e453dA1838261",
+        "address": "0xF575cC4DdA4d35c78de884f5749c8B64e9e03A7D",
         "version": "0.1.0",
-        "implementation": "0x798F6e1A725230870Fc358AADC3AC1B5650dd58A"
+        "implementation": "0x1dd310165fb9552b2C4511Ac150f0A35fA9aC0C5"
       }
     ]
   },
   "zosversion": "2.2",
   "version": "0.1.0",
   "proxyAdmin": {
-    "address": "0x5a194D25188bC96F183c4Bd4d60038b2c1dC5244"
+    "address": "0x35dFaE44BB3407b79A33bdD36cAE85842Eb055f8"
   }
 }

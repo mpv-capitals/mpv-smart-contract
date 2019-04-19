@@ -53,8 +53,8 @@ contract MintingAdminRole is Initializable {
         _;
     }
 
-    modifier onlyBasicOwnerRole() {
-        require(address(basicOwnerRole) == msg.sender);
+    modifier onlyBasicOwner() {
+        require(IMultiSigWallet(basicOwnerRole.multiSig()).hasOwner(msg.sender));
         _;
     }
 
@@ -208,7 +208,7 @@ contract MintingAdminRole is Initializable {
     /// to be sent the by the basic owner role contract.
     function cancelMinting()
     public
-    onlyBasicOwnerRole
+    onlyBasicOwner
     mpvNotPaused
     {
         require(mintingCountdownStart > 0);

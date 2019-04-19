@@ -199,14 +199,21 @@ async function setAdmins() {
   let operationAdminMultiSig = await getInstance('OperationAdminMultiSigWallet', true)
   let mintingAdminMultiSig = await getInstance('MintingAdminMultiSigWallet', true)
   let mintingAdminRole = await getInstance('MintingAdminRole', true)
-  let assets = await getInstance('Assets')
+  let assets = await getInstance('Assets', true)
   let redemptionAdminMultiSig = await getInstance('RedemptionAdminMultiSigWallet', true)
   let mpv  = await getInstance('MasterPropertyValue', true)
 
   try {
     //const admin = await superOwnerMultiSig.admin.call({from: senderAddress})
     //console.log('admin', admin)
+    //const w = await assets.basicOwnerMultiSig.call()
+    //console.log(w)
     console.log(0)
+    await assets.updateMintingAdminRole(mintingAdminRole.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(0.1)
     await superOwnerMultiSig.updateAdmin(superOwnerMultiSig.address, {
       from: senderAddress,
       gas: 7712383,

@@ -48,4 +48,6 @@ interface IMultiSigWallet {
 
     function getConfirmationCount(uint transactionId) external view returns (uint count);
 
+    function isExecuted(uint transactionId) external view returns (bool);
+
 }

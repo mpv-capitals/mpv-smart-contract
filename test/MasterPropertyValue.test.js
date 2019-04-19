@@ -93,8 +93,7 @@ async function initContracts (accounts) {
   )
 
   await basicOwnerRole.initialize(
-    basicOwnerMultiSig.address,
-    mintingAdminRole.address
+    basicOwnerMultiSig.address
   )
 
   await mintingAdminRole.initialize(
@@ -987,11 +986,11 @@ contract('MasterPropertyValue', accounts => {
       countdownStart.toString().should.not.equal('0')
 
       const notABasicOwner = accounts[3]
-      await shouldFail(basicOwnerRole.cancelMinting({
+      await shouldFail(mintingAdminRole.cancelMinting({
         from: notABasicOwner,
       }))
 
-      await basicOwnerRole.cancelMinting({
+      await mintingAdminRole.cancelMinting({
         from: defaultBasicOwner,
       })
 

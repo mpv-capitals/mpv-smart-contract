@@ -29,21 +29,9 @@ contract BasicOwnerRole is Initializable {
      */
     /// @dev Initialize function sets initial storage values.
     /// @param _multiSig Address of the basic owner multisig contract.
-    /// @param _mintingAdminRole Address of the minting admin role contract.
     function initialize(
-        IMultiSigWallet _multiSig,
-        MintingAdminRole _mintingAdminRole
+        IMultiSigWallet _multiSig
     ) public initializer {
         multiSig = _multiSig;
-        mintingAdminRole = _mintingAdminRole;
-    }
-
-    /// @dev Cancels the minting of new tokens. Transaction has to be sent by a
-    /// basic owner.
-    function cancelMinting()
-        public
-        onlyOwner
-    {
-        mintingAdminRole.cancelMinting();
     }
 }
