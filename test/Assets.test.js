@@ -45,6 +45,7 @@ contract('Assets', accounts => {
     redemptionAdminRole.initialize(
       redemptionAdminMultiSig.address,
       basicOwnerMultiSig.address,
+      accounts[5], // superOwnerMultiSig
       assets.address,
       mpvToken.address,
       masterPropertyValue.address

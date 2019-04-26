@@ -15,16 +15,20 @@ build:
 start:
 	@ganache-cli --deterministic -a 10 --gasLimit=7712383
 
-.PHONY: deploy
-deploy:
+.PHONY: push
+push:
 	@npx zos push --network=$(network)
+
+.PHONY: deploy
+deploy: push
+	@./scripts/deploy.sh -n $(network)
+	@node scripts/deploy.js
 
 .PHONY: deploy/reset
 deploy/reset:
 	@rm -rf zos.dev*.json
-	@npx zos push --network=$(network)
-	@. scripts/deploy.sh
-	@node scripts/deploy.js
+	@rm -rf zos.rinkeby.json
+	$(MAKE) deploy
 
 .PHONY: deploy/deps
 deploy/deps:

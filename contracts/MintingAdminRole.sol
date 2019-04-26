@@ -220,7 +220,7 @@ contract MintingAdminRole is Initializable {
     /// @dev Set the receiver wallet of newly minting tokens. Transaction has
     /// to be sent by the basic owner multisig contract.
     /// @param newWallet Address of new wallet.
-    function setMintingReceiverWallet(
+    function updateMintingReceiverWallet(
         address newWallet
     )
     public

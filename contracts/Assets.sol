@@ -58,6 +58,7 @@ contract Assets is Initializable {
     event RedemptionRejected(uint256 assetId, address account, uint256 refundAmount);
     event RedemptionExecuted(uint256 assetId, address account, uint256 assetValue);
     event MintingAdminRoleUpdated(address indexed sender, address indexed addr);
+    event RedemptionAdminRoleUpdated(address indexed sender, address indexed addr);
 
     /*
      *  Storage
@@ -205,6 +206,17 @@ contract Assets is Initializable {
     {
         mintingAdminRole = _mintingAdminRole;
         emit MintingAdminRoleUpdated(msg.sender, _mintingAdminRole);
+    }
+
+    function updateRedemptionAdminRole(
+        address _redemptionAdminRole
+    )
+    public
+    onlyBasicOwner
+    mpvNotPaused
+    {
+        redemptionAdminRole = RedemptionAdminRole(_redemptionAdminRole);
+        emit RedemptionAdminRoleUpdated(msg.sender, _redemptionAdminRole);
     }
 
     /// @dev Set the redemption fee amount. Transaction has to be sent by

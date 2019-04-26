@@ -200,8 +200,11 @@ async function setAdmins() {
   let mintingAdminMultiSig = await getInstance('MintingAdminMultiSigWallet', true)
   let mintingAdminRole = await getInstance('MintingAdminRole', true)
   let assets = await getInstance('Assets', true)
+  let redemptionAdminRole = await getInstance('RedemptionAdminRole', true)
   let redemptionAdminMultiSig = await getInstance('RedemptionAdminMultiSigWallet', true)
   let mpv  = await getInstance('MasterPropertyValue', true)
+  let mpvToken  = await getInstance('MPVToken', true)
+  let whitelist = await getInstance('Whitelist', true)
 
   try {
     //const admin = await superOwnerMultiSig.admin.call({from: senderAddress})
@@ -213,7 +216,22 @@ async function setAdmins() {
       from: senderAddress,
       gas: 7712383,
     })
+    console.log(0.01)
+    await assets.updateRedemptionAdminRole(redemptionAdminRole.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
     console.log(0.1)
+    await mpvToken.updateMintingAdmin(mintingAdminRole.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(0.2)
+    await mpvToken.updateRedemptionAdmin(redemptionAdminRole.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(0.3)
     await superOwnerMultiSig.updateAdmin(superOwnerMultiSig.address, {
       from: senderAddress,
       gas: 7712383,
@@ -254,6 +272,15 @@ async function setAdmins() {
       gas: 7712383,
     })
     console.log(8)
+    await whitelist.addWhitelisted(senderAddress, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    await whitelist.addWhitelisted(assets.address, {
+      from: senderAddress,
+      gas: 7712383,
+    })
+    console.log(10)
   } catch(err) {
     console.error(err)
     console.trace(err)

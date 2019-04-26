@@ -24,11 +24,14 @@ contract RedemptionAdminRole is Initializable {
 
     event RedemptionRejected(address indexed sender, uint256 indexed assetId);
 
+    event BurningActionCountdownUpdated(address indexed sender, uint256 indexed countdown);
+
     /*
      *  Storage
      */
     IMultiSigWallet public multiSig;
     IMultiSigWallet public basicOwnerMultiSig;
+    address public superOwnerMultiSig;
     Assets public assets;
     MPVToken public mpvToken;
     uint256 public burningActionCountdownLength;
@@ -50,6 +53,12 @@ contract RedemptionAdminRole is Initializable {
         _;
     }
 
+    /// @dev Requires the sender to be an owner of the SuperOwnerMultiSig
+    modifier onlySuperOwnerMultiSig() {
+        require(superOwnerMultiSig == (msg.sender));
+        _;
+    }
+
     /// @dev Requires that the MPV contract is not paused.
     modifier mpvNotPaused() {
         require(masterPropertyValue.paused() == false);
@@ -65,12 +74,14 @@ contract RedemptionAdminRole is Initializable {
     function initialize(
         IMultiSigWallet _multiSig,
         IMultiSigWallet _basicOwnerMultiSig,
+        address _superOwnerMultiSig,
         Assets _assets,
         MPVToken _mpvToken,
         MasterPropertyValue _masterPropertyValue
     ) public initializer {
         multiSig = _multiSig;
         basicOwnerMultiSig = _basicOwnerMultiSig;
+        superOwnerMultiSig = _superOwnerMultiSig;
         assets = _assets;
         mpvToken = _mpvToken;
         masterPropertyValue = _masterPropertyValue;
@@ -125,5 +136,19 @@ contract RedemptionAdminRole is Initializable {
         (uint256 amount, ,) = assets.redemptionTokenLocks(assetId);
         mpvToken.burn(address(assets), amount);
         assets.executeRedemption(assetId);
+    }
+
+    /// @dev Set the countdown length for the action of burning of tokens.
+    /// Transaction has to be sent by the super owner multisig.
+    /// @param newCountdown New countdown length.
+    function updateBurningActionCountdownLength(
+        uint256 newCountdown
+    )
+    public
+    onlySuperOwnerMultiSig
+    mpvNotPaused
+    {
+        burningActionCountdownLength = newCountdown;
+        emit BurningActionCountdownUpdated(msg.sender, newCountdown);
     }
 }

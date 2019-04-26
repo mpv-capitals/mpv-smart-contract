@@ -74,26 +74,26 @@ module.exports = {
     kovan: {
       provider: createProvider('https://kovan.infura.io'),
       network_id: 42, // eslint-disable-line camelcase
-      gas: 4712383,
+      gas: 7712383,
       gasPrice: 20000000000
     },
     rinkeby: {
       provider: createProvider('https://rinkeby.infura.io'),
       network_id: 4, // eslint-disable-line camelcase
-      gas: 4712383,
+      gas: 7712383,
       gasPrice: 20000000000
     },
     ropsten: {
       provider: createProvider('https://ropsten.infura.io'),
       network_id: 3, // eslint-disable-line camelcase
-      gas: 4712383,
+      gas: 7712383,
       gasPrice: 20000000000
     },
     mainnet: {
       provider: createProvider('https://mainnet.infura.io'),
       network_id: 1, // eslint-disable-line camelcase
-      gas: 4500000,
-      gasPrice: 10000000000
+      gas: 7712383,
+      gasPrice: 20000000000
     }
 
     // Useful for testing. The `development` name is special - truffle uses it by default

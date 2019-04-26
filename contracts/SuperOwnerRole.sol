@@ -16,7 +16,6 @@ contract SuperOwnerRole is Initializable {
     event TransferLimitChangeCountdownUpdated(address indexed sender, uint256 indexed countdown);
     event DelayTransferCountdownUpdated(address indexed sender, uint256 indexed countdown);
     event WhitelistRemovalCountdownUpdated(address indexed sender, uint256 indexed countdown);
-    event BurningActionCountdownUpdated(address indexed sender, uint256 indexed countdown);
 
     /*
      *  Storage
@@ -25,7 +24,6 @@ contract SuperOwnerRole is Initializable {
     uint256 public transferLimitChangeCountdownLength;
     uint256 public delayedTransferCountdownLength;
     uint256 public whitelistRemovalActionCountdownLength;
-    uint256 public burningActionCountdownLength;
     MasterPropertyValue public masterPropertyValue;
 
     /*
@@ -99,19 +97,5 @@ contract SuperOwnerRole is Initializable {
     {
         whitelistRemovalActionCountdownLength = newCountdown;
         emit WhitelistRemovalCountdownUpdated(msg.sender, newCountdown);
-    }
-
-    /// @dev Set the countdown length for the action of burning of tokens.
-    /// Transaction has to be sent by the super owner multisig.
-    /// @param newCountdown New countdown length.
-    function updateBurningActionCountdownLength(
-        uint256 newCountdown
-    )
-    public
-    onlyMultiSig
-    mpvNotPaused
-    {
-        burningActionCountdownLength = newCountdown;
-        emit BurningActionCountdownUpdated(msg.sender, newCountdown);
     }
 }
