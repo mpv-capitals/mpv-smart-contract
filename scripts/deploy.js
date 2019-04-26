@@ -1,3 +1,4 @@
+require('dotenv').config()
 const util = require('util')
 const Web3 = require('web3')
 const exec = util.promisify(require('child_process').exec)
@@ -5,6 +6,9 @@ const { encodeCall } = require('zos-lib')
 const contract = require('truffle-contract')
 const fs = require('fs')
 const glob = require('glob')
+const HDWalletProvider = require('truffle-hdwallet-provider')
+const PrivateKeyProvider = require('truffle-privatekey-provider')
+
 const zosJson = require('../zos.json')
 
 const json = {
@@ -24,11 +28,24 @@ const json = {
   Pausable: getJson('Pausable')
 }
 
-const provider = new Web3.providers.HttpProvider('http://localhost:8545')
+let provider = new Web3.providers.HttpProvider('http://localhost:8545')
+
+let network = process.argv[2]
+
+if (network && network != 'development') {
+  const url = `https://${network}.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed`
+  let key = process.env.PRIVATE_KEY
+  if (process.env.MNEMONIC) {
+    key = process.env.MNEMONIC
+  }
+
+  provider = new HDWalletProvider(key, url)
+}
+
 const web3 = new Web3(provider)
 
 function getProxyAddress(name) {
-  const files = glob.sync('zos.dev-*.json')
+  const files = glob.sync('zos.*.json')
   const zosDevJson = JSON.parse(fs.readFileSync(files[0]))
   const zosProxyAddress = zosDevJson.proxies[`master-property-value/${name}`][0].address
   return zosProxyAddress
@@ -47,7 +64,7 @@ async function getInstance(name, proxy) {
 }
 
 function getAddress(name) {
-  const files = glob.sync('zos.dev-*.json')
+  const files = glob.sync('zos.*.json')
   const zosDevJson = JSON.parse(fs.readFileSync(files[0]))
   console.log(name)
   return zosDevJson.contracts[name].address
@@ -211,74 +228,102 @@ async function setAdmins() {
     //console.log('admin', admin)
     //const w = await assets.basicOwnerMultiSig.call()
     //console.log(w)
-    console.log(0)
+    console.log('assets.updateMintingAdminRole')
     await assets.updateMintingAdminRole(mintingAdminRole.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(0.01)
+
+    console.log('assets.updateRedemptionAdminRole')
     await assets.updateRedemptionAdminRole(redemptionAdminRole.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(0.1)
+
+    console.log('mpvToken.updateMintingAdmin')
     await mpvToken.updateMintingAdmin(mintingAdminRole.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(0.2)
+
+    console.log('mpvToken.updateRedemptionAdmin')
     await mpvToken.updateRedemptionAdmin(redemptionAdminRole.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(0.3)
+
+    console.log('superOwnerMultiSig.updateAdmin')
     await superOwnerMultiSig.updateAdmin(superOwnerMultiSig.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(1)
+
+    console.log('basicOwnerMultiSig.updateAdmin')
     await basicOwnerMultiSig.updateAdmin(superOwnerMultiSig.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(2)
+
+    console.log('operationAdminMultiSig.updateAdmin')
     await operationAdminMultiSig.updateAdmin(basicOwnerMultiSig.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(3)
+
+    console.log('mintingAdminMultiSig.updateTransactor')
     await mintingAdminMultiSig.updateTransactor(mintingAdminRole.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(4)
+
+    console.log('mintingAdminMultiSig.updateTransactor')
     await mintingAdminMultiSig.updateAdmin(basicOwnerMultiSig.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(5)
+
+    console.log('redemptionAdminMultiSig.updateTransactor')
     await redemptionAdminMultiSig.updateTransactor(assets.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(6)
+
+    console.log('redemptionAdminMultiSig.updateAdmin')
     await redemptionAdminMultiSig.updateAdmin(basicOwnerMultiSig.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(7)
+
+    console.log('mpv.updatePausableAdmin')
     await mpv.updatePausableAdmin(superOwnerMultiSig.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
-    console.log(8)
+
+    console.log('whitelist.addWhitelisted')
     await whitelist.addWhitelisted(senderAddress, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
+
+    console.log('whitelist.addWhitelisted')
     await whitelist.addWhitelisted(assets.address, {
       from: senderAddress,
-      gas: 7712383,
+      gas: 5712383,
+      gasPrice: 20000000000
     })
     console.log(10)
   } catch(err) {
@@ -288,7 +333,9 @@ async function setAdmins() {
 }
 
 async function main() {
+  // commented out because it's done in deploy.sh
   //await initializeContracts()
+
   await setAdmins()
   process.exit(0)
 }

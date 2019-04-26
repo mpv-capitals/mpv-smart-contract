@@ -34,7 +34,7 @@ shift "$(($OPTIND -1))"
 ZosFile="$fvalue"
 if [ -z "$fvalue" ]; then
   # get zos file if exists
-  ZosFile=$(ls | grep zos.+.*.json | tr -d '[:cntrl:]'| perl -pe 's/\[[0-9;]*[mGKF]//g')
+  ZosFile=$(ls | grep zos..*.json | tr -d '[:cntrl:]'| perl -pe 's/\[[0-9;]*[mGKF]//g')
 fi
 
 Network="$nvalue"

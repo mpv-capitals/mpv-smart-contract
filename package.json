@@ -16,7 +16,6 @@
     "ethereum-input-data-decoder": "^0.1.1"
   },
   "devDependencies": {
-    "truffle-contract": "^4.0.11",
     "chai": "^4.2.0",
     "docusaurus": "^1.8.0",
     "dotenv": "^6.2.0",
@@ -36,7 +35,8 @@
     "solidity-coverage": "https://github.com:rotcivegaf/solidity-coverage.git#5875f5b7bc74d447f3312c9c0e9fc7814b482477",
     "solidity-docgen": "^0.1.1",
     "standard": "^12.0.1",
-    "truffle": "^5.0.4",
+    "truffle": "^5.0.14",
+    "truffle-contract": "^4.0.11",
     "truffle-hdwallet-provider": "^1.0.5",
     "truffle-privatekey-provider": "^1.1.0",
     "web3-providers-ws": "^1.0.0-beta.37",

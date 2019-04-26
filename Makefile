@@ -22,12 +22,11 @@ push:
 .PHONY: deploy
 deploy: push
 	@./scripts/deploy.sh -n $(network)
-	@node scripts/deploy.js
+	@node scripts/deploy.js $(network)
 
 .PHONY: deploy/reset
 deploy/reset:
 	@rm -rf zos.dev*.json
-	@rm -rf zos.rinkeby.json
 	$(MAKE) deploy
 
 .PHONY: deploy/deps
