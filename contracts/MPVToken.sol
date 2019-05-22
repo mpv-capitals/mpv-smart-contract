@@ -1,5 +1,6 @@
 pragma solidity ^0.5.1;
 
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-eth/contracts/token/ERC20/ERC20Detailed.sol";
@@ -12,10 +13,11 @@ import "./MasterPropertyValue.sol";
  * @dev The MPV Token contract.
  */
 contract MPVToken is Initializable, ERC20, ERC20Detailed {
+    using SafeMath for uint256;
 
-  /*
-   *  Events
-   */
+    /*
+     *  Events
+     */
     event DailyLimitUpdatePending(address account, uint256 currentDailyLimit, uint256 updatedDailyLimit);
     event DailyLimitUpdateCancelled(address account, uint256 dailyLimit);
     event DailyLimitUpdated(address indexed sender, uint256 indexed dailyLimit);
@@ -228,7 +230,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function cancelDailyLimitUpdate() public {
         DailyLimitInfo storage limitInfo = dailyLimits[msg.sender];
 
-        require(limitInfo.countdownStart + updateDailyLimitCountdownLength < now);
+        require(limitInfo.countdownStart.add(updateDailyLimitCountdownLength) < now);
         limitInfo.countdownStart = 0;
         limitInfo.updatedDailyLimit = 0;
         emit DailyLimitUpdateCancelled(msg.sender, limitInfo.dailyLimit);
@@ -245,7 +247,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mpvNotPaused
     returns (bool)
     {
-        dailyLimits[msg.sender].spentToday += value;
+        dailyLimits[msg.sender].spentToday = dailyLimits[msg.sender].spentToday.add(value);
         return super.transfer(to, value);
     }
 
@@ -261,7 +263,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     enforceDailyLimit(from, value)
     returns (bool)
     {
-        dailyLimits[from].spentToday += value;
+        dailyLimits[from].spentToday = dailyLimits[from].spentToday.add(value);
         return super.transferFrom(from, to, value);
     }
 
@@ -456,7 +458,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
 
         if (
             limitInfo.countdownStart != 0 &&
-            now > limitInfo.countdownStart + updateDailyLimitCountdownLength
+            now > limitInfo.countdownStart.add(updateDailyLimitCountdownLength)
         ) {
             limitInfo.countdownStart = 0;
             limitInfo.dailyLimit = limitInfo.updatedDailyLimit;
@@ -474,7 +476,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         return (
             // 0 == no daily limit
             limitInfo.dailyLimit == 0 ||
-            limitInfo.spentToday + amount <= limitInfo.dailyLimit
+            limitInfo.spentToday.add(amount) <= limitInfo.dailyLimit
         );
     }
 }

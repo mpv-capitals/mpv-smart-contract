@@ -1,6 +1,7 @@
 pragma solidity ^0.5.1;
 pragma experimental ABIEncoderV2;
 
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "zos-lib/contracts/Initializable.sol";
 import "./MasterPropertyValue.sol";
 import "./IMultiSigWallet.sol";
@@ -15,6 +16,8 @@ import "./BasicOwnerRole.sol";
  * @dev Minting admin role contract.
  */
 contract MintingAdminRole is Initializable {
+    using SafeMath for uint256;
+
     /*
      *  Events
      */
@@ -182,7 +185,7 @@ contract MintingAdminRole is Initializable {
     function refreshPendingAssetsStatus()
     public
     {
-        require(now >= mintingCountdownStart + mintingActionCountdownLength);
+        require(now >= mintingCountdownStart.add(mintingActionCountdownLength));
         _enlistPendingAssets();
         emit RefreshPendingAssetsStatus(msg.sender);
     }
