@@ -93,6 +93,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
     public
     onlyAdmin
     {
+        require(_admin != address(0));
         admin = _admin;
         emit AdminUpdated(msg.sender, _admin);
     }
@@ -104,6 +105,7 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
     public
     onlyAdmin
     {
+        require(_transactor != address(0));
         transactor = _transactor;
         emit TransactorUpdated(msg.sender, _transactor);
     }
