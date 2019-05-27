@@ -18,11 +18,11 @@ contract RedemptionAdminRole is Initializable {
      */
     event BurningCountdownStarted(
             address indexed sender,
-            uint256 indexed assetId,
+            bytes32 indexed assetId,
             uint256 indexed tokens
     );
 
-    event RedemptionRejected(address indexed sender, uint256 indexed assetId);
+    event RedemptionRejected(address indexed sender, bytes32 indexed assetId);
 
     event BurningActionCountdownUpdated(address indexed sender, uint256 indexed countdown);
 
@@ -35,7 +35,7 @@ contract RedemptionAdminRole is Initializable {
     Assets public assets;
     MPVToken public mpvToken;
     uint256 public burningActionCountdownLength;
-    mapping(uint256 => uint256) public redemptionCountdowns;
+    mapping(bytes32 => uint256) public redemptionCountdowns;
     MasterPropertyValue public masterPropertyValue;
 
     /*
@@ -91,7 +91,7 @@ contract RedemptionAdminRole is Initializable {
     /// @dev Start the countdown to initiate burning of tokens. Transaction has
     /// to be sent by the redemption admin multisig.
     /// @param assetId Id of asset being redeemed.
-    function startBurningCountdown(uint256 assetId)
+    function startBurningCountdown(bytes32 assetId)
         public
         onlyRedemptionAdminMultiSig
         mpvNotPaused
@@ -113,7 +113,7 @@ contract RedemptionAdminRole is Initializable {
     /// @dev Reject a redemption request. Transaction has to be sent by
     /// a redemption admin.
     /// @param assetId Id of asset being redeemed.
-    function rejectRedemption(uint256 assetId)
+    function rejectRedemption(bytes32 assetId)
         public
         onlyRedemptionAdmin
         mpvNotPaused
@@ -122,7 +122,7 @@ contract RedemptionAdminRole is Initializable {
         emit RedemptionRejected(msg.sender, assetId);
     }
 
-    function executeRedemption(uint256 assetId)
+    function executeRedemption(bytes32 assetId)
         public
     {
         require(

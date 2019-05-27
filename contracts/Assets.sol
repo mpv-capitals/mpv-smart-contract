@@ -28,21 +28,21 @@ contract Assets is Initializable {
 
     event AssetAdded(
         address indexed sender,
-        uint256 indexed assetId,
+        bytes32 indexed assetId,
         Status indexed status,
         bytes32 notarizationId,
         uint256 tokens,
         uint256 timstamp
     );
 
-    event PendingAssetAdded(address indexed sender, uint256 indexed assetId);
-    event PendingAssetRemoved(address indexed sender, uint256 indexed assetId);
+    event PendingAssetAdded(address indexed sender, bytes32 indexed assetId);
+    event PendingAssetRemoved(address indexed sender, bytes32 indexed assetId);
     event PendingAssetsCleared(address indexed sender);
-    event AssetMarkedReserved(address indexed sender, uint256 indexed assetId);
-    event AssetMarkedEnlisted(address indexed sender, uint256 indexed assetId);
+    event AssetMarkedReserved(address indexed sender, bytes32 indexed assetId);
+    event AssetMarkedEnlisted(address indexed sender, bytes32 indexed assetId);
 
     event RedemptionRequested(
-        uint256 assetId,
+        bytes32 assetId,
         address account,
         uint256 burnAmount,
         uint256 redemptionFee,
@@ -50,21 +50,21 @@ contract Assets is Initializable {
     );
 
     event RedemptionCancelled(
-        uint256 assetId,
+        bytes32 assetId,
         address account,
         uint256 refundAmount
     );
 
-    event RedemptionRejected(uint256 assetId, address account, uint256 refundAmount);
-    event RedemptionExecuted(uint256 assetId, address account, uint256 assetValue);
+    event RedemptionRejected(bytes32 assetId, address account, uint256 refundAmount);
+    event RedemptionExecuted(bytes32 assetId, address account, uint256 assetValue);
     event MintingAdminRoleUpdated(address indexed sender, address indexed addr);
     event RedemptionAdminRoleUpdated(address indexed sender, address indexed addr);
 
     /*
      *  Storage
      */
-    mapping (uint256 => Asset) public assets;
-    mapping (uint256 => RedemptionTokenLock) public redemptionTokenLocks;
+    mapping (bytes32 => Asset) public assets;
+    mapping (bytes32 => RedemptionTokenLock) public redemptionTokenLocks;
     Asset[] public pendingAssets;
     uint256 public pendingAssetsTransactionId;
     uint256 public redemptionFee;
@@ -81,7 +81,7 @@ contract Assets is Initializable {
     /// @dev Asset is the structure for an asset.
     struct Asset {
         /// @dev id is asset id.
-        uint256 id;
+        bytes32 id;
 
         /// @dev status is current state asset is in.
         Status status;
@@ -267,8 +267,8 @@ contract Assets is Initializable {
     /// @dev Get an asset given the asset id. Transaction can be called by anyone.
     /// @param id Id of asset.
     /// @return Returns the asset parameters.
-    function get(uint256 assetId) public returns (
-        uint256 id,
+    function get(bytes32 assetId) public returns (
+        bytes32 id,
         Status status,
         bytes32 notarizationId,
         uint256 tokens,
@@ -284,7 +284,7 @@ contract Assets is Initializable {
         timestamp = timestamp;
     }
 
-    function getRedemptionTokenLock(uint256 assetId) public returns (
+    function getRedemptionTokenLock(bytes32 assetId) public returns (
         uint256 amount,
         address account,
         uint256 transactionId
@@ -342,7 +342,7 @@ contract Assets is Initializable {
     /// @dev Remove an asset from the list of pending assets. Transaction has
     /// to be sent by the minting admin role contract.
     /// @param assetId Id of asset to remove.
-    function removePendingAsset(uint256 assetId)
+    function removePendingAsset(bytes32 assetId)
     public
     onlyMintingAdminRole
     mpvNotPaused
@@ -368,7 +368,7 @@ contract Assets is Initializable {
     /// fee is non-refundable. Transaction can be sent by anyone.
     /// @param assetId Id of asset to redeem.
     /// @return Returns transaction ID.
-    function requestRedemption(uint256 assetId)
+    function requestRedemption(bytes32 assetId)
     public
     mpvNotPaused
     returns (uint256 transactionId)
@@ -381,7 +381,7 @@ contract Assets is Initializable {
     /// for each asset. The redemption fee is non-refundable. Transaction can
     /// be sent by anyone.
     /// @param assetIds Ids of assets to redeem.
-    function requestRedemptions(uint256[] memory assetIds)
+    function requestRedemptions(bytes32[] memory assetIds)
     public
     {
         for (uint256 i = 0; i < assetIds.length; i++) {
@@ -392,7 +392,7 @@ contract Assets is Initializable {
     /// @dev Cancel an asset redemption request. Locked tokens will be unlocked.
     /// Transaction has be sent by the redeemer of the asset.
     /// @param assetId Id of asset to cancel redemption of.
-    function cancelRedemption(uint256 assetId)
+    function cancelRedemption(bytes32 assetId)
     public
     mpvNotPaused {
         Asset storage asset = assets[assetId];
@@ -408,7 +408,7 @@ contract Assets is Initializable {
     /// @dev Reject an asset redemption request. Locked tokens will be unlocked.
     /// Transaction has be sent by a redemptionAdminRole owner.
     /// @param assetId Id of asset to cancel redemption of.
-    function rejectRedemption(uint256 assetId)
+    function rejectRedemption(bytes32 assetId)
     public
     onlyRedemptionAdminRole
     mpvNotPaused {
@@ -420,7 +420,7 @@ contract Assets is Initializable {
         _revokeRedemption(assetId);
     }
 
-    function executeRedemption(uint256 assetId)
+    function executeRedemption(bytes32 assetId)
     public
     onlyRedemptionAdminRole
     {
@@ -436,7 +436,7 @@ contract Assets is Initializable {
     /// @dev Sets a list of enlisted assets as reserved. Transaction has be sent by
     /// the basic owner multisig.
     /// @param assetIds List of asset Ids to set as reserved.
-    function setReserved(uint256[] memory assetIds)
+    function setReserved(bytes32[] memory assetIds)
     public
     onlyBasicOwnerMultiSig
     mpvNotPaused
@@ -449,7 +449,7 @@ contract Assets is Initializable {
     /// @dev Sets a list of reserved assets as enlisted. Transaction has be sent by
     /// the basic owner multisig.
     /// @param assetIds List of asset Ids to set as reserved.
-    function setEnlisted(uint256[] memory assetIds)
+    function setEnlisted(bytes32[] memory assetIds)
     public
     onlyBasicOwnerMultiSig
     mpvNotPaused
@@ -476,7 +476,7 @@ contract Assets is Initializable {
      */
     /// @dev Sets an enlisted asset as reserved.
     /// @param assetId Id of asset.
-    function _setReserved(uint256 assetId)
+    function _setReserved(bytes32 assetId)
     internal
     {
         require(assets[assetId].status == Status.Enlisted);
@@ -488,7 +488,7 @@ contract Assets is Initializable {
 
     /// @dev Sets a reserved asset as enlisted.
     /// @param assetId Id of asset.
-    function _setEnlisted(uint256 assetId)
+    function _setEnlisted(bytes32 assetId)
     internal
     {
         require(assets[assetId].status == Status.Reserved);
@@ -498,7 +498,7 @@ contract Assets is Initializable {
         emit AssetMarkedEnlisted(msg.sender, assetId);
     }
 
-    function _requestRedemption(uint256 assetId)
+    function _requestRedemption(bytes32 assetId)
     internal
     returns (uint256 transactionId)
     {
@@ -527,7 +527,7 @@ contract Assets is Initializable {
 
     /// @dev sets asset.status back to Enlisted and refunds tokens to redeemer
     /// @param assetId Id of asset.
-    function _revokeRedemption(uint256 assetId)
+    function _revokeRedemption(bytes32 assetId)
     internal
     {
         Asset storage asset = assets[assetId];

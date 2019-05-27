@@ -25,9 +25,9 @@ contract MintingAdminRole is Initializable {
     event MintingReceiverWalletUpdated(address indexed sender, address indexed wallet);
     event MintingCountdownStarted(address indexed sender);
     event RefreshPendingAssetsStatus(address indexed sender);
-    event PendingAssetAdded(address indexed sender, uint256 indexed assetId);
-    event PendingAssetRemoved(address indexed sender, uint256 indexed assetId);
-    event AssetEnlisted(address indexed sender, uint256 indexed assetId);
+    event PendingAssetAdded(address indexed sender, bytes32 indexed assetId);
+    event PendingAssetRemoved(address indexed sender, bytes32 indexed assetId);
+    event AssetEnlisted(address indexed sender, bytes32 indexed assetId);
 
     /*
      *  Storage
@@ -194,7 +194,7 @@ contract MintingAdminRole is Initializable {
     /// resets all confirmations. Transaction has to be sent by a minting admin.
     /// @param assetId Id of asset to remove from the pending list.
     /// @return Returns transaction ID.
-    function removePendingAsset(uint256 assetId)
+    function removePendingAsset(bytes32 assetId)
     public
     onlyMintingAdmin
     mpvNotPaused

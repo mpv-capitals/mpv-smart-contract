@@ -15,6 +15,8 @@ const BasicProtectorRole = artifacts.require('BasicProtectorRole')
 const MintingAdminRole = artifacts.require('MintingAdminRole')
 const RedemptionAdminRole = artifacts.require('RedemptionAdminRole')
 
+const { fromAscii } = web3.utils
+
 let mpv = null
 let mpvToken = null
 let assets = null
@@ -764,7 +766,7 @@ contract('MasterPropertyValue', accounts => {
 
     it('add pending asset and start countdown', async () => {
       let asset = {
-        id: 1,
+        id: fromAscii('1'),
         notarizationId: '0xabcd',
         tokens: 100,
         status: 0,
@@ -818,13 +820,13 @@ contract('MasterPropertyValue', accounts => {
       })
       pendingAssetsCount.toNumber().should.equal(0)
 
-      asset = await assets.get.call(1)
+      asset = await assets.get.call(fromAscii('1'))
       asset.tokens.toNumber().should.equal(100)
     })
 
     it('reset pending asset votes', async () => {
       const asset = {
-        id: 11,
+        id: fromAscii('11'),
         notarizationId: '0xabcd',
         tokens: 100,
         status: 0,
@@ -855,7 +857,7 @@ contract('MasterPropertyValue', accounts => {
       pendingAssetsCount.toNumber().should.equal(1)
 
       const secondAsset = {
-        id: 12,
+        id: fromAscii('12'),
         notarizationId: '0xabcd',
         tokens: 100,
         status: 0,
@@ -881,14 +883,14 @@ contract('MasterPropertyValue', accounts => {
 
     it('add multiple pending assets, remove pending asset', async () => {
       const list = [{
-        id: 2,
+        id: fromAscii('2'),
         notarizationId: '0xabcd',
         tokens: 100,
         status: 0,
         owner: accounts[0],
         timestamp: moment().unix(),
       }, {
-        id: 3,
+        id: fromAscii('3'),
         notarizationId: '0xabcd',
         tokens: 100,
         status: 0,
@@ -913,7 +915,7 @@ contract('MasterPropertyValue', accounts => {
       let confirmationCount = await mintingAdminMultiSig.getConfirmationCount.call(txId)
       confirmationCount.toNumber().should.equal(1)
 
-      const assetId = 2
+      const assetId = fromAscii('2')
       txId = await mintingAdminRole.removePendingAsset.call(assetId, {
         from: defaultMintingAdmin,
       })
@@ -951,7 +953,7 @@ contract('MasterPropertyValue', accounts => {
 
     it('cancel minting', async () => {
       const asset = {
-        id: 10,
+        id: fromAscii('10'),
         notarizationId: '0xabcd',
         tokens: 100,
         status: 0,
@@ -1001,9 +1003,9 @@ contract('MasterPropertyValue', accounts => {
       confirmationCount.toNumber().should.equal(0)
     })
 
-    it('set asset to from enlisted to reserved status', async () => {
+    it('set asset from enlisted to reserved status', async () => {
       const newAsset = {
-        id: 1,
+        id: fromAscii('1'),
         notarizationId: '0xabcd',
         tokens: 100,
         status: 0,
@@ -1028,26 +1030,26 @@ contract('MasterPropertyValue', accounts => {
       await mintingAdminRole.refreshPendingAssetsStatus({
         from: defaultMintingAdmin,
       })
-      let asset = await assets.get.call(1)
+      let asset = await assets.get.call(fromAscii('1'))
       asset.status.toNumber().should.equal(Status.Enlisted)
 
       const data = encodeCall(
         'setReserved',
-        ['uint256[]'],
-        [[1]]
+        ['bytes32[]'],
+        [[fromAscii('1').padEnd(66, '0')]]
       )
 
       await basicProtectorMultiSig.submitTransaction(assets.address, 0, data, {
         from: defaultBasicProtector,
       })
 
-      asset = await assets.get.call(1)
+      asset = await assets.get.call(fromAscii('1'))
       asset.status.toNumber().should.equal(Status.Reserved)
     })
 
     it('set asset from reserved to enlisted status', async () => {
       const newAsset = {
-        id: 1,
+        id: fromAscii('1'),
         notarizationId: '0xabcd',
         tokens: 100,
         status: 0,
@@ -1074,28 +1076,28 @@ contract('MasterPropertyValue', accounts => {
 
       let data = encodeCall(
         'setReserved',
-        ['uint256[]'],
-        [[1]]
+        ['bytes32[]'],
+        [[fromAscii('1').padEnd(66, '0')]]
       )
 
       await basicProtectorMultiSig.submitTransaction(assets.address, 0, data, {
         from: defaultBasicProtector,
       })
 
-      let asset = await assets.get.call(1)
+      let asset = await assets.get.call(fromAscii('1'))
       asset.status.toNumber().should.equal(Status.Reserved)
 
       data = encodeCall(
         'setEnlisted',
-        ['uint256[]'],
-        [[1]]
+        ['bytes32[]'],
+        [[fromAscii('1').padEnd(66, '0')]]
       )
 
       await basicProtectorMultiSig.submitTransaction(assets.address, 0, data, {
         from: defaultBasicProtector,
       })
 
-      asset = await assets.get.call(1)
+      asset = await assets.get.call(fromAscii('1'))
       asset.status.toNumber().should.equal(Status.Enlisted)
     })
   })
