@@ -6,10 +6,10 @@ import "./MasterPropertyValue.sol";
 
 
 /**
- * @title SuperOwnerRole
- * @dev Super owner role contract.
+ * @title SuperProtectorRole
+ * @dev Super protector role contract.
  */
-contract SuperOwnerRole is Initializable {
+contract SuperProtectorRole is Initializable {
     /*
      *  Events
      */
@@ -44,7 +44,7 @@ contract SuperOwnerRole is Initializable {
      * Public functions
      */
     /// @dev Initialize function set initial storage values.
-    /// @param _multiSig Address of the super owner multisig.
+    /// @param _multiSig Address of the super protector multisig.
     function initialize(
         IMultiSigWallet _multiSig,
         MasterPropertyValue _masterPropertyValue
@@ -58,7 +58,7 @@ contract SuperOwnerRole is Initializable {
     }
 
     /// @dev Set the countdown length from when there's a transfer limit change.
-    /// Transaction has to be sent by the super owner multisig.
+    /// Transaction has to be sent by the super protector multisig.
     /// @param newCountdown New countdown length.
     function updateTransferLimitChangeCountdownLength(
         uint256 newCountdown
@@ -72,7 +72,7 @@ contract SuperOwnerRole is Initializable {
     }
 
     /// @dev Set the delayed transfer countdown length. Transaction has to be
-    /// sent by the super owner multisig.
+    /// sent by the super protector multisig.
     /// @param newCountdown New countdown length.
     function updateDelayedTransferCountdownLength(
         uint256 newCountdown
@@ -86,7 +86,7 @@ contract SuperOwnerRole is Initializable {
     }
 
     /// @dev Set the countdown length for the whitelist removal action.
-    /// Transaction has to be sent by the super owner multisig.
+    /// Transaction has to be sent by the super protector multisig.
     /// @param newCountdown New countdown length.
     function updateWhitelistRemovalActionCountdownLength(
         uint256 newCountdown

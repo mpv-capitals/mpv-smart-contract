@@ -2,7 +2,7 @@ pragma solidity ^0.5.1;
 
 import '../../contracts/AdministeredMultiSigWallet.sol';
 
-contract BasicOwnerMultiSigWalletMock is AdministeredMultiSigWallet {
+contract BasicProtectorMultiSigWalletMock is AdministeredMultiSigWallet {
 
   constructor(address[] memory _owners, uint _required)
       public

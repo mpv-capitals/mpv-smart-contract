@@ -18,7 +18,7 @@ const REDEMPTION_FEE = MULTIPLIER.div(BN(10)) // 0.1
 
 contract('Assets', accounts => {
   let whitelist, masterPropertyValue // needed for token setup
-  let assets, mpvToken, whitelistedAccts, basicOwnerMultiSig
+  let assets, mpvToken, whitelistedAccts, basicProtectorMultiSig
   let redemptionFeeReceiverWallet, redemptionAdminMultiSig, redemptionAdminRole
 
   before(async () => {
@@ -29,8 +29,8 @@ contract('Assets', accounts => {
     whitelistedAccts = [accounts[0], accounts[1], accounts[2]]
     whitelist = await initializeWhitelist(multiSig)
     await whitelist.addWhitelisted(redemptionFeeReceiverWallet)
-    basicOwnerMultiSig = await AdministeredMultiSigWallet.new()
-    await basicOwnerMultiSig.initialize([accounts[0]], 1)
+    basicProtectorMultiSig = await AdministeredMultiSigWallet.new()
+    await basicProtectorMultiSig.initialize([accounts[0]], 1)
   })
 
   beforeEach(async () => {
@@ -41,11 +41,11 @@ contract('Assets', accounts => {
 
     // Initialize token, assets, and redemptionAdminRole
     mpvToken = await initializeToken()
-    assets = await initializeAssets(basicOwnerMultiSig.address)
+    assets = await initializeAssets(basicProtectorMultiSig.address)
     redemptionAdminRole.initialize(
       redemptionAdminMultiSig.address,
-      basicOwnerMultiSig.address,
-      accounts[5], // superOwnerMultiSig
+      basicProtectorMultiSig.address,
+      accounts[5], // superProtectorMultiSig
       assets.address,
       mpvToken.address,
       masterPropertyValue.address
@@ -55,7 +55,7 @@ contract('Assets', accounts => {
 
   describe('updateRedemptionFee()', () => {
     it('properly sets redemptionFee to the given value', async () => {
-      // initialize assets contract with accessible basicOwnerMultSig for testing
+      // initialize assets contract with accessible basicProtectorMultSig for testing
       const multiSig = accounts[1]
       const assetsB = await initializeAssets(multiSig)
       expect((await assetsB.redemptionFee()).toString()).to.equal(REDEMPTION_FEE.toString())
@@ -67,7 +67,7 @@ contract('Assets', accounts => {
 
   describe('updateRedemptionFeeReceiverWallet()', () => {
     it('properly sets setRedemptionFeeReceiverWallet to the given value', async () => {
-      // initialize assets contract with accessible basicOwnerMultSig for testing
+      // initialize assets contract with accessible basicProtectorMultSig for testing
       const multiSig = accounts[1]
       const assetsB = await initializeAssets(multiSig)
       const defaultAddr = await assetsB.redemptionFeeReceiverWallet()
@@ -476,12 +476,12 @@ contract('Assets', accounts => {
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
       redemptionAdminRole.address, // redemptionAdmin
-      accounts[5] // superOwnerMultiSig
+      accounts[5] // superProtectorMultiSig
     )
     return mpvToken
   }
 
-  async function initializeAssets (basicOwnerMultiSig) {
+  async function initializeAssets (basicProtectorMultiSig) {
     const assets = await Assets.new()
     await assets.initialize(
       REDEMPTION_FEE.toString(),
@@ -489,7 +489,7 @@ contract('Assets', accounts => {
       accounts[0], // mintingAdminRole
       redemptionAdminRole.address,
       redemptionAdminMultiSig.address,
-      basicOwnerMultiSig,
+      basicProtectorMultiSig,
       mpvToken.address,
       masterPropertyValue.address
     )

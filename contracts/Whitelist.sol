@@ -24,7 +24,7 @@ contract Whitelist is Initializable {
      *  Storage
      */
     IMultiSigWallet public operationAdminMultiSig;
-    IMultiSigWallet public basicOwnerMultiSig;
+    IMultiSigWallet public basicProtectorMultiSig;
     MasterPropertyValue public masterPropertyValue;
 
     /*
@@ -37,8 +37,8 @@ contract Whitelist is Initializable {
     }
 
     /// @dev Requires sender to be the basic owner multisig contract.
-    modifier onlyBasicOwnerMultiSig() {
-        require(address(basicOwnerMultiSig) == msg.sender);
+    modifier onlyBasicProtectorMultiSig() {
+        require(address(basicProtectorMultiSig) == msg.sender);
         _;
     }
 
@@ -59,15 +59,15 @@ contract Whitelist is Initializable {
      */
     /// @dev Initialize function set initial storage values.
     /// @param _operationAdminMultiSig Address of operation admin multisig contract.
-    /// @param _basicOwnerMultiSig Address of basic owner multisig contract.
+    /// @param _basicProtectorMultiSig Address of basic protector multisig contract.
     function initialize(
         address _operationAdminMultiSig,
-        address _basicOwnerMultiSig,
+        address _basicProtectorMultiSig,
         MasterPropertyValue _masterPropertyValue
     ) public initializer
     {
         operationAdminMultiSig = IMultiSigWallet(_operationAdminMultiSig);
-        basicOwnerMultiSig = IMultiSigWallet(_basicOwnerMultiSig);
+        basicProtectorMultiSig = IMultiSigWallet(_basicProtectorMultiSig);
         masterPropertyValue = _masterPropertyValue;
     }
 
@@ -97,7 +97,7 @@ contract Whitelist is Initializable {
     /// @param account Address of account.
     function removeWhitelisted(address account)
     public
-    onlyBasicOwnerMultiSig
+    onlyBasicProtectorMultiSig
     mpvNotPaused
     {
         _removeWhitelisted(account);
@@ -107,7 +107,7 @@ contract Whitelist is Initializable {
     /// @param accounts List of account addresses.
     function removeWhitelisteds(address[] memory accounts)
     public
-    onlyBasicOwnerMultiSig
+    onlyBasicProtectorMultiSig
     mpvNotPaused
     {
         for (uint256 i = 0; i < accounts.length; i++) {

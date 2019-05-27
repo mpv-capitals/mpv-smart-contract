@@ -7,8 +7,8 @@ import "./MasterPropertyValue.sol";
 import "./IMultiSigWallet.sol";
 import "./Assets.sol";
 import "./MPVToken.sol";
-import "./SuperOwnerRole.sol";
-import "./BasicOwnerRole.sol";
+import "./SuperProtectorRole.sol";
+import "./BasicProtectorRole.sol";
 
 
 /**
@@ -35,8 +35,8 @@ contract MintingAdminRole is Initializable {
     IMultiSigWallet public multiSig;
     Assets public assets;
     MPVToken public mpvToken;
-    SuperOwnerRole public superOwnerRole;
-    BasicOwnerRole public basicOwnerRole;
+    SuperProtectorRole public superProtectorRole;
+    BasicProtectorRole public basicProtectorRole;
     address public mintingReceiverWallet;
     uint256 public mintingActionCountdownLength;
     uint256 public mintingCountdownStart;
@@ -51,23 +51,23 @@ contract MintingAdminRole is Initializable {
         _;
     }
 
-    modifier onlyOwner() {
+    modifier onlyMintingAdmin() {
         require(multiSig.hasOwner(msg.sender));
         _;
     }
 
-    modifier onlyBasicOwner() {
-        require(IMultiSigWallet(basicOwnerRole.multiSig()).hasOwner(msg.sender));
+    modifier onlyBasicProtector() {
+        require(IMultiSigWallet(basicProtectorRole.multiSig()).hasOwner(msg.sender));
         _;
     }
 
-    modifier onlyBasicOwnerMultiSig() {
-        require(address(basicOwnerRole.multiSig()) == msg.sender);
+    modifier onlyBasicProtectorMultiSig() {
+        require(address(basicProtectorRole.multiSig()) == msg.sender);
         _;
     }
 
-    modifier onlySuperOwnerMultiSig() {
-        require(address(superOwnerRole.multiSig()) == msg.sender);
+    modifier onlySuperProtectorMultiSig() {
+        require(address(superProtectorRole.multiSig()) == msg.sender);
         _;
     }
 
@@ -84,15 +84,15 @@ contract MintingAdminRole is Initializable {
     /// @param _multiSig Address of the minting owner multisig contract.
     /// @param _assets Address of the Assets contrac.
     /// @param _mpvToken Address of the MPV Token contract.
-    /// @param _superOwnerRole Address of the super owner role contract.
-    /// @param _basicOwnerRole Address of the basic owner role contract.
+    /// @param _superProtectorRole Address of the super owner role contract.
+    /// @param _basicProtectorRole Address of the basic owner role contract.
     /// @param _mintingReceiverWallet Address of the new token minting receiving wallet.
     function initialize(
         IMultiSigWallet _multiSig,
         Assets _assets,
         MPVToken _mpvToken,
-        SuperOwnerRole _superOwnerRole,
-        BasicOwnerRole _basicOwnerRole,
+        SuperProtectorRole _superProtectorRole,
+        BasicProtectorRole _basicProtectorRole,
         address _mintingReceiverWallet,
         MasterPropertyValue _masterPropertyValue
     ) public initializer {
@@ -100,8 +100,8 @@ contract MintingAdminRole is Initializable {
         assets = _assets;
         mpvToken = _mpvToken;
         masterPropertyValue = _masterPropertyValue;
-        superOwnerRole = _superOwnerRole;
-        basicOwnerRole = _basicOwnerRole;
+        superProtectorRole = _superProtectorRole;
+        basicProtectorRole = _basicProtectorRole;
         mintingReceiverWallet = _mintingReceiverWallet;
         mintingActionCountdownLength = 48 hours;
     }
@@ -112,7 +112,7 @@ contract MintingAdminRole is Initializable {
         uint256 newCountdown
     )
     public
-    onlySuperOwnerMultiSig
+    onlySuperProtectorMultiSig
     mpvNotPaused
     {
         mintingActionCountdownLength = newCountdown;
@@ -125,7 +125,7 @@ contract MintingAdminRole is Initializable {
     /// @return Returns transaction ID.
     function addPendingAsset(Assets.Asset memory _asset)
     public
-    onlyOwner
+    onlyMintingAdmin
     mpvNotPaused
     returns (uint256) {
         // minting countdown terminated
@@ -158,7 +158,7 @@ contract MintingAdminRole is Initializable {
     /// @return Returns transaction ID.
     function addPendingAssets(Assets.Asset[] memory _assets)
     public
-    onlyOwner
+    onlyMintingAdmin
     mpvNotPaused
     returns (uint256) {
         for (uint256 i = 0; i < _assets.length; i++) {
@@ -196,7 +196,7 @@ contract MintingAdminRole is Initializable {
     /// @return Returns transaction ID.
     function removePendingAsset(uint256 assetId)
     public
-    onlyOwner
+    onlyMintingAdmin
     mpvNotPaused
     returns (uint256)
     {
@@ -211,7 +211,7 @@ contract MintingAdminRole is Initializable {
     /// to be sent the by the basic owner role contract.
     function cancelMinting()
     public
-    onlyBasicOwner
+    onlyBasicProtector
     mpvNotPaused
     {
         require(mintingCountdownStart > 0);
@@ -227,7 +227,7 @@ contract MintingAdminRole is Initializable {
         address newWallet
     )
     public
-    onlyBasicOwnerMultiSig
+    onlyBasicProtectorMultiSig
     mpvNotPaused
     {
         require(newWallet != address(0));

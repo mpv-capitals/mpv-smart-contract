@@ -12,16 +12,16 @@ const PrivateKeyProvider = require('truffle-privatekey-provider')
 const zosJson = require('../zos.json')
 
 const json = {
-  SuperOwnerMultiSigWallet: getJson('AdministeredMultiSigWallet'),
-  BasicOwnerMultiSigWallet: getJson('AdministeredMultiSigWallet'),
+  SuperProtectorMultiSigWallet: getJson('AdministeredMultiSigWallet'),
+  BasicProtectorMultiSigWallet: getJson('AdministeredMultiSigWallet'),
   MintingAdminMultiSigWallet: getJson('AdministeredMultiSigWallet'),
   OperationAdminMultiSigWallet: getJson('AdministeredMultiSigWallet'),
   RedemptionAdminMultiSigWallet: getJson('AdministeredMultiSigWallet'),
   Whitelist: getJson('Whitelist'),
   MPVToken: getJson('MPVToken'),
   Assets: getJson('Assets'),
-  SuperOwnerRole: getJson('SuperOwnerRole'),
-  BasicOwnerRole: getJson('BasicOwnerRole'),
+  SuperProtectorRole: getJson('SuperProtectorRole'),
+  BasicProtectorRole: getJson('BasicProtectorRole'),
   MintingAdminRole: getJson('MintingAdminRole'),
   MasterPropertyValue: getJson('MasterPropertyValue'),
   RedemptionAdminRole: getJson('RedemptionAdminRole'),
@@ -87,12 +87,12 @@ async function initializeContracts () {
       console.log('stderr:', stderr)
     }
 
-    let instance = await getInstance('SuperOwnerMultiSigWallet')
+    let instance = await getInstance('SuperProtectorMultiSigWallet')
     await instance.initialize([senderAddress], 1, {
       from: senderAddress
     })
 
-    instance = await getInstance('BasicOwnerMultiSigWallet')
+    instance = await getInstance('BasicProtectorMultiSigWallet')
     await instance.initialize([senderAddress], 1, {
       from: senderAddress
     })
@@ -115,7 +115,7 @@ async function initializeContracts () {
     instance = await getInstance('Whitelist')
     await instance.initialize(
       getProxyAddress('OperationAdminMultiSigWallet'),
-      getProxyAddress('BasicOwnerMultiSigWallet'),
+      getProxyAddress('BasicProtectorMultiSigWallet'),
       getProxyAddress('MasterPropertyValue'),
       {
       from: senderAddress
@@ -130,7 +130,7 @@ async function initializeContracts () {
       getProxyAddress('MasterPropertyValue'),
       getProxyAddress('MintingAdminRole'),
       getProxyAddress('RedemptionAdminRole'),
-      getProxyAddress('SuperOwnerMultiSigWallet'),
+      getProxyAddress('SuperProtectorMultiSigWallet'),
       {
       from: senderAddress
     })
@@ -142,24 +142,24 @@ async function initializeContracts () {
       getProxyAddress('MintingAdminRole'),
       getProxyAddress('RedemptionAdminRole'),
       getProxyAddress('RedemptionAdminMultiSigWallet'),
-      getProxyAddress('BasicOwnerMultiSigWallet'),
+      getProxyAddress('BasicProtectorMultiSigWallet'),
       getProxyAddress('MPVToken'),
       getProxyAddress('MasterPropertyValue'),
       {
       from: senderAddress
     })
 
-    instance = await getInstance('SuperOwnerRole')
+    instance = await getInstance('SuperProtectorRole')
     await instance.initialize(
-      getProxyAddress('SuperOwnerMultiSigWallet'),
+      getProxyAddress('SuperProtectorMultiSigWallet'),
       getProxyAddress('MasterPropertyValue'),
       {
       from: senderAddress
     })
 
-    instance = await getInstance('BasicOwnerRole')
+    instance = await getInstance('BasicProtectorRole')
     await instance.initialize(
-      getProxyAddress('BasicOwnerMultiSigWallet'),
+      getProxyAddress('BasicProtectorMultiSigWallet'),
       getProxyAddress('MintingAdminRole'),
       {
       from: senderAddress
@@ -170,8 +170,8 @@ async function initializeContracts () {
       getProxyAddress('MintingAdminMultiSigWallet'),
       getProxyAddress('Assets'),
       getProxyAddress('MPVToken'),
-      getProxyAddress('SuperOwnerRole'),
-      getProxyAddress('BasicOwnerRole'),
+      getProxyAddress('SuperProtectorRole'),
+      getProxyAddress('BasicProtectorRole'),
       mintingReceiverWallet,
       getProxyAddress('MasterPropertyValue'),
       {
@@ -187,7 +187,7 @@ async function initializeContracts () {
     instance = await getInstance('RedemptionAdminRole')
     await instance.initialize(
       getProxyAddress('RedemptionAdminMultiSigWallet'),
-      getProxyAddress('BasicOwnerMultiSigWallet'),
+      getProxyAddress('BasicProtectorMultiSigWallet'),
       getProxyAddress('Assets'),
       getProxyAddress('MPVToken'),
       getProxyAddress('MasterPropertyValue'),
@@ -211,8 +211,8 @@ async function initializeContracts () {
 
 async function setAdmins() {
   let senderAddress = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
-  let superOwnerMultiSig = await getInstance('SuperOwnerMultiSigWallet', true)
-  let basicOwnerMultiSig = await getInstance('BasicOwnerMultiSigWallet', true)
+  let superProtectorMultiSig = await getInstance('SuperProtectorMultiSigWallet', true)
+  let basicProtectorMultiSig = await getInstance('BasicProtectorMultiSigWallet', true)
   let operationAdminMultiSig = await getInstance('OperationAdminMultiSigWallet', true)
   let mintingAdminMultiSig = await getInstance('MintingAdminMultiSigWallet', true)
   let mintingAdminRole = await getInstance('MintingAdminRole', true)
@@ -224,9 +224,9 @@ async function setAdmins() {
   let whitelist = await getInstance('Whitelist', true)
 
   try {
-    //const admin = await superOwnerMultiSig.admin.call({from: senderAddress})
+    //const admin = await superProtectorMultiSig.admin.call({from: senderAddress})
     //console.log('admin', admin)
-    //const w = await assets.basicOwnerMultiSig.call()
+    //const w = await assets.basicProtectorMultiSig.call()
     //console.log(w)
     console.log('assets.updateMintingAdminRole')
     await assets.updateMintingAdminRole(mintingAdminRole.address, {
@@ -256,22 +256,22 @@ async function setAdmins() {
       gasPrice: 20000000000
     })
 
-    console.log('superOwnerMultiSig.updateAdmin')
-    await superOwnerMultiSig.updateAdmin(superOwnerMultiSig.address, {
+    console.log('superProtectorMultiSig.updateAdmin')
+    await superProtectorMultiSig.updateAdmin(superProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
       gasPrice: 20000000000
     })
 
-    console.log('basicOwnerMultiSig.updateAdmin')
-    await basicOwnerMultiSig.updateAdmin(superOwnerMultiSig.address, {
+    console.log('basicProtectorMultiSig.updateAdmin')
+    await basicProtectorMultiSig.updateAdmin(superProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
       gasPrice: 20000000000
     })
 
     console.log('operationAdminMultiSig.updateAdmin')
-    await operationAdminMultiSig.updateAdmin(basicOwnerMultiSig.address, {
+    await operationAdminMultiSig.updateAdmin(basicProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
       gasPrice: 20000000000
@@ -285,7 +285,7 @@ async function setAdmins() {
     })
 
     console.log('mintingAdminMultiSig.updateTransactor')
-    await mintingAdminMultiSig.updateAdmin(basicOwnerMultiSig.address, {
+    await mintingAdminMultiSig.updateAdmin(basicProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
       gasPrice: 20000000000
@@ -299,14 +299,14 @@ async function setAdmins() {
     })
 
     console.log('redemptionAdminMultiSig.updateAdmin')
-    await redemptionAdminMultiSig.updateAdmin(basicOwnerMultiSig.address, {
+    await redemptionAdminMultiSig.updateAdmin(basicProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
       gasPrice: 20000000000
     })
 
     console.log('mpv.updatePausableAdmin')
-    await mpv.updatePausableAdmin(superOwnerMultiSig.address, {
+    await mpv.updatePausableAdmin(superProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
       gasPrice: 20000000000

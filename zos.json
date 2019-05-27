@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "contracts": {
     "Assets": "Assets",
-    "BasicOwnerMultiSigWallet": "AdministeredMultiSigWallet",
-    "BasicOwnerRole": "BasicOwnerRole",
+    "BasicProtectorMultiSigWallet": "AdministeredMultiSigWallet",
+    "BasicProtectorRole": "BasicProtectorRole",
     "MasterPropertyValue": "MasterPropertyValue",
     "MintingAdminMultiSigWallet": "AdministeredMultiSigWallet",
     "MintingAdminRole": "MintingAdminRole",
@@ -15,8 +15,8 @@
     "Pausable": "Pausable",
     "RedemptionAdminMultiSigWallet": "AdministeredMultiSigWallet",
     "RedemptionAdminRole": "RedemptionAdminRole",
-    "SuperOwnerMultiSigWallet": "AdministeredMultiSigWallet",
-    "SuperOwnerRole": "SuperOwnerRole",
+    "SuperProtectorMultiSigWallet": "AdministeredMultiSigWallet",
+    "SuperProtectorRole": "SuperProtectorRole",
     "Whitelist": "Whitelist"
   },
   "dependencies": {}

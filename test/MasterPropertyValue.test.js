@@ -10,8 +10,8 @@ const MPVToken = artifacts.require('MPVToken')
 const Assets = artifacts.require('Assets')
 const Whitelist = artifacts.require('Whitelist')
 const AdministeredMultiSigWallet = artifacts.require('AdministeredMultiSigWallet')
-const SuperOwnerRole = artifacts.require('SuperOwnerRole')
-const BasicOwnerRole = artifacts.require('BasicOwnerRole')
+const SuperProtectorRole = artifacts.require('SuperProtectorRole')
+const BasicProtectorRole = artifacts.require('BasicProtectorRole')
 const MintingAdminRole = artifacts.require('MintingAdminRole')
 const RedemptionAdminRole = artifacts.require('RedemptionAdminRole')
 
@@ -20,13 +20,13 @@ let mpvToken = null
 let assets = null
 let whitelist = null
 
-let superOwnerRole = null
-let basicOwnerRole = null
+let superProtectorRole = null
+let basicProtectorRole = null
 let mintingAdminRole = null
 let redemptionAdminRole = null
 
-let superOwnerMultiSig = null
-let basicOwnerMultiSig = null
+let superProtectorMultiSig = null
+let basicProtectorMultiSig = null
 let operationAdminMultiSig = null
 let mintingAdminMultiSig = null
 let redemptionAdminMultiSig = null
@@ -43,15 +43,15 @@ async function initContracts (accounts) {
   assets = await Assets.new()
   whitelist = await Whitelist.new()
 
-  superOwnerRole = await SuperOwnerRole.new()
-  basicOwnerRole = await BasicOwnerRole.new()
+  superProtectorRole = await SuperProtectorRole.new()
+  basicProtectorRole = await BasicProtectorRole.new()
   mintingAdminRole = await MintingAdminRole.new()
   redemptionAdminRole = await RedemptionAdminRole.new()
 
-  superOwnerMultiSig = await AdministeredMultiSigWallet.new()
-  superOwnerMultiSig.initialize([accounts[0]], 1)
-  basicOwnerMultiSig = await AdministeredMultiSigWallet.new()
-  basicOwnerMultiSig.initialize([accounts[0]], 1)
+  superProtectorMultiSig = await AdministeredMultiSigWallet.new()
+  superProtectorMultiSig.initialize([accounts[0]], 1)
+  basicProtectorMultiSig = await AdministeredMultiSigWallet.new()
+  basicProtectorMultiSig.initialize([accounts[0]], 1)
   operationAdminMultiSig = await AdministeredMultiSigWallet.new()
   operationAdminMultiSig.initialize([accounts[0]], 1)
   mintingAdminMultiSig = await AdministeredMultiSigWallet.new()
@@ -61,7 +61,7 @@ async function initContracts (accounts) {
 
   await whitelist.initialize(
     operationAdminMultiSig.address,
-    basicOwnerMultiSig.address,
+    basicProtectorMultiSig.address,
     mpv.address
   )
 
@@ -73,7 +73,7 @@ async function initContracts (accounts) {
     mpv.address,
     mintingAdminRole.address,
     redemptionAdminRole.address,
-    accounts[5] // super owner multisig
+    accounts[5] // super protector multisig
   )
 
   await assets.initialize(
@@ -82,26 +82,26 @@ async function initContracts (accounts) {
     mintingAdminRole.address,
     redemptionAdminRole.address,
     redemptionAdminMultiSig.address,
-    basicOwnerMultiSig.address,
+    basicProtectorMultiSig.address,
     mpvToken.address,
     mpv.address
   )
 
-  await superOwnerRole.initialize(
-    superOwnerMultiSig.address,
+  await superProtectorRole.initialize(
+    superProtectorMultiSig.address,
     mpv.address
   )
 
-  await basicOwnerRole.initialize(
-    basicOwnerMultiSig.address
+  await basicProtectorRole.initialize(
+    basicProtectorMultiSig.address
   )
 
   await mintingAdminRole.initialize(
     mintingAdminMultiSig.address,
     assets.address,
     mpvToken.address,
-    superOwnerRole.address,
-    basicOwnerRole.address,
+    superProtectorRole.address,
+    basicProtectorRole.address,
     mintingReceiverWallet,
     mpv.address
   )
@@ -112,24 +112,24 @@ async function initContracts (accounts) {
     whitelist.address,
   )
 
-  await superOwnerMultiSig.updateAdmin(superOwnerMultiSig.address)
-  await basicOwnerMultiSig.updateAdmin(superOwnerMultiSig.address)
-  await operationAdminMultiSig.updateAdmin(basicOwnerMultiSig.address)
+  await superProtectorMultiSig.updateAdmin(superProtectorMultiSig.address)
+  await basicProtectorMultiSig.updateAdmin(superProtectorMultiSig.address)
+  await operationAdminMultiSig.updateAdmin(basicProtectorMultiSig.address)
   await mintingAdminMultiSig.updateTransactor(mintingAdminRole.address)
-  await mintingAdminMultiSig.updateAdmin(basicOwnerMultiSig.address)
+  await mintingAdminMultiSig.updateAdmin(basicProtectorMultiSig.address)
   await redemptionAdminMultiSig.updateTransactor(assets.address)
-  await redemptionAdminMultiSig.updateAdmin(basicOwnerMultiSig.address)
-  await mpv.updatePausableAdmin(superOwnerMultiSig.address)
+  await redemptionAdminMultiSig.updateAdmin(basicProtectorMultiSig.address)
+  await mpv.updatePausableAdmin(superProtectorMultiSig.address)
 }
 
 contract('MasterPropertyValue', accounts => {
-  describe('SuperOwner', () => {
+  describe('SuperProtector', () => {
     before(async () => {
       await initContracts(accounts)
     })
 
-    const defaultSuperOwner = accounts[0]
-    const defaultBasicOwner = accounts[0]
+    const defaultSuperProtector = accounts[0]
+    const defaultBasicProtector = accounts[0]
 
     it('add 2nd super owner', async () => {
       const newOwner = accounts[2]
@@ -140,47 +140,47 @@ contract('MasterPropertyValue', accounts => {
         [newOwner]
       )
 
-      const txId = await superOwnerMultiSig.submitTransaction.call(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      const txId = await superProtectorMultiSig.submitTransaction.call(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
-      await superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      const notASuperOwner = accounts[9]
-      await shouldFail(superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
-        from: notASuperOwner,
+      const notASuperProtector = accounts[9]
+      await shouldFail(superProtectorMultiSig.submitTransaction(superProtectorMultiSig.address, 0, data, {
+        from: notASuperProtector,
       }))
 
       txId.toString().should.equal('0')
 
-      const confirmationCount = await superOwnerMultiSig.getConfirmations.call(txId)
+      const confirmationCount = await superProtectorMultiSig.getConfirmations.call(txId)
       confirmationCount.length.should.equal(1)
 
-      const required = await superOwnerMultiSig.required.call()
+      const required = await superProtectorMultiSig.required.call()
       required.toString().should.equal('1')
 
-      const isConfirmed = await superOwnerMultiSig.isConfirmed.call(txId)
+      const isConfirmed = await superProtectorMultiSig.isConfirmed.call(txId)
       isConfirmed.should.equal(true)
 
-      const owners = await superOwnerMultiSig.getOwners.call()
+      const owners = await superProtectorMultiSig.getOwners.call()
       owners.length.should.equal(2)
     })
 
-    it('add 3rd super owner and require 100% of confirmations', async () => {
+    it('add 3rd super protector and require 100% of confirmations', async () => {
       let data = encodeCall(
         'changeRequirement',
         ['uint256'],
         [2]
       )
-      let txId = await superOwnerMultiSig.submitTransaction.call(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      let txId = await superProtectorMultiSig.submitTransaction.call(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
-      await superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      const required = await superOwnerMultiSig.required.call()
+      const required = await superProtectorMultiSig.required.call()
       required.toString().should.equal('2')
 
       const newOwner = accounts[3]
@@ -189,33 +189,33 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newOwner]
       )
-      txId = await superOwnerMultiSig.submitTransaction.call(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      txId = await superProtectorMultiSig.submitTransaction.call(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
-      await superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      const confirmationCount = await superOwnerMultiSig.getConfirmations.call(txId)
+      const confirmationCount = await superProtectorMultiSig.getConfirmations.call(txId)
       confirmationCount.length.should.equal(1)
 
-      let isOwner = await superOwnerMultiSig.isOwner.call(newOwner)
+      let isOwner = await superProtectorMultiSig.isOwner.call(newOwner)
       isOwner.should.equal(false)
 
-      const notASuperOwner = accounts[9]
-      await shouldFail(superOwnerMultiSig.confirmTransaction(txId, {
-        from: notASuperOwner,
+      const notASuperProtector = accounts[9]
+      await shouldFail(superProtectorMultiSig.confirmTransaction(txId, {
+        from: notASuperProtector,
       }))
 
-      await superOwnerMultiSig.confirmTransaction(txId, {
+      await superProtectorMultiSig.confirmTransaction(txId, {
         from: accounts[2],
       })
 
-      isOwner = await superOwnerMultiSig.isOwner.call(newOwner)
+      isOwner = await superProtectorMultiSig.isOwner.call(newOwner)
       isOwner.should.equal(true)
 
       // should not be able to confirm transaction again
-      await shouldFail(superOwnerMultiSig.confirmTransaction(txId, {
+      await shouldFail(superProtectorMultiSig.confirmTransaction(txId, {
         from: accounts[2],
       }))
     })
@@ -226,14 +226,14 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [accounts[3]]
       )
-      let txId = await superOwnerMultiSig.submitTransaction.call(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      let txId = await superProtectorMultiSig.submitTransaction.call(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
-      await superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      await superOwnerMultiSig.confirmTransaction(txId, {
+      await superProtectorMultiSig.confirmTransaction(txId, {
         from: accounts[2],
       })
 
@@ -243,35 +243,35 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [accounts[2]]
       )
-      txId = await superOwnerMultiSig.submitTransaction.call(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      txId = await superProtectorMultiSig.submitTransaction.call(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
-      await superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      await superOwnerMultiSig.confirmTransaction(txId, {
+      await superProtectorMultiSig.confirmTransaction(txId, {
         from: accounts[2],
       })
 
-      const required = await superOwnerMultiSig.required.call()
+      const required = await superProtectorMultiSig.required.call()
       required.toString().should.equal('1')
 
-      let owners = await superOwnerMultiSig.getOwners.call()
+      let owners = await superProtectorMultiSig.getOwners.call()
       owners.length.should.equal(1)
 
       data = encodeCall(
         'removeOwner',
         ['address'],
-        [defaultSuperOwner]
+        [defaultSuperProtector]
       )
 
       // should not be able to delete sole owner
-      await superOwnerMultiSig.submitTransaction(superOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      owners = await superOwnerMultiSig.getOwners.call()
+      owners = await superProtectorMultiSig.getOwners.call()
       owners.length.should.equal(1)
     })
 
@@ -285,8 +285,8 @@ contract('MasterPropertyValue', accounts => {
         [newWallet]
       )
 
-      basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
-        from: defaultBasicOwner,
+      basicProtectorMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       const updatedWallet = await assets.redemptionFeeReceiverWallet.call()
@@ -294,7 +294,7 @@ contract('MasterPropertyValue', accounts => {
     })
 
     it('set transfer limit countdown length', async () => {
-      const currentCountdown = await superOwnerRole.transferLimitChangeCountdownLength.call()
+      const currentCountdown = await superProtectorRole.transferLimitChangeCountdownLength.call()
       currentCountdown.toNumber().should.equal(60 * 60 * 24 * 2)
 
       const newCountdown = 60 * 60 * 24
@@ -304,11 +304,11 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [newCountdown]
       )
-      await superOwnerMultiSig.submitTransaction(superOwnerRole.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorRole.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      const updatedCountdown = await superOwnerRole.transferLimitChangeCountdownLength.call()
+      const updatedCountdown = await superProtectorRole.transferLimitChangeCountdownLength.call()
 
       updatedCountdown.toNumber().should.equal(newCountdown)
     })
@@ -321,11 +321,11 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [newCountdown]
       )
-      await superOwnerMultiSig.submitTransaction(superOwnerRole.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorRole.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      const updatedCountdown = await superOwnerRole.transferLimitChangeCountdownLength.call()
+      const updatedCountdown = await superProtectorRole.transferLimitChangeCountdownLength.call()
 
       updatedCountdown.toNumber().should.equal(newCountdown)
     })
@@ -338,11 +338,11 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [newCountdown]
       )
-      await superOwnerMultiSig.submitTransaction(superOwnerRole.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorRole.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      const updatedCountdown = await superOwnerRole.whitelistRemovalActionCountdownLength.call()
+      const updatedCountdown = await superProtectorRole.whitelistRemovalActionCountdownLength.call()
 
       updatedCountdown.toNumber().should.equal(newCountdown)
     })
@@ -355,11 +355,11 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [newCountdown]
       )
-      await superOwnerMultiSig.submitTransaction(superOwnerRole.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(superProtectorRole.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      const updatedCountdown = await superOwnerRole.delayedTransferCountdownLength.call()
+      const updatedCountdown = await superProtectorRole.delayedTransferCountdownLength.call()
 
       updatedCountdown.toNumber().should.equal(newCountdown)
     })
@@ -370,13 +370,13 @@ contract('MasterPropertyValue', accounts => {
       await initContracts(accounts)
     })
 
-    const defaultSuperOwner = accounts[0]
-    const defaultBasicOwner = accounts[0]
+    const defaultSuperProtector = accounts[0]
+    const defaultBasicProtector = accounts[0]
 
     it('add 2nd basic owner', async () => {
       const newOwner = accounts[2]
 
-      let isOwner = await basicOwnerMultiSig.isOwner.call(newOwner)
+      let isOwner = await basicProtectorMultiSig.isOwner.call(newOwner)
       isOwner.should.equal(false)
 
       const data = encodeCall(
@@ -384,17 +384,17 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newOwner]
       )
-      await superOwnerMultiSig.submitTransaction(basicOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(basicProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      isOwner = await basicOwnerMultiSig.isOwner.call(newOwner)
+      isOwner = await basicProtectorMultiSig.isOwner.call(newOwner)
       isOwner.should.equal(true)
     })
 
     it('remove 2nd basic owner', async () => {
       const owner = accounts[2]
-      let isOwner = await basicOwnerMultiSig.isOwner.call(owner)
+      let isOwner = await basicProtectorMultiSig.isOwner.call(owner)
       isOwner.should.equal(true)
 
       const data = encodeCall(
@@ -402,11 +402,11 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [owner]
       )
-      await superOwnerMultiSig.submitTransaction(basicOwnerMultiSig.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(basicProtectorMultiSig.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
-      isOwner = await basicOwnerMultiSig.isOwner.call(owner)
+      isOwner = await basicProtectorMultiSig.isOwner.call(owner)
       isOwner.should.equal(false)
     })
 
@@ -423,8 +423,8 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [newRedemptionFee]
       )
-      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       const updatedRedemptionFee = await assets.redemptionFee.call()
@@ -441,8 +441,8 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newWallet]
       )
-      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       const updatedWallet = await assets.redemptionFeeReceiverWallet.call()
@@ -456,7 +456,7 @@ contract('MasterPropertyValue', accounts => {
       await initContracts(accounts)
     })
 
-    const defaultBasicOwner = accounts[0]
+    const defaultBasicProtector = accounts[0]
 
     it('add 2nd operation admin', async () => {
       const newAdmin = accounts[2]
@@ -469,8 +469,8 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newAdmin]
       )
-      await basicOwnerMultiSig.submitTransaction(operationAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(operationAdminMultiSig.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       isOwner = await operationAdminMultiSig.isOwner.call(newAdmin)
@@ -488,8 +488,8 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [admin]
       )
-      await basicOwnerMultiSig.submitTransaction(operationAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(operationAdminMultiSig.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       isOwner = await operationAdminMultiSig.isOwner.call(admin)
@@ -503,8 +503,8 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [admin]
       )
-      await basicOwnerMultiSig.submitTransaction(operationAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(operationAdminMultiSig.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       const account = accounts[3]
@@ -534,8 +534,8 @@ contract('MasterPropertyValue', accounts => {
       isWhitelisted.should.equal(true)
     })
 
-    it('basic owner remove account from whitelist', async () => {
-      const basicOwner = accounts[0]
+    it('basic protector remove account from whitelist', async () => {
+      const basicProtector = accounts[0]
       const account = accounts[4]
 
       let isWhitelisted = await whitelist.isWhitelisted.call(account)
@@ -546,8 +546,8 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [account]
       )
-      await basicOwnerMultiSig.submitTransaction(whitelist.address, 0, data, {
-        from: basicOwner,
+      await basicProtectorMultiSig.submitTransaction(whitelist.address, 0, data, {
+        from: basicProtector,
       })
 
       isWhitelisted = await whitelist.isWhitelisted.call(account)
@@ -560,7 +560,7 @@ contract('MasterPropertyValue', accounts => {
       await initContracts(accounts)
     })
 
-    const defaultBasicOwner = accounts[0]
+    const defaultBasicProtector = accounts[0]
 
     it('add 2nd mintin admin', async () => {
       const newAdmin = accounts[2]
@@ -573,8 +573,8 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newAdmin]
       )
-      await basicOwnerMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       isOwner = await mintingAdminMultiSig.isOwner.call(newAdmin)
@@ -592,8 +592,8 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [admin]
       )
-      await basicOwnerMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       isOwner = await mintingAdminMultiSig.isOwner.call(admin)
@@ -606,7 +606,7 @@ contract('MasterPropertyValue', accounts => {
       await initContracts(accounts)
     })
 
-    const defaultBasicOwner = accounts[0]
+    const defaultBasicProtector = accounts[0]
 
     it('add 2nd mintin admin', async () => {
       const newAdmin = accounts[2]
@@ -619,8 +619,8 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [newAdmin]
       )
-      await basicOwnerMultiSig.submitTransaction(redemptionAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(redemptionAdminMultiSig.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       isOwner = await redemptionAdminMultiSig.isOwner.call(newAdmin)
@@ -638,8 +638,8 @@ contract('MasterPropertyValue', accounts => {
         ['address'],
         [admin]
       )
-      await basicOwnerMultiSig.submitTransaction(redemptionAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(redemptionAdminMultiSig.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       isOwner = await redemptionAdminMultiSig.isOwner.call(admin)
@@ -652,7 +652,7 @@ contract('MasterPropertyValue', accounts => {
       await initContracts(accounts)
     })
 
-    const defaultSuperOwner = accounts[0]
+    const defaultSuperProtector = accounts[0]
 
     it('super owner should pause contract', async () => {
       let paused = await mpv.paused.call()
@@ -660,7 +660,7 @@ contract('MasterPropertyValue', accounts => {
 
       // must happen through multisig
       await shouldFail(mpv.pause({
-        from: defaultSuperOwner,
+        from: defaultSuperProtector,
       }))
 
       const data = encodeCall(
@@ -669,8 +669,8 @@ contract('MasterPropertyValue', accounts => {
         []
       )
 
-      await superOwnerMultiSig.submitTransaction(mpv.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(mpv.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
       paused = await mpv.paused.call()
@@ -682,7 +682,7 @@ contract('MasterPropertyValue', accounts => {
       paused.should.equal(true)
 
       await shouldFail(mpv.unpause({
-        from: defaultSuperOwner,
+        from: defaultSuperProtector,
       }))
 
       const data = encodeCall(
@@ -691,8 +691,8 @@ contract('MasterPropertyValue', accounts => {
         []
       )
 
-      await superOwnerMultiSig.submitTransaction(mpv.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(mpv.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
       paused = await mpv.paused.call()
@@ -701,8 +701,8 @@ contract('MasterPropertyValue', accounts => {
   })
 
   describe('Assets', () => {
-    const defaultSuperOwner = accounts[0]
-    const defaultBasicOwner = accounts[0]
+    const defaultSuperProtector = accounts[0]
+    const defaultBasicProtector = accounts[0]
     const defaultMintingAdmin = accounts[0]
     const defaultOperationAdmin = accounts[0]
     const secondMintingAdmin = accounts[2]
@@ -716,8 +716,8 @@ contract('MasterPropertyValue', accounts => {
         [1]
       )
 
-      await superOwnerMultiSig.submitTransaction(mintingAdminRole.address, 0, data, {
-        from: defaultSuperOwner,
+      await superProtectorMultiSig.submitTransaction(mintingAdminRole.address, 0, data, {
+        from: defaultSuperProtector,
       })
 
       const countdown = await mintingAdminRole.mintingActionCountdownLength.call()
@@ -732,8 +732,8 @@ contract('MasterPropertyValue', accounts => {
         [secondMintingAdmin]
       )
 
-      await basicOwnerMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       data = encodeCall(
@@ -741,12 +741,12 @@ contract('MasterPropertyValue', accounts => {
         ['uint256'],
         [2]
       )
-      await basicOwnerMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(mintingAdminMultiSig.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       const required = await mintingAdminMultiSig.required.call({
-        from: defaultBasicOwner,
+        from: defaultBasicProtector,
       })
       required.toNumber().should.equal(2)
 
@@ -991,7 +991,7 @@ contract('MasterPropertyValue', accounts => {
       }))
 
       await mintingAdminRole.cancelMinting({
-        from: defaultBasicOwner,
+        from: defaultBasicProtector,
       })
 
       countdownStart = await mintingAdminRole.mintingCountdownStart.call()
@@ -1037,8 +1037,8 @@ contract('MasterPropertyValue', accounts => {
         [[1]]
       )
 
-      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       asset = await assets.get.call(1)
@@ -1078,8 +1078,8 @@ contract('MasterPropertyValue', accounts => {
         [[1]]
       )
 
-      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       let asset = await assets.get.call(1)
@@ -1091,8 +1091,8 @@ contract('MasterPropertyValue', accounts => {
         [[1]]
       )
 
-      await basicOwnerMultiSig.submitTransaction(assets.address, 0, data, {
-        from: defaultBasicOwner,
+      await basicProtectorMultiSig.submitTransaction(assets.address, 0, data, {
+        from: defaultBasicProtector,
       })
 
       asset = await assets.get.call(1)

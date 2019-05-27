@@ -30,8 +30,8 @@ contract RedemptionAdminRole is Initializable {
      *  Storage
      */
     IMultiSigWallet public multiSig;
-    IMultiSigWallet public basicOwnerMultiSig;
-    address public superOwnerMultiSig;
+    IMultiSigWallet public basicProtectorMultiSig;
+    address public superProtectorMultiSig;
     Assets public assets;
     MPVToken public mpvToken;
     uint256 public burningActionCountdownLength;
@@ -48,14 +48,14 @@ contract RedemptionAdminRole is Initializable {
     }
 
     /// @dev Requires the sender an owner of the redemptionAdminMultiSig
-    modifier onlyRedemptionAdminOwner() {
+    modifier onlyRedemptionAdmin() {
         require(multiSig.hasOwner(msg.sender));
         _;
     }
 
-    /// @dev Requires the sender to be an owner of the SuperOwnerMultiSig
-    modifier onlySuperOwnerMultiSig() {
-        require(superOwnerMultiSig == (msg.sender));
+    /// @dev Requires the sender to be an owner of the SuperProtectorMultiSig
+    modifier onlySuperProtectorMultiSig() {
+        require(superProtectorMultiSig == (msg.sender));
         _;
     }
 
@@ -73,15 +73,15 @@ contract RedemptionAdminRole is Initializable {
     /// @param _assets Address of the assets contract.
     function initialize(
         IMultiSigWallet _multiSig,
-        IMultiSigWallet _basicOwnerMultiSig,
-        address _superOwnerMultiSig,
+        IMultiSigWallet _basicProtectorMultiSig,
+        address _superProtectorMultiSig,
         Assets _assets,
         MPVToken _mpvToken,
         MasterPropertyValue _masterPropertyValue
     ) public initializer {
         multiSig = _multiSig;
-        basicOwnerMultiSig = _basicOwnerMultiSig;
-        superOwnerMultiSig = _superOwnerMultiSig;
+        basicProtectorMultiSig = _basicProtectorMultiSig;
+        superProtectorMultiSig = _superProtectorMultiSig;
         assets = _assets;
         mpvToken = _mpvToken;
         masterPropertyValue = _masterPropertyValue;
@@ -115,7 +115,7 @@ contract RedemptionAdminRole is Initializable {
     /// @param assetId Id of asset being redeemed.
     function rejectRedemption(uint256 assetId)
         public
-        onlyRedemptionAdminOwner
+        onlyRedemptionAdmin
         mpvNotPaused
     {
         assets.rejectRedemption(assetId);
@@ -127,7 +127,7 @@ contract RedemptionAdminRole is Initializable {
     {
         require(
             multiSig.hasOwner(msg.sender) ||
-            basicOwnerMultiSig.hasOwner(msg.sender)
+            basicProtectorMultiSig.hasOwner(msg.sender)
         );
         require(
             now > redemptionCountdowns[assetId].add(burningActionCountdownLength)
@@ -145,7 +145,7 @@ contract RedemptionAdminRole is Initializable {
         uint256 newCountdown
     )
     public
-    onlySuperOwnerMultiSig
+    onlySuperProtectorMultiSig
     mpvNotPaused
     {
         burningActionCountdownLength = newCountdown;

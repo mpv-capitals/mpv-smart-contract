@@ -5,10 +5,10 @@ import "./IMultiSigWallet.sol";
 import "./MintingAdminRole.sol";
 
 /**
- * @title BasicOwnerRole
- * @dev Basic owner role contract.
+ * @title BasicProtectorRole
+ * @dev Basic protector role contract.
  */
-contract BasicOwnerRole is Initializable {
+contract BasicProtectorRole is Initializable {
     /*
      *  Storage
      */
@@ -18,7 +18,7 @@ contract BasicOwnerRole is Initializable {
     /*
      *  Modifiers
      */
-    /// Requires that the sender is an owner in the basic owner multisig contract.
+    /// Requires that the sender is an owner in the basic protector multisig contract.
     modifier onlyOwner() {
         require(multiSig.hasOwner(msg.sender));
         _;

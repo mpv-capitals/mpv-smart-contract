@@ -6,24 +6,24 @@ const MPVToken = artifacts.require('MPVToken')
 const Whitelist = artifacts.require('Whitelist')
 const MasterPropertyValueMock = artifacts.require('MasterPropertyValueMock')
 const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiSigWalletMock')
-const BasicOwnerMultiSigWalletMock = artifacts.require('BasicOwnerMultiSigWalletMock')
+const BasicProtectorMultiSigWalletMock = artifacts.require('BasicProtectorMultiSigWalletMock')
 
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const BN = n => new web3.utils.BN(n)
 const MULTIPLIER = BN(10).pow(BN(18))
 
 contract('MPVToken', accounts => {
-  let token, whitelist, masterPropertyValue, superOwnerMultiSig
+  let token, whitelist, masterPropertyValue, superProtectorMultiSig
 
   beforeEach(async () => {
-    superOwnerMultiSig = accounts[5]
+    superProtectorMultiSig = accounts[5]
     masterPropertyValue = await MasterPropertyValueMock.new()
     const multiSig = await OperationAdminMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
-    const basicOwnerMultiSig = await BasicOwnerMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
+    const basicProtectorMultiSig = await BasicProtectorMultiSigWalletMock.new([accounts[0], accounts[1]], 2)
     whitelist = await Whitelist.new()
     await whitelist.initialize(
       multiSig.address,
-      basicOwnerMultiSig.address,
+      basicProtectorMultiSig.address,
       masterPropertyValue.address
     )
     token = await MPVToken.new()
@@ -35,7 +35,7 @@ contract('MPVToken', accounts => {
       masterPropertyValue.address,
       masterPropertyValue.address, // mintingAdmin
       masterPropertyValue.address, // redemptionAdmin
-      superOwnerMultiSig
+      superProtectorMultiSig
     )
 
     await whitelist.addWhitelisted(accounts[0])
@@ -359,18 +359,18 @@ contract('MPVToken', accounts => {
     it('updates the updateDailyLimitCountdownLength', async () => {
       expect((await token.updateDailyLimitCountdownLength()).toNumber())
         .to.equal(60 * 60 * 48)
-      await token.updateUpdateDailyLimitCountdownLength(15, { from: superOwnerMultiSig })
+      await token.updateUpdateDailyLimitCountdownLength(15, { from: superProtectorMultiSig })
       expect((await token.updateDailyLimitCountdownLength()).toNumber())
         .to.equal(15)
     })
 
-    it('reverts if sent by address other than superOwnerMultiSig', async () => {
+    it('reverts if sent by address other than superProtectorMultiSig', async () => {
       await shouldFail(token.updateUpdateDailyLimitCountdownLength(15))
     })
 
     it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
       const { logs } = await token.updateUpdateDailyLimitCountdownLength(
-        10, { from: superOwnerMultiSig }
+        10, { from: superProtectorMultiSig }
       )
       expect(logs[0].event).to.equal('UpdateDailyLimitCountdownLengthUpdated')
     })
@@ -380,18 +380,18 @@ contract('MPVToken', accounts => {
     it('updates the delayedTransferCountdownLength', async () => {
       expect((await token.delayedTransferCountdownLength()).toNumber())
         .to.equal(60 * 60 * 48)
-      await token.updateDelayedTransferCountdownLength(15, { from: superOwnerMultiSig })
+      await token.updateDelayedTransferCountdownLength(15, { from: superProtectorMultiSig })
       expect((await token.delayedTransferCountdownLength()).toNumber())
         .to.equal(15)
     })
 
-    it('reverts if sent by address other than superOwnerMultiSig', async () => {
+    it('reverts if sent by address other than superProtectorMultiSig', async () => {
       await shouldFail(token.updateDelayedTransferCountdownLength(15))
     })
 
     it('emits UpdateDailyLimitCountdownLengthUpdated event', async () => {
       const { logs } = await token.updateDelayedTransferCountdownLength(
-        10, { from: superOwnerMultiSig }
+        10, { from: superProtectorMultiSig }
       )
       expect(logs[0].event).to.equal('DelayedTransferCountdownLengthUpdated')
     })

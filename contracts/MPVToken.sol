@@ -22,7 +22,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     event DailyLimitUpdateCancelled(address account, uint256 dailyLimit);
     event DailyLimitUpdated(address indexed sender, uint256 indexed dailyLimit);
     event DailyLimitUpdateFulfilled(address account, uint256 newDailyLimit);
-    event DelayedTransferCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
+    event DelayedTransferCountdownLengthUpdated(address superProtectorMultisig, uint256 updatedCountdownLength);
 
     event DelayedTransferInitiated(
         address from,
@@ -36,7 +36,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     event MintingAdminUpdated(address indexed sender, address indexed admin);
     event MPVUpdated(address indexed sender, address indexed addr);
     event RedemptionAdminUpdated(address indexed sender, address indexed admin);
-    event UpdateDailyLimitCountdownLengthUpdated(address superOwnerMultisig, uint256 updatedCountdownLength);
+    event UpdateDailyLimitCountdownLengthUpdated(address superProtectorMultisig, uint256 updatedCountdownLength);
 
 
     /*
@@ -46,7 +46,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     MasterPropertyValue public masterPropertyValue;
     address public mintingAdmin;
     address public redemptionAdmin;
-    address public superOwnerMultiSig;
+    address public superProtectorMultiSig;
     uint256 public updateDailyLimitCountdownLength;
     uint256 public delayedTransferCountdownLength;
     uint256 public delayedTransferNonce;
@@ -105,9 +105,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         _;
     }
 
-    /// @dev Requires the sender to be the super owner multiSig contract.
-    modifier onlySuperOwnerMultiSig() {
-        require(superOwnerMultiSig == msg.sender);
+    /// @dev Requires the sender to be the super protector multiSig contract.
+    modifier onlySuperProtectorMultiSig() {
+        require(superProtectorMultiSig == msg.sender);
         _;
     }
 
@@ -142,7 +142,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         MasterPropertyValue _masterPropertyValue,
         address _mintingAdmin,
         address _redemptionAdmin,
-        address _superOwnerMultiSig
+        address _superProtectorMultiSig
     )
     public
     initializer
@@ -152,7 +152,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         masterPropertyValue = _masterPropertyValue;
         mintingAdmin = _mintingAdmin;
         redemptionAdmin = _redemptionAdmin;
-        superOwnerMultiSig = _superOwnerMultiSig;
+        superProtectorMultiSig = _superProtectorMultiSig;
         updateDailyLimitCountdownLength = 48 hours;
         delayedTransferCountdownLength = 48 hours;
         delayedTransferNonce = 0;
@@ -195,7 +195,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /// @param updatedCountdownLength Address of redemption admin role contract.
     function updateUpdateDailyLimitCountdownLength(uint256 updatedCountdownLength)
     public
-    onlySuperOwnerMultiSig
+    onlySuperProtectorMultiSig
     mpvNotPaused
     {
         updateDailyLimitCountdownLength = updatedCountdownLength;
@@ -206,7 +206,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /// @param updatedCountdownLength Address of redemption admin role contract.
     function updateDelayedTransferCountdownLength(uint256 updatedCountdownLength)
     public
-    onlySuperOwnerMultiSig
+    onlySuperProtectorMultiSig
     mpvNotPaused
     {
         delayedTransferCountdownLength = updatedCountdownLength;
