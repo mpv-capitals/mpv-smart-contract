@@ -23,6 +23,13 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
      */
     /// admin is the account or multisig able to submit transaction on
     /// behalf of this multisig.
+    /// The admin value is set immeidately after deployment.
+    /// Admins for multisigs:
+    /// SuperProtectorMultiSig admin = SuperProtectorMultiSig
+    /// BasicProtectorMultiSig admin = SuperProtectorMultiSig
+    /// OperationAdminMultiSig admin = BasicProtectorMultiSig
+    /// MintingAdminMultiSig admin = BasicProtectorMultiSig
+    /// RedemptionAdminMultiSig admin = BasicProtectorMultiSig
     address public admin;
     MasterPropertyValue public masterPropertyValue;
 
@@ -35,6 +42,12 @@ contract AdministeredMultiSigWallet is BaseMultiSigWallet, Initializable {
     /// in this case immediately rather than requiring the multisig to submit
     // the transaction because it would require majority vote which is not what
     /// we want in this case.
+    /// Transactors for multisigs:
+    /// SuperProtectorMultiSig admin = nobody
+    /// BasicProtectorMultiSig admin = nobody
+    /// OperationAdminMultiSig admin = nobody
+    /// MintingAdminMultiSig admin = MintingAdminRole contract
+    /// RedemptionAdminMultiSig admin = Assets contract
     address public transactor;
 
     /*

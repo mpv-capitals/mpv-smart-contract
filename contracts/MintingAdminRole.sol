@@ -32,7 +32,7 @@ contract MintingAdminRole is Initializable {
     /*
      *  Storage
      */
-    IMultiSigWallet public multiSig;
+    IMultiSigWallet public mintingAdminMultiSig;
     Assets public assets;
     MPVToken public mpvToken;
     SuperProtectorRole public superProtectorRole;
@@ -46,28 +46,28 @@ contract MintingAdminRole is Initializable {
     /*
      *  Modifiers
      */
-    modifier onlyMultiSig() {
-        require(address(multiSig) == msg.sender);
+    modifier onlyMintingAdminMultiSig() {
+        require(address(mintingAdminMultiSig) == msg.sender);
         _;
     }
 
     modifier onlyMintingAdmin() {
-        require(multiSig.hasOwner(msg.sender));
+        require(mintingAdminMultiSig.hasOwner(msg.sender));
         _;
     }
 
     modifier onlyBasicProtector() {
-        require(IMultiSigWallet(basicProtectorRole.multiSig()).hasOwner(msg.sender));
+        require(IMultiSigWallet(basicProtectorRole.basicProtectorMultiSig()).hasOwner(msg.sender));
         _;
     }
 
     modifier onlyBasicProtectorMultiSig() {
-        require(address(basicProtectorRole.multiSig()) == msg.sender);
+        require(address(basicProtectorRole.basicProtectorMultiSig()) == msg.sender);
         _;
     }
 
     modifier onlySuperProtectorMultiSig() {
-        require(address(superProtectorRole.multiSig()) == msg.sender);
+        require(address(superProtectorRole.superProtectorMultiSig()) == msg.sender);
         _;
     }
 
@@ -81,14 +81,14 @@ contract MintingAdminRole is Initializable {
      * Public functions
      */
     /// @dev Initialize function sets initial storage values.
-    /// @param _multiSig Address of the minting owner multisig contract.
+    /// @param _mintingAdminMultiSig Address of the minting owner multisig contract.
     /// @param _assets Address of the Assets contrac.
     /// @param _mpvToken Address of the MPV Token contract.
     /// @param _superProtectorRole Address of the super owner role contract.
     /// @param _basicProtectorRole Address of the basic owner role contract.
     /// @param _mintingReceiverWallet Address of the new token minting receiving wallet.
     function initialize(
-        IMultiSigWallet _multiSig,
+        IMultiSigWallet _mintingAdminMultiSig,
         Assets _assets,
         MPVToken _mpvToken,
         SuperProtectorRole _superProtectorRole,
@@ -96,7 +96,7 @@ contract MintingAdminRole is Initializable {
         address _mintingReceiverWallet,
         MasterPropertyValue _masterPropertyValue
     ) public initializer {
-        multiSig = _multiSig;
+        mintingAdminMultiSig = _mintingAdminMultiSig;
         assets = _assets;
         mpvToken = _mpvToken;
         masterPropertyValue = _masterPropertyValue;
@@ -139,13 +139,13 @@ contract MintingAdminRole is Initializable {
                 this._startMintingCountdown.selector
             );
 
-            uint256 transactionId = multiSig.addTransaction(address(this), data);
+            uint256 transactionId = mintingAdminMultiSig.addTransaction(address(this), data);
             pendingAssetsTransactionId = transactionId;
             emit PendingAssetAdded(msg.sender, _asset.id);
             return transactionId;
         } else {
             assets.addPendingAsset(_asset);
-            multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+            mintingAdminMultiSig.revokeAllConfirmations(pendingAssetsTransactionId);
             emit PendingAssetAdded(msg.sender, _asset.id);
             return pendingAssetsTransactionId;
         }
@@ -172,7 +172,7 @@ contract MintingAdminRole is Initializable {
     /// by the minting admin multsig contract.
     function _startMintingCountdown()
     public
-    onlyMultiSig
+    onlyMintingAdminMultiSig
     mpvNotPaused
     {
         require(mintingCountdownStart == 0);
@@ -202,7 +202,7 @@ contract MintingAdminRole is Initializable {
     {
         assets.removePendingAsset(assetId);
 
-        multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+        mintingAdminMultiSig.revokeAllConfirmations(pendingAssetsTransactionId);
         emit PendingAssetRemoved(msg.sender, assetId);
         return pendingAssetsTransactionId;
     }
@@ -215,7 +215,7 @@ contract MintingAdminRole is Initializable {
     mpvNotPaused
     {
         require(mintingCountdownStart > 0);
-        multiSig.revokeAllConfirmations(pendingAssetsTransactionId);
+        mintingAdminMultiSig.revokeAllConfirmations(pendingAssetsTransactionId);
         mintingCountdownStart = 0;
         emit MintingCancelled(msg.sender);
     }

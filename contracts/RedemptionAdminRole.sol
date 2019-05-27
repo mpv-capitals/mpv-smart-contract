@@ -29,7 +29,7 @@ contract RedemptionAdminRole is Initializable {
     /*
      *  Storage
      */
-    IMultiSigWallet public multiSig;
+    IMultiSigWallet public redemptionAdminMultiSig;
     IMultiSigWallet public basicProtectorMultiSig;
     address public superProtectorMultiSig;
     Assets public assets;
@@ -43,13 +43,13 @@ contract RedemptionAdminRole is Initializable {
      */
     /// @dev Requires the sender to be the redemption admin multisig contract.
     modifier onlyRedemptionAdminMultiSig() {
-        require(address(multiSig) == msg.sender);
+        require(address(redemptionAdminMultiSig) == msg.sender);
         _;
     }
 
     /// @dev Requires the sender an owner of the redemptionAdminMultiSig
     modifier onlyRedemptionAdmin() {
-        require(multiSig.hasOwner(msg.sender));
+        require(redemptionAdminMultiSig.hasOwner(msg.sender));
         _;
     }
 
@@ -69,17 +69,17 @@ contract RedemptionAdminRole is Initializable {
      * Public functions
      */
     /// @dev Initialize function sets initial storage values.
-    /// @param _multiSig Address of the redemption admin multisig contract.
+    /// @param _redemptionAdminMultiSig Address of the redemption admin multisig contract.
     /// @param _assets Address of the assets contract.
     function initialize(
-        IMultiSigWallet _multiSig,
+        IMultiSigWallet _redemptionAdminMultiSig,
         IMultiSigWallet _basicProtectorMultiSig,
         address _superProtectorMultiSig,
         Assets _assets,
         MPVToken _mpvToken,
         MasterPropertyValue _masterPropertyValue
     ) public initializer {
-        multiSig = _multiSig;
+        redemptionAdminMultiSig = _redemptionAdminMultiSig;
         basicProtectorMultiSig = _basicProtectorMultiSig;
         superProtectorMultiSig = _superProtectorMultiSig;
         assets = _assets;
@@ -126,7 +126,7 @@ contract RedemptionAdminRole is Initializable {
         public
     {
         require(
-            multiSig.hasOwner(msg.sender) ||
+            redemptionAdminMultiSig.hasOwner(msg.sender) ||
             basicProtectorMultiSig.hasOwner(msg.sender)
         );
         require(

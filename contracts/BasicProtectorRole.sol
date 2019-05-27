@@ -12,15 +12,15 @@ contract BasicProtectorRole is Initializable {
     /*
      *  Storage
      */
-    IMultiSigWallet public multiSig;
+    IMultiSigWallet public basicProtectorMultiSig;
     MintingAdminRole public mintingAdminRole;
 
     /*
      *  Modifiers
      */
     /// Requires that the sender is an owner in the basic protector multisig contract.
-    modifier onlyOwner() {
-        require(multiSig.hasOwner(msg.sender));
+    modifier onlyBasicProtector() {
+        require(basicProtectorMultiSig.hasOwner(msg.sender));
         _;
     }
 
@@ -28,10 +28,10 @@ contract BasicProtectorRole is Initializable {
      * Public functions
      */
     /// @dev Initialize function sets initial storage values.
-    /// @param _multiSig Address of the basic owner multisig contract.
+    /// @param _basicProtectorMultiSig Address of the basic owner multisig contract.
     function initialize(
-        IMultiSigWallet _multiSig
+        IMultiSigWallet _basicProtectorMultiSig
     ) public initializer {
-        multiSig = _multiSig;
+        basicProtectorMultiSig = _basicProtectorMultiSig;
     }
 }

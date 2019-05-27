@@ -20,7 +20,7 @@ contract SuperProtectorRole is Initializable {
     /*
      *  Storage
      */
-    IMultiSigWallet public multiSig;
+    IMultiSigWallet public superProtectorMultiSig;
     uint256 public transferLimitChangeCountdownLength;
     uint256 public delayedTransferCountdownLength;
     uint256 public whitelistRemovalActionCountdownLength;
@@ -29,8 +29,8 @@ contract SuperProtectorRole is Initializable {
     /*
      *  Modifiers
      */
-    modifier onlyMultiSig() {
-        require(address(multiSig) == msg.sender);
+    modifier onlySuperProtectorMultiSig() {
+        require(address(superProtectorMultiSig) == msg.sender);
         _;
     }
 
@@ -44,12 +44,12 @@ contract SuperProtectorRole is Initializable {
      * Public functions
      */
     /// @dev Initialize function set initial storage values.
-    /// @param _multiSig Address of the super protector multisig.
+    /// @param _superProtectorMultiSig Address of the super protector multisig.
     function initialize(
-        IMultiSigWallet _multiSig,
+        IMultiSigWallet _superProtectorMultiSig,
         MasterPropertyValue _masterPropertyValue
     ) public initializer {
-        multiSig = _multiSig;
+        superProtectorMultiSig = _superProtectorMultiSig;
         masterPropertyValue = _masterPropertyValue;
 
         transferLimitChangeCountdownLength = 48 hours;
@@ -64,7 +64,7 @@ contract SuperProtectorRole is Initializable {
         uint256 newCountdown
     )
     public
-    onlyMultiSig
+    onlySuperProtectorMultiSig
     mpvNotPaused
     {
         transferLimitChangeCountdownLength = newCountdown;
@@ -78,7 +78,7 @@ contract SuperProtectorRole is Initializable {
         uint256 newCountdown
     )
     public
-    onlyMultiSig
+    onlySuperProtectorMultiSig
     mpvNotPaused
     {
         delayedTransferCountdownLength = newCountdown;
@@ -92,7 +92,7 @@ contract SuperProtectorRole is Initializable {
         uint256 newCountdown
     )
     public
-    onlyMultiSig
+    onlySuperProtectorMultiSig
     mpvNotPaused
     {
         whitelistRemovalActionCountdownLength = newCountdown;

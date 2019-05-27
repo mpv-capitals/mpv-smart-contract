@@ -325,7 +325,7 @@ async function setAdmins() {
       gas: 5712383,
       gasPrice: 20000000000
     })
-    console.log(10)
+    console.log('done')
   } catch(err) {
     console.error(err)
     console.trace(err)
