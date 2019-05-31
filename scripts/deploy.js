@@ -31,6 +31,7 @@ const json = {
 let provider = new Web3.providers.HttpProvider('http://localhost:8545')
 
 let network = process.argv[2]
+let zosFilePath = process.argv[3]
 
 if (network && network != 'development') {
   const url = `https://${network}.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed`
@@ -45,9 +46,15 @@ if (network && network != 'development') {
 const web3 = new Web3(provider)
 
 function getProxyAddress(name) {
-  const files = glob.sync('zos.*.json')
-  const zosDevJson = JSON.parse(fs.readFileSync(files[0]))
-  const zosProxyAddress = zosDevJson.proxies[`master-property-value/${name}`][0].address
+  let zosFile = null
+  if (zosFilePath) {
+    zosFile = JSON.parse(fs.readFileSync(zosFilePath))
+  } else {
+    const files = glob.sync('zos.*.json')
+    zosFile = JSON.parse(fs.readFileSync(files[0]))
+  }
+
+  const zosProxyAddress = zosFile.proxies[`master-property-value/${name}`][0].address
   return zosProxyAddress
 }
 
@@ -237,6 +244,20 @@ async function setAdmins() {
 
     console.log('assets.updateRedemptionAdminRole')
     await assets.updateRedemptionAdminRole(redemptionAdminRole.address, {
+      from: senderAddress,
+      gas: 5712383,
+      gasPrice: 20000000000
+    })
+
+    console.log('mpvToken.updateAssets')
+    await mpvToken.updateAssets(assets.address, {
+      from: senderAddress,
+      gas: 5712383,
+      gasPrice: 20000000000
+    })
+
+    console.log('mpvToken.updateSuperProtectorMultiSig')
+    await mpvToken.updateSuperProtectorMultiSig(superProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
       gasPrice: 20000000000

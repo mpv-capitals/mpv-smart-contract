@@ -21,6 +21,8 @@ push:
 
 .PHONY: deploy
 deploy: push
+	#@./scripts/deploy.sh -n development - f zos.dev-1559329914676.json
+	#@node scripts/deploy.js development zos.dev-1559329914676.json
 	@./scripts/deploy.sh -n $(network)
 	@node scripts/deploy.js $(network)
 

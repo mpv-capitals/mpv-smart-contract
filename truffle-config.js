@@ -68,13 +68,13 @@ module.exports = {
     development: {
       provider: createProvider('ws://localhost:8545'),
       network_id: '*', // eslint-disable-line camelcase
-      gas: 5712383,
+      gas: 6712383,
       gasPrice: 20000000000
     },
     kovan: {
       provider: createProvider('https://kovan.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
       network_id: 42, // eslint-disable-line camelcase
-      gas: 5712383,
+      gas: 6712383,
       gasPrice: 20000000000
     },
     rinkeby: {
@@ -86,13 +86,13 @@ module.exports = {
     ropsten: {
       provider: createProvider('https://ropsten.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
       network_id: 3, // eslint-disable-line camelcase
-      gas: 5712383,
+      gas: 6712383,
       gasPrice: 20000000000
     },
     mainnet: {
       provider: createProvider('https://mainnet.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
       network_id: 1, // eslint-disable-line camelcase
-      gas: 5712383,
+      gas: 6712383,
       gasPrice: 20000000000
     }
 

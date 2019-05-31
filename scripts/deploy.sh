@@ -134,7 +134,7 @@ npx zos create Whitelist --init initialize --args "$ProxyOperationAdminMultiSigW
 ProxyWhitelistAddress=$(contract_proxy_address "Whitelist")
 echo "ProxyWhitelist: $ProxyWhitelistAddress"
 
-npx zos create MPVToken --init initialize --args '"Master Property Value"','"MPV"',18,"$ProxyWhitelistAddress","$MasterPropertyValueAddress","$SenderAddress","$SenderAddress","$ProxySuperProtectorMultiSigWalletAddress" --network="$Network"
+npx zos create MPVToken --init initialize --args '"Master Property Value"','"MPV"',18,"$ProxyWhitelistAddress","$MasterPropertyValueAddress","$SenderAddress","$SenderAddress","$SenderAddress" --network="$Network"
 
 ProxyMPVTokenAddress=$(contract_proxy_address "MPVToken")
 echo "ProxyMPVToken: $ProxyMPVTokenAddress"
