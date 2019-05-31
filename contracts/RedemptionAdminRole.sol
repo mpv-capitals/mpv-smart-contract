@@ -1,5 +1,6 @@
 pragma solidity ^0.5.1;
 
+import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "zos-lib/contracts/Initializable.sol";
 import "./MasterPropertyValue.sol";
 import "./IMultiSigWallet.sol";
@@ -134,8 +135,8 @@ contract RedemptionAdminRole is Initializable {
         );
 
         (uint256 amount, ,) = assets.redemptionTokenLocks(assetId);
-        mpvToken.burn(address(assets), amount);
         assets.executeRedemption(assetId);
+        mpvToken.burn(address(assets), amount);
     }
 
     /// @dev Set the countdown length for the action of burning of tokens.

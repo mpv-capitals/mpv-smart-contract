@@ -4,6 +4,7 @@ require('chai').should()
 
 const MPVToken = artifacts.require('MPVToken')
 const Whitelist = artifacts.require('Whitelist')
+const AssetsMock = artifacts.require('AssetsMock')
 const MasterPropertyValueMock = artifacts.require('MasterPropertyValueMock')
 const OperationAdminMultiSigWalletMock = artifacts.require('OperationAdminMultiSigWalletMock')
 const BasicProtectorMultiSigWalletMock = artifacts.require('BasicProtectorMultiSigWalletMock')
@@ -13,7 +14,7 @@ const BN = n => new web3.utils.BN(n)
 const MULTIPLIER = BN(10).pow(BN(18))
 
 contract('MPVToken', accounts => {
-  let token, whitelist, masterPropertyValue, superProtectorMultiSig
+  let token, whitelist, masterPropertyValue, superProtectorMultiSig, assetsMock
 
   beforeEach(async () => {
     superProtectorMultiSig = accounts[5]
@@ -26,7 +27,10 @@ contract('MPVToken', accounts => {
       basicProtectorMultiSig.address,
       masterPropertyValue.address
     )
-    token = await MPVToken.new()
+    token = await MPVToken.new({
+      gas: 6712383,
+    })
+    assetsMock = await AssetsMock.new()
     await token.initialize(
       'Master Property Value',
       'MPV',
@@ -38,6 +42,9 @@ contract('MPVToken', accounts => {
       superProtectorMultiSig
     )
 
+    await token.updateAssets(assetsMock.address, {
+      from: superProtectorMultiSig
+    })
     await whitelist.addWhitelisted(accounts[0])
     await whitelist.addWhitelisted(accounts[1])
     await whitelist.addWhitelisted(accounts[2])
@@ -45,7 +52,9 @@ contract('MPVToken', accounts => {
 
   describe('transfer()', () => {
     beforeEach(async () => {
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[0], (BN(10000).mul(MULTIPLIER)).toString())
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[1], (BN(10000).mul(MULTIPLIER)).toString())
     })
 
@@ -72,9 +81,12 @@ contract('MPVToken', accounts => {
 
   describe('transferFrom()', () => {
     beforeEach(async () => {
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER))
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER))
       await token.approve(accounts[0], BN(10000).mul(MULTIPLIER), { from: accounts[1] })
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER))
     })
 
@@ -104,7 +116,9 @@ contract('MPVToken', accounts => {
 
     beforeEach(async () => {
       largeTransferAmt = BN(70).mul(MULTIPLIER)
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER).toString())
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER).toString())
       await token.updateDailyLimit(BN(50).mul(MULTIPLIER).toString())
       await mine(60 * 60 * 48 + 1)
@@ -136,8 +150,11 @@ contract('MPVToken', accounts => {
 
     beforeEach(async () => {
       largeTransferAmt = BN(70).mul(MULTIPLIER)
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER).toString())
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER).toString())
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[2], BN(10000).mul(MULTIPLIER).toString())
       await token.updateDailyLimit(BN(50).mul(MULTIPLIER).toString())
       await mine(60 * 60 * 48 + 1)
@@ -165,8 +182,11 @@ contract('MPVToken', accounts => {
 
   describe('executeDelayedTransfer()', () => {
     beforeEach(async () => {
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER).toString())
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER).toString())
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[2], BN(10000).mul(MULTIPLIER).toString())
       await token.updateDailyLimit(BN(50).mul(MULTIPLIER).toString())
       await mine(60 * 60 * 48 + 1)
@@ -320,6 +340,7 @@ contract('MPVToken', accounts => {
       const mintAmount = 500
       const previousTokenSupply = (await token.totalSupply())
 
+      await assetsMock.mock_addTotalTokens(mintAmount)
       await masterPropertyValue.mock_callMint(token.address, accounts[0], mintAmount)
 
       const newTokenSupply = (await token.totalSupply())
@@ -331,12 +352,14 @@ contract('MPVToken', accounts => {
     })
 
     it('reverts if minting tokens to a non-whitelisted address', async () => {
+      await assetsMock.mock_addTotalTokens(500)
       await shouldFail(masterPropertyValue.mock_callMint(token.address, accounts[4], 500))
     })
   })
 
   describe('burn()', () => {
     beforeEach(async () => {
+      await assetsMock.mock_addTotalTokens(500)
       await masterPropertyValue.mock_callMint(token.address, accounts[0], 500)
     })
 
@@ -344,6 +367,7 @@ contract('MPVToken', accounts => {
       const burnAmount = 300
       const previousTokenSupply = (await token.totalSupply())
 
+      await assetsMock.mock_subTotalTokens(burnAmount)
       await masterPropertyValue.mock_callBurn(token.address, accounts[0], burnAmount)
 
       const newTokenSupply = (await token.totalSupply()).toNumber()
@@ -399,7 +423,9 @@ contract('MPVToken', accounts => {
 
   describe('detectTransferRestriction()', () => {
     beforeEach(async () => {
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[0], BN(10000).mul(MULTIPLIER).toString())
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
       await masterPropertyValue.mock_callMint(token.address, accounts[1], BN(10000).mul(MULTIPLIER).toString())
     })
 

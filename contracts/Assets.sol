@@ -471,6 +471,19 @@ contract Assets is Initializable {
         return pendingAssets;
     }
 
+
+    function totalTokens() public returns (uint256) {
+        uint256 _totalTokens = statusTotalTokens[uint256(Status.Enlisted)];
+        _totalTokens = _totalTokens.add(statusTotalTokens[uint256(Status.Locked)]);
+        _totalTokens = _totalTokens.add(statusTotalTokens[uint256(Status.Reserved)]);
+
+        return _totalTokens;
+    }
+
+    function totalPendingTokens() public returns (uint256) {
+        return statusTotalTokens[uint256(Status.Pending)];
+    }
+
     /*
      * Internal functions
      */

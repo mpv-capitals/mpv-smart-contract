@@ -41,7 +41,9 @@ async function initContracts (accounts) {
   redemptionFeeReceiverWallet = accounts[9]
 
   mpv = await MPV.new()
-  mpvToken = await MPVToken.new()
+  mpvToken = await MPVToken.new({
+    gas: 6712383,
+  })
   assets = await Assets.new()
   whitelist = await Whitelist.new()
 
@@ -122,6 +124,9 @@ async function initContracts (accounts) {
   await redemptionAdminMultiSig.updateTransactor(assets.address)
   await redemptionAdminMultiSig.updateAdmin(basicProtectorMultiSig.address)
   await mpv.updatePausableAdmin(superProtectorMultiSig.address)
+  await mpvToken.updateAssets(assets.address, {
+    from: accounts[5]
+  })
 }
 
 contract('MasterPropertyValue', accounts => {

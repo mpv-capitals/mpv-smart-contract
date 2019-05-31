@@ -80,7 +80,7 @@ module.exports = {
     rinkeby: {
       provider: createProvider('https://rinkeby.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
       network_id: 4, // eslint-disable-line camelcase
-      gas: 5712383,
+      gas: 6712383,
       gasPrice: 20000000000
     },
     ropsten: {

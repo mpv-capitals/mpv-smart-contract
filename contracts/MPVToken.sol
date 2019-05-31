@@ -4,6 +4,7 @@ import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "zos-lib/contracts/Initializable.sol";
 import "openzeppelin-eth/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-eth/contracts/token/ERC20/ERC20Detailed.sol";
+import "./Assets.sol";
 import "./Whitelist.sol";
 import "./MasterPropertyValue.sol";
 
@@ -33,15 +34,18 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         TransferMethod transferMethod
     );
 
+    event AssetsUpdated(address indexed sender, address indexed addr);
     event MintingAdminUpdated(address indexed sender, address indexed admin);
     event MPVUpdated(address indexed sender, address indexed addr);
     event RedemptionAdminUpdated(address indexed sender, address indexed admin);
+    event SuperProtectorMultiSigUpdated(address indexed sender, address indexed addr);
     event UpdateDailyLimitCountdownLengthUpdated(address superProtectorMultisig, uint256 updatedCountdownLength);
 
 
     /*
      *  Storage
      */
+    Assets public assets;
     Whitelist public whitelist;
     MasterPropertyValue public masterPropertyValue;
     address public mintingAdmin;
@@ -165,6 +169,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mpvAccessOnly(msg.sender)
     mpvNotPaused
     {
+        require(_masterPropertyValue != address(0));
         masterPropertyValue = MasterPropertyValue(_masterPropertyValue);
         emit MPVUpdated(msg.sender, _masterPropertyValue);
     }
@@ -176,8 +181,31 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     onlyMintingAdmin
     mpvNotPaused
     {
+        require(_mintingAdmin != address(0));
         mintingAdmin = _mintingAdmin;
         emit MintingAdminUpdated(msg.sender, _mintingAdmin);
+    }
+
+    function updateSuperProtectorMultiSig(address _multisig)
+    public
+    onlySuperProtectorMultiSig
+    mpvNotPaused
+    {
+        require(_multisig != address(0));
+        superProtectorMultiSig = _multisig;
+        emit SuperProtectorMultiSigUpdated(msg.sender, _multisig);
+    }
+
+    /// @dev Set the assets contract address.
+    /// @param _assets Address of assets contract.
+    function updateAssets(address _assets)
+    public
+    onlySuperProtectorMultiSig
+    mpvNotPaused
+    {
+        require(_assets != address(0));
+        assets = Assets(_assets);
+        emit AssetsUpdated(msg.sender, _assets);
     }
 
     /// @dev Set the redemption admin role contract address.
@@ -371,6 +399,10 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     whitelistedAddress(account)
     mpvNotPaused
     {
+        uint256 newTotal = totalSupply().add(value);
+        uint256 totalTokens = assets.totalTokens();
+        require(newTotal == totalTokens);
+
         _mint(account, value);
     }
 
@@ -382,6 +414,10 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     onlyRedemptionAdmin
     mpvNotPaused
     {
+        uint256 newTotal = totalSupply().sub(value);
+        uint256 totalTokens = assets.totalTokens();
+        require(newTotal == totalTokens);
+
         _burn(account, value);
     }
 

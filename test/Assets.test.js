@@ -17,7 +17,8 @@ const ZERO_BYTES32 = '0x00000000000000000000000000000000000000000000000000000000
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const BN = n => new web3.utils.BN(n)
 const MULTIPLIER = BN(10).pow(BN(18))
-const REDEMPTION_FEE = MULTIPLIER.div(BN(10)) // 0.1
+//const REDEMPTION_FEE = MULTIPLIER.div(BN(10)) // 0.1
+const REDEMPTION_FEE = BN(0)
 
 contract('Assets', accounts => {
   let whitelist, masterPropertyValue // needed for token setup
@@ -45,6 +46,9 @@ contract('Assets', accounts => {
     // Initialize token, assets, and redemptionAdminRole
     mpvToken = await initializeToken()
     assets = await initializeAssets(basicProtectorMultiSig.address)
+    await mpvToken.updateAssets(assets.address, {
+      from: accounts[5]
+    })
     redemptionAdminRole.initialize(
       redemptionAdminMultiSig.address,
       basicProtectorMultiSig.address,
@@ -120,8 +124,8 @@ contract('Assets', accounts => {
         timestamp: now,
       }
       await assets.add(newAsset)
-      await mintTokens(accounts[0], BN(200).mul(MULTIPLIER).toString())
-      await mpvToken.approve(assets.address, (200 * MULTIPLIER).toString(), { from: accounts[0] })
+      await mintTokens(accounts[0], BN(100).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, (100 * MULTIPLIER).toString(), { from: accounts[0] })
     })
 
     it('sets the asset status to LOCKED', async () => {
@@ -132,7 +136,7 @@ contract('Assets', accounts => {
       expect((await assets.assets(fromAscii('1'))).status.toNumber()).to.equal(locked)
     })
 
-    it('reverts if the account does not have the proper balance approved', async () => {
+    it.skip('reverts if the account does not have the proper balance approved', async () => {
       await mintTokens(accounts[1], BN(100).mul(MULTIPLIER).toString()) // amount doesn't cover fee
       await mpvToken.approve(assets.address, BN(100).mul(MULTIPLIER).toString(), { from: accounts[1] })
       await shouldFail(assets.requestRedemption(1, { from: accounts[1] }))
@@ -221,8 +225,8 @@ contract('Assets', accounts => {
         timestamp: now,
       }]
       await assets.addList(newAssets)
-      await mintTokens(accounts[0], BN(400).mul(MULTIPLIER).toString())
-      await mpvToken.approve(assets.address, BN(400).mul(MULTIPLIER).toString(), { from: accounts[0] })
+      await mintTokens(accounts[0], BN(200).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, BN(200).mul(MULTIPLIER).toString(), { from: accounts[0] })
     })
 
     it('sets the assets\' status to LOCKED', async () => {
@@ -251,8 +255,8 @@ contract('Assets', accounts => {
         timestamp: now,
       }
       await assets.add(newAsset)
-      await mintTokens(accounts[0], BN(200).mul(MULTIPLIER).toString())
-      await mpvToken.approve(assets.address, BN(200).mul(MULTIPLIER).toString(), { from: accounts[0] })
+      await mintTokens(accounts[0], BN(100).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, BN(100).mul(MULTIPLIER).toString(), { from: accounts[0] })
       await assets.requestRedemption(fromAscii('1'), { from: accounts[0] })
     })
 
@@ -321,8 +325,8 @@ contract('Assets', accounts => {
         timestamp: now,
       }
       await assets.add(newAsset)
-      await mintTokens(accounts[0], BN(200).mul(MULTIPLIER).toString())
-      await mpvToken.approve(assets.address, BN(200).mul(MULTIPLIER).toString(), { from: accounts[0] })
+      await mintTokens(accounts[0], BN(100).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, BN(100).mul(MULTIPLIER).toString(), { from: accounts[0] })
       await assets.requestRedemption(fromAscii('1'), { from: accounts[0] })
     })
 
@@ -393,8 +397,8 @@ contract('Assets', accounts => {
         timestamp: now,
       }
       await assets.add(newAsset)
-      await mintTokens(accounts[0], BN(200).mul(MULTIPLIER).toString())
-      await mpvToken.approve(assets.address, BN(200).mul(MULTIPLIER).toString(), { from: accounts[0] })
+      await mintTokens(accounts[0], BN(100).mul(MULTIPLIER).toString())
+      await mpvToken.approve(assets.address, BN(100).mul(MULTIPLIER).toString(), { from: accounts[0] })
       await assets.requestRedemption(fromAscii('1'), { from: accounts[0] })
       await redemptionAdminMultiSig.confirmTransaction(0)
       mine(60 * 60 * 48 + 1)
@@ -470,7 +474,9 @@ contract('Assets', accounts => {
   }
 
   async function initializeToken () {
-    const mpvToken = await MPVToken.new()
+    const mpvToken = await MPVToken.new({
+      gas: 6712383,
+    })
     await mpvToken.initialize(
       'Master Property Value',
       'MPV',
