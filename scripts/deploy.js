@@ -43,9 +43,11 @@ if (network && network != 'development') {
   provider = new HDWalletProvider(key, url)
 }
 
+const gasPrice = 20000000000 // 20gwei
+
 const web3 = new Web3(provider)
 
-function getProxyAddress(name) {
+function getZosFile() {
   let zosFile = null
   if (zosFilePath) {
     zosFile = JSON.parse(fs.readFileSync(zosFilePath))
@@ -53,6 +55,11 @@ function getProxyAddress(name) {
     const files = glob.sync('zos.*.json')
     zosFile = JSON.parse(fs.readFileSync(files[0]))
   }
+  return zosFile
+}
+
+function getProxyAddress(name) {
+  const zosFile = getZosFile()
 
   const zosProxyAddress = zosFile.proxies[`master-property-value/${name}`][0].address
   return zosProxyAddress
@@ -239,114 +246,114 @@ async function setAdmins() {
     await assets.updateMintingAdminRole(mintingAdminRole.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('assets.updateRedemptionAdminRole')
     await assets.updateRedemptionAdminRole(redemptionAdminRole.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('mpvToken.updateAssets')
     await mpvToken.updateAssets(assets.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('mpvToken.updateSuperProtectorMultiSig')
     await mpvToken.updateSuperProtectorMultiSig(superProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('mpvToken.updateMintingAdmin')
     await mpvToken.updateMintingAdmin(mintingAdminRole.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('mpvToken.updateRedemptionAdmin')
     await mpvToken.updateRedemptionAdmin(redemptionAdminRole.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('superProtectorMultiSig.updateAdmin')
     await superProtectorMultiSig.updateAdmin(superProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('basicProtectorMultiSig.updateAdmin')
     await basicProtectorMultiSig.updateAdmin(superProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('operationAdminMultiSig.updateAdmin')
     await operationAdminMultiSig.updateAdmin(basicProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('mintingAdminMultiSig.updateTransactor')
     await mintingAdminMultiSig.updateTransactor(mintingAdminRole.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('mintingAdminMultiSig.updateTransactor')
     await mintingAdminMultiSig.updateAdmin(basicProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('redemptionAdminMultiSig.updateTransactor')
     await redemptionAdminMultiSig.updateTransactor(assets.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('redemptionAdminMultiSig.updateAdmin')
     await redemptionAdminMultiSig.updateAdmin(basicProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('mpv.updatePausableAdmin')
     await mpv.updatePausableAdmin(superProtectorMultiSig.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('whitelist.addWhitelisted')
     await whitelist.addWhitelisted(senderAddress, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
 
     console.log('whitelist.addWhitelisted')
     await whitelist.addWhitelisted(assets.address, {
       from: senderAddress,
       gas: 5712383,
-      gasPrice: 20000000000
+      gasPrice
     })
-    console.log('done')
+    console.log('done setting admins')
   } catch(err) {
     console.error(err)
     console.trace(err)

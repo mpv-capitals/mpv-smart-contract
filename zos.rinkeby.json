@@ -2393,7 +2393,8 @@
       {
         "address": "0xdb9066B961c35e42e906EB5A157D3952bc50F942",
         "version": "0.1.0",
-        "implementation": "0x7968c0F1CE2e20d97c6Bf6F9Cb8f9Acb2EAD493F"
+        "implementation": "0x7968c0F1CE2e20d97c6Bf6F9Cb8f9Acb2EAD493F",
+        "admin": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0"
       }
     ],
     "master-property-value/BasicProtectorMultiSigWallet": [
@@ -2442,7 +2443,8 @@
       {
         "address": "0x556D43AEE3158Ca8B3CAE02ec5Dd4c08619dab6A",
         "version": "0.1.0",
-        "implementation": "0x64b73eC886D928DdDC4C70a624951b0861339110"
+        "implementation": "0x64b73eC886D928DdDC4C70a624951b0861339110",
+        "admin": "0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0"
       }
     ],
     "master-property-value/SuperProtectorRole": [

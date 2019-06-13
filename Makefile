@@ -35,6 +35,10 @@ deploy/reset:
 deploy/deps:
 	@npx zos push --deploy-dependencies --network=$(network)
 
+.PHONY: set-admin
+set-admin:
+	@node scripts/proxy_admin.js $(network) $(admin)
+
 .PHONY: create
 create:
 	@npx zos create MasterPropertyValue --init initialize --network=$(network)

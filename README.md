@@ -46,7 +46,7 @@ make test
 
 For deployment:
 
-  - First create a `.env` file with either a `MNEMONIC` or `PRIVATE_KEY` variable to export.
+  - First create a `.env` file with either a `MNEMONIC` or `PRIVATE_KEY` variable to export, for example:
 
     ```bash
     MNEMONIC='myth like bonus scare over problem client lizard pioneer submit female collect'
@@ -57,6 +57,12 @@ For deployment:
 
     ```bash
     make deploy network=mainnet
+    ```
+
+  - Afterwards set the owner for the proxy admin contract:
+
+    ```bash
+    make set-admin network=mainnet admin=0xFFcf8FDEE72ac11b5c542428B35EEF5769C409f0
     ```
 
 ## Documentation

@@ -1,0 +1,972 @@
+{
+  "contractName": "WithoutInitialValuesInFieldsDeclarations",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "doSomething",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "pure",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50610139806100206000396000f3fe608060405234801561001057600080fd5b5060043610610048576000357c010000000000000000000000000000000000000000000000000000000090048063826926791461004d575b600080fd5b6100556100d0565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561009557808201518184015260208101905061007a565b50505050905090810190601f1680156100c25780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b60606040805190810160405280600281526020017f646f00000000000000000000000000000000000000000000000000000000000081525090509056fea165627a7a72305820c745ce74d08b6d31e5fa9785e863244b3ac591c0b3d4390b63a69ba63e6e0f060029",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b5060043610610048576000357c010000000000000000000000000000000000000000000000000000000090048063826926791461004d575b600080fd5b6100556100d0565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561009557808201518184015260208101905061007a565b50505050905090810190601f1680156100c25780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b60606040805190810160405280600281526020017f646f00000000000000000000000000000000000000000000000000000000000081525090509056fea165627a7a72305820c745ce74d08b6d31e5fa9785e863244b3ac591c0b3d4390b63a69ba63e6e0f060029",
+  "sourceMap": "25:172:23:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:172:23;;;;;;;",
+  "deployedSourceMap": "25:172:23:-;;;;8:9:-1;5:2;;;30:1;27;20:12;5:2;25:172:23;;;;;;;;;;;;;;;;;;;;114:81;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;99:1;94:3;90:11;84:18;80:1;75:3;71:11;64:39;52:2;49:1;45:10;40:15;;8:100;;;12:14;114:81:23;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;158:13;179:11;;;;;;;;;;;;;;;;;;;;114:81;:::o",
+  "source": "pragma solidity ^0.5.0;\n\ncontract WithoutInitialValuesInFieldsDeclarations {\n  uint constant myConst = 115994;\n\n  function doSomething() public pure returns (string memory) {\n    return 'do';\n  }\n}\n\ncontract WithInitialValuesInFieldsDeclarations {\n  string public allaps = 'allaps';\n\n  function doSomething() public pure returns (string memory) {\n    return 'do';\n  }\n}\n\ncontract WithParentWithInitialValuesInFieldsDeclarations is WithInitialValuesInFieldsDeclarations {\n  string public myVar;\n\n  function doSomething() public pure returns (string memory) {\n    return 'do';\n  }\n}\n\n",
+  "sourcePath": "/Volumes/hd2/Sandbox/zos/packages/lib/contracts/mocks/WithInitialValues.sol",
+  "ast": {
+    "absolutePath": "/Volumes/hd2/Sandbox/zos/packages/lib/contracts/mocks/WithInitialValues.sol",
+    "exportedSymbols": {
+      "WithInitialValuesInFieldsDeclarations": [
+        4764
+      ],
+      "WithParentWithInitialValuesInFieldsDeclarations": [
+        4777
+      ],
+      "WithoutInitialValuesInFieldsDeclarations": [
+        4752
+      ]
+    },
+    "id": 4778,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4740,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:23"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4752,
+        "linearizedBaseContracts": [
+          4752
+        ],
+        "name": "WithoutInitialValuesInFieldsDeclarations",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": true,
+            "id": 4743,
+            "name": "myConst",
+            "nodeType": "VariableDeclaration",
+            "scope": 4752,
+            "src": "79:30:23",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 4741,
+              "name": "uint",
+              "nodeType": "ElementaryTypeName",
+              "src": "79:4:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "313135393934",
+              "id": 4742,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "103:6:23",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_115994_by_1",
+                "typeString": "int_const 115994"
+              },
+              "value": "115994"
+            },
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 4750,
+              "nodeType": "Block",
+              "src": "173:22:23",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "hexValue": "646f",
+                    "id": 4748,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "string",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "186:4:23",
+                    "subdenomination": null,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_stringliteral_a25dd137276eccd5048f808ec1a55102f9cde0dc9f47be33bc0c29fa331a789d",
+                      "typeString": "literal_string \"do\""
+                    },
+                    "value": "do"
+                  },
+                  "functionReturnParameters": 4747,
+                  "id": 4749,
+                  "nodeType": "Return",
+                  "src": "179:11:23"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 4751,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doSomething",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4744,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "134:2:23"
+            },
+            "returnParameters": {
+              "id": 4747,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4746,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4751,
+                  "src": "158:13:23",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 4745,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "158:6:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "157:15:23"
+            },
+            "scope": 4752,
+            "src": "114:81:23",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4778,
+        "src": "25:172:23"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4764,
+        "linearizedBaseContracts": [
+          4764
+        ],
+        "name": "WithInitialValuesInFieldsDeclarations",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 4755,
+            "name": "allaps",
+            "nodeType": "VariableDeclaration",
+            "scope": 4764,
+            "src": "250:31:23",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_storage",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 4753,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "250:6:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "616c6c617073",
+              "id": 4754,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "273:8:23",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_e919cf55dac0a9e9746a92ec54b98336dc9d8e3bcca6fbbc6ecdc60172503ead",
+                "typeString": "literal_string \"allaps\""
+              },
+              "value": "allaps"
+            },
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 4762,
+              "nodeType": "Block",
+              "src": "345:22:23",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "hexValue": "646f",
+                    "id": 4760,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "string",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "358:4:23",
+                    "subdenomination": null,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_stringliteral_a25dd137276eccd5048f808ec1a55102f9cde0dc9f47be33bc0c29fa331a789d",
+                      "typeString": "literal_string \"do\""
+                    },
+                    "value": "do"
+                  },
+                  "functionReturnParameters": 4759,
+                  "id": 4761,
+                  "nodeType": "Return",
+                  "src": "351:11:23"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 4763,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doSomething",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4756,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "306:2:23"
+            },
+            "returnParameters": {
+              "id": 4759,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4758,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4763,
+                  "src": "330:13:23",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 4757,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "330:6:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "329:15:23"
+            },
+            "scope": 4764,
+            "src": "286:81:23",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4778,
+        "src": "199:170:23"
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 4765,
+              "name": "WithInitialValuesInFieldsDeclarations",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 4764,
+              "src": "431:37:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_WithInitialValuesInFieldsDeclarations_$4764",
+                "typeString": "contract WithInitialValuesInFieldsDeclarations"
+              }
+            },
+            "id": 4766,
+            "nodeType": "InheritanceSpecifier",
+            "src": "431:37:23"
+          }
+        ],
+        "contractDependencies": [
+          4764
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4777,
+        "linearizedBaseContracts": [
+          4777,
+          4764
+        ],
+        "name": "WithParentWithInitialValuesInFieldsDeclarations",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 4768,
+            "name": "myVar",
+            "nodeType": "VariableDeclaration",
+            "scope": 4777,
+            "src": "473:19:23",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_storage",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 4767,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "473:6:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 4775,
+              "nodeType": "Block",
+              "src": "556:22:23",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "hexValue": "646f",
+                    "id": 4773,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "string",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "569:4:23",
+                    "subdenomination": null,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_stringliteral_a25dd137276eccd5048f808ec1a55102f9cde0dc9f47be33bc0c29fa331a789d",
+                      "typeString": "literal_string \"do\""
+                    },
+                    "value": "do"
+                  },
+                  "functionReturnParameters": 4772,
+                  "id": 4774,
+                  "nodeType": "Return",
+                  "src": "562:11:23"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 4776,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doSomething",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4769,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "517:2:23"
+            },
+            "returnParameters": {
+              "id": 4772,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4771,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4776,
+                  "src": "541:13:23",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 4770,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "541:6:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "540:15:23"
+            },
+            "scope": 4777,
+            "src": "497:81:23",
+            "stateMutability": "pure",
+            "superFunction": 4763,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4778,
+        "src": "371:209:23"
+      }
+    ],
+    "src": "0:582:23"
+  },
+  "legacyAST": {
+    "absolutePath": "/Volumes/hd2/Sandbox/zos/packages/lib/contracts/mocks/WithInitialValues.sol",
+    "exportedSymbols": {
+      "WithInitialValuesInFieldsDeclarations": [
+        4764
+      ],
+      "WithParentWithInitialValuesInFieldsDeclarations": [
+        4777
+      ],
+      "WithoutInitialValuesInFieldsDeclarations": [
+        4752
+      ]
+    },
+    "id": 4778,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4740,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:23"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4752,
+        "linearizedBaseContracts": [
+          4752
+        ],
+        "name": "WithoutInitialValuesInFieldsDeclarations",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": true,
+            "id": 4743,
+            "name": "myConst",
+            "nodeType": "VariableDeclaration",
+            "scope": 4752,
+            "src": "79:30:23",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 4741,
+              "name": "uint",
+              "nodeType": "ElementaryTypeName",
+              "src": "79:4:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "313135393934",
+              "id": 4742,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "number",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "103:6:23",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_rational_115994_by_1",
+                "typeString": "int_const 115994"
+              },
+              "value": "115994"
+            },
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 4750,
+              "nodeType": "Block",
+              "src": "173:22:23",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "hexValue": "646f",
+                    "id": 4748,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "string",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "186:4:23",
+                    "subdenomination": null,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_stringliteral_a25dd137276eccd5048f808ec1a55102f9cde0dc9f47be33bc0c29fa331a789d",
+                      "typeString": "literal_string \"do\""
+                    },
+                    "value": "do"
+                  },
+                  "functionReturnParameters": 4747,
+                  "id": 4749,
+                  "nodeType": "Return",
+                  "src": "179:11:23"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 4751,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doSomething",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4744,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "134:2:23"
+            },
+            "returnParameters": {
+              "id": 4747,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4746,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4751,
+                  "src": "158:13:23",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 4745,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "158:6:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "157:15:23"
+            },
+            "scope": 4752,
+            "src": "114:81:23",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4778,
+        "src": "25:172:23"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4764,
+        "linearizedBaseContracts": [
+          4764
+        ],
+        "name": "WithInitialValuesInFieldsDeclarations",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 4755,
+            "name": "allaps",
+            "nodeType": "VariableDeclaration",
+            "scope": 4764,
+            "src": "250:31:23",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_storage",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 4753,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "250:6:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": {
+              "argumentTypes": null,
+              "hexValue": "616c6c617073",
+              "id": 4754,
+              "isConstant": false,
+              "isLValue": false,
+              "isPure": true,
+              "kind": "string",
+              "lValueRequested": false,
+              "nodeType": "Literal",
+              "src": "273:8:23",
+              "subdenomination": null,
+              "typeDescriptions": {
+                "typeIdentifier": "t_stringliteral_e919cf55dac0a9e9746a92ec54b98336dc9d8e3bcca6fbbc6ecdc60172503ead",
+                "typeString": "literal_string \"allaps\""
+              },
+              "value": "allaps"
+            },
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 4762,
+              "nodeType": "Block",
+              "src": "345:22:23",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "hexValue": "646f",
+                    "id": 4760,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "string",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "358:4:23",
+                    "subdenomination": null,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_stringliteral_a25dd137276eccd5048f808ec1a55102f9cde0dc9f47be33bc0c29fa331a789d",
+                      "typeString": "literal_string \"do\""
+                    },
+                    "value": "do"
+                  },
+                  "functionReturnParameters": 4759,
+                  "id": 4761,
+                  "nodeType": "Return",
+                  "src": "351:11:23"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 4763,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doSomething",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4756,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "306:2:23"
+            },
+            "returnParameters": {
+              "id": 4759,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4758,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4763,
+                  "src": "330:13:23",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 4757,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "330:6:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "329:15:23"
+            },
+            "scope": 4764,
+            "src": "286:81:23",
+            "stateMutability": "pure",
+            "superFunction": null,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4778,
+        "src": "199:170:23"
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": null,
+            "baseName": {
+              "contractScope": null,
+              "id": 4765,
+              "name": "WithInitialValuesInFieldsDeclarations",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 4764,
+              "src": "431:37:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_WithInitialValuesInFieldsDeclarations_$4764",
+                "typeString": "contract WithInitialValuesInFieldsDeclarations"
+              }
+            },
+            "id": 4766,
+            "nodeType": "InheritanceSpecifier",
+            "src": "431:37:23"
+          }
+        ],
+        "contractDependencies": [
+          4764
+        ],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 4777,
+        "linearizedBaseContracts": [
+          4777,
+          4764
+        ],
+        "name": "WithParentWithInitialValuesInFieldsDeclarations",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 4768,
+            "name": "myVar",
+            "nodeType": "VariableDeclaration",
+            "scope": 4777,
+            "src": "473:19:23",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_storage",
+              "typeString": "string"
+            },
+            "typeName": {
+              "id": 4767,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "473:6:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 4775,
+              "nodeType": "Block",
+              "src": "556:22:23",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "hexValue": "646f",
+                    "id": 4773,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "string",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "569:4:23",
+                    "subdenomination": null,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_stringliteral_a25dd137276eccd5048f808ec1a55102f9cde0dc9f47be33bc0c29fa331a789d",
+                      "typeString": "literal_string \"do\""
+                    },
+                    "value": "do"
+                  },
+                  "functionReturnParameters": 4772,
+                  "id": 4774,
+                  "nodeType": "Return",
+                  "src": "562:11:23"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 4776,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "doSomething",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4769,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "517:2:23"
+            },
+            "returnParameters": {
+              "id": 4772,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4771,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4776,
+                  "src": "541:13:23",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string"
+                  },
+                  "typeName": {
+                    "id": 4770,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "541:6:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "540:15:23"
+            },
+            "scope": 4777,
+            "src": "497:81:23",
+            "stateMutability": "pure",
+            "superFunction": 4763,
+            "visibility": "public"
+          }
+        ],
+        "scope": 4778,
+        "src": "371:209:23"
+      }
+    ],
+    "src": "0:582:23"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.3+commit.10d17f24.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.0.2",
+  "updatedAt": "2019-06-13T20:08:01.189Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
