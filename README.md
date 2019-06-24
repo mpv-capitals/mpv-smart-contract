@@ -3,7 +3,11 @@
 > [Ethereum](https://www.ethereum.org/) smart contracts for [Master Property Value](https://mpv.world/)
 
 [![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/levelkdev/master-property-value-token/master/LICENSE)
+
+<!--
 [![CircleCI](https://circleci.com/gh/levelkdev/master-property-value-token.svg?style=svg&circle-token=b94fe4a0faefdcfdbfef6b1516e77c262dd41a08)](https://circleci.com/gh/levelkdev/master-property-value-token)
+-->
+
 [![dependencies Status](https://david-dm.org/levelkdev/master-property-value-token/status.svg)](https://david-dm.org/levelkdev/master-property-value-token)
 
 ## Development
@@ -54,12 +58,9 @@ make test
 
 For deployment:
 
-  - First create a `.env` file with either a `MNEMONIC` or `PRIVATE_KEY` variable to export, for example:
+  - First create a `.env` file with a `PRIVATE_KEY` variable to export, for example:
 
     ```bash
-    MNEMONIC='myth like bonus scare over problem client lizard pioneer submit female collect'
-    # or
-    PRIVATE_KEY=0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d
     ```
   - Run deploy make rule passing in the desired network to deploy to:
 
@@ -137,6 +138,14 @@ make docs/site/start
     ```bash
     sudo apt-get install python2.7
     ln -s /usr/bin/python2.7 /usr/local/bin/python
+    ```
+
+- Q: I'm getting the error `jq: command not found` when deploying the contract!
+
+  - A: Install jq:
+
+    ```bash
+    sudo apt-get install jq
     ```
 
 ## License
