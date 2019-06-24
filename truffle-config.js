@@ -53,6 +53,8 @@ function createProvider (url) {
   return provider
 }
 
+const gasPrice = 1000000000 // 1 gwei
+
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -69,31 +71,31 @@ module.exports = {
       provider: createProvider('ws://localhost:8545'),
       network_id: '*', // eslint-disable-line camelcase
       gas: 6712383,
-      gasPrice: 20000000000
+      gasPrice
     },
     kovan: {
       provider: createProvider('https://kovan.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
       network_id: 42, // eslint-disable-line camelcase
       gas: 6712383,
-      gasPrice: 20000000000
+      gasPrice
     },
     rinkeby: {
       provider: createProvider('https://rinkeby.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
       network_id: 4, // eslint-disable-line camelcase
       gas: 6712383,
-      gasPrice: 20000000000
+      gasPrice
     },
     ropsten: {
       provider: createProvider('https://ropsten.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
       network_id: 3, // eslint-disable-line camelcase
       gas: 6712383,
-      gasPrice: 20000000000
+      gasPrice
     },
     mainnet: {
       provider: createProvider('https://mainnet.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
       network_id: 1, // eslint-disable-line camelcase
       gas: 6712383,
-      gasPrice: 20000000000
+      gasPrice
     }
 
     // Useful for testing. The `development` name is special - truffle uses it by default

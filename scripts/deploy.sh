@@ -4,6 +4,12 @@ set -e
 set -u
 set -o pipefail
 
+# check that `jq` command exists
+if ! type "jq" > /dev/null; then
+  printf "%s\n%s" "\"jq\" command is required." "sudo apt-get install jq"
+  return
+fi
+
 fvalue=""
 nvalue=""
 
@@ -40,7 +46,7 @@ read_var() {
 ZosFile="$fvalue"
 if [ -z "$fvalue" ]; then
   # get zos file if exists
-  ZosFile=$(ls | grep zos..*.json | tr -d '[:cntrl:]'| perl -pe 's/\[[0-9;]*[mGKF]//g')
+  ZosFile=$(ls | grep ^zos..*.json | tr -d '[:cntrl:]'| perl -pe 's/\[[0-9;]*[mGKF]//g')
 fi
 
 Network="$nvalue"

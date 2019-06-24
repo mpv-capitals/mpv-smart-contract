@@ -8,6 +8,7 @@ const fs = require('fs')
 const glob = require('glob')
 const HDWalletProvider = require('truffle-hdwallet-provider')
 const PrivateKeyProvider = require('truffle-privatekey-provider')
+const privateKeyToAddress = require('ethereum-private-key-to-address')
 
 const zosJson = require('../zos.json')
 
@@ -32,18 +33,19 @@ let provider = new Web3.providers.HttpProvider('http://localhost:8545')
 
 let network = process.argv[2]
 let zosFilePath = process.argv[3]
+let privateKey = ''
 
 if (network && network != 'development') {
   const url = `https://${network}.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed`
-  let key = (process.env.PRIVATE_KEY).replace(/^0x/, '')
+  privateKey = (process.env.PRIVATE_KEY || '').replace(/^0x/, '')
   if (process.env.MNEMONIC) {
-    key = process.env.MNEMONIC
+    privateKey = process.env.MNEMONIC
   }
 
-  provider = new HDWalletProvider(key, url)
+  provider = new HDWalletProvider(privateKey, url)
 }
 
-const gasPrice = 20000000000 // 20gwei
+const gasPrice = 1000000000 // 1 gwei
 
 const web3 = new Web3(provider)
 
@@ -89,7 +91,7 @@ function getJson (name) {
 }
 
 async function initializeContracts () {
-  let senderAddress = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
+  let senderAddress = privateKeyToAddress(privateKey)
   let redemptionFeeReceiverWallet = senderAddress
   let mintingReceiverWallet = senderAddress
 
@@ -224,7 +226,8 @@ async function initializeContracts () {
 }
 
 async function setAdmins() {
-  let senderAddress = '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1'
+  let senderAddress = privateKeyToAddress(privateKey)
+
   let superProtectorMultiSig = await getInstance('SuperProtectorMultiSigWallet', true)
   let basicProtectorMultiSig = await getInstance('BasicProtectorMultiSigWallet', true)
   let operationAdminMultiSig = await getInstance('OperationAdminMultiSigWallet', true)
