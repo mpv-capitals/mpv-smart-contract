@@ -13,7 +13,8 @@
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\""
   },
   "dependencies": {
-    "ethereum-input-data-decoder": "^0.1.1"
+    "ethereum-input-data-decoder": "^0.1.1",
+    "ethereum-private-key-to-address": "0.0.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",

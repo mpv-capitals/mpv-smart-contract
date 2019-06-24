@@ -22,6 +22,12 @@ while getopts 'f:n:' OPTION; do
 done
 shift "$(($OPTIND -1))"
 
+read_var() {
+  VAR=$(grep $1 $2 | xargs)
+  IFS="=" read -ra VAR <<< "$VAR"
+  echo ${VAR[1]}
+}
+
 # ganache test keys
 # 0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1
 # 0x4f3edf983ac636a65a842ce7c78d9aa706d3b113bce9c46f30d7d21715b23b1d
@@ -42,7 +48,9 @@ if [ -z "$nvalue" ]; then
   Network="development"
 fi
 
-SenderAddress=0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1
+PRIVATE_KEY=$(read_var PRIVATE_KEY .env)
+
+SenderAddress=$(./node_modules/ethereum-private-key-to-address/bin/ethereum_private_key_to_address $PRIVATE_KEY)
 RedemptionFeeReceiverWallet="$SenderAddress"
 MintingReceiverWallet="$SenderAddress"
 
@@ -73,6 +81,7 @@ WhitelistAddress=$(contract_address "Whitelist")
 
 echo "Network: $Network"
 echo "zos: $ZosFile"
+echo "sender: $SenderAddress"
 echo "Assets: $AssetsAddress"
 echo "BasicProtectorMultiSigWallet: $BasicProtectorMultiSigWalletAddress"
 echo "BasicProtectorRole: $BasicProtectorRoleAddress"

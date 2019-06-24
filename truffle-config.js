@@ -43,7 +43,7 @@ function createProvider (url) {
       key = process.env.MNEMONIC
       provider = new HDWalletProvider(key, url)
     } else if (process.env.PRIVATE_KEY) {
-      key = process.env.PRIVATE_KEY
+      key = (process.env.PRIVATE_KEY).replace(/^0x/, '')
       provider = new PrivateKeyProvider(key, url)
     }
   } else {

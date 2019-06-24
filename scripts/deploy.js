@@ -35,7 +35,7 @@ let zosFilePath = process.argv[3]
 
 if (network && network != 'development') {
   const url = `https://${network}.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed`
-  let key = process.env.PRIVATE_KEY
+  let key = (process.env.PRIVATE_KEY).replace(/^0x/, '')
   if (process.env.MNEMONIC) {
     key = process.env.MNEMONIC
   }
