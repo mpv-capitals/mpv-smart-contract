@@ -107,11 +107,11 @@ echo "Whitelist: $WhitelistAddress"
 
 # npx zos push --network=development
 
-npx zos create SuperProtectorMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network" --from="$SenderAddress"
-npx zos create BasicProtectorMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network"
-npx zos create MintingAdminMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network"
-npx zos create OperationAdminMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network"
-npx zos create RedemptionAdminMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network"
+npx zos create SuperProtectorMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network" --from="$SenderAddress" --timeout=1200
+npx zos create BasicProtectorMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network" --timeout=1200
+npx zos create MintingAdminMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network" --timeout=1200
+npx zos create OperationAdminMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network" --timeout=1200
+npx zos create RedemptionAdminMultiSigWallet --init initialize --args ["$SenderAddress"],1 --network="$Network" --timeout=1200
 
 
 ProxyAssetsAddress=$(contract_proxy_address "Assets")
@@ -144,38 +144,38 @@ echo "ProxySuperProtectorMultiSigWallet: $ProxySuperProtectorMultiSigWalletAddre
 echo "ProxySuperProtectorRole: $ProxySuperProtectorRoleAddress"
 echo "ProxyWhitelist: $ProxyWhitelistAddress"
 
-npx zos create Whitelist --init initialize --args "$ProxyOperationAdminMultiSigWalletAddress","$ProxyBasicProtectorMultiSigWalletAddress","$MasterPropertyValueAddress" --network="$Network"
+npx zos create Whitelist --init initialize --args "$ProxyOperationAdminMultiSigWalletAddress","$ProxyBasicProtectorMultiSigWalletAddress","$MasterPropertyValueAddress" --network="$Network" --timeout=1200
 
 ProxyWhitelistAddress=$(contract_proxy_address "Whitelist")
 echo "ProxyWhitelist: $ProxyWhitelistAddress"
 
-npx zos create MPVToken --init initialize --args '"Master Property Value"','"MPV"',18,"$ProxyWhitelistAddress","$MasterPropertyValueAddress","$SenderAddress","$SenderAddress","$SenderAddress" --network="$Network"
+npx zos create MPVToken --init initialize --args '"Master Property Value"','"MPV"',18,"$ProxyWhitelistAddress","$MasterPropertyValueAddress","$SenderAddress","$SenderAddress","$SenderAddress" --network="$Network" --timeout=1200
 
 ProxyMPVTokenAddress=$(contract_proxy_address "MPVToken")
 echo "ProxyMPVToken: $ProxyMPVTokenAddress"
 
-npx zos create Assets --init initialize --args 1000,"$RedemptionFeeReceiverWallet","$MintingAdminRoleAddress","$RedemptionAdminRoleAddress","$ProxyRedemptionAdminMultiSigWalletAddress","$ProxyBasicProtectorMultiSigWalletAddress","$ProxyMPVTokenAddress","$MasterPropertyValueAddress" --network="$Network"
+npx zos create Assets --init initialize --args 1000,"$RedemptionFeeReceiverWallet","$MintingAdminRoleAddress","$RedemptionAdminRoleAddress","$ProxyRedemptionAdminMultiSigWalletAddress","$ProxyBasicProtectorMultiSigWalletAddress","$ProxyMPVTokenAddress","$MasterPropertyValueAddress" --network="$Network" --timeout=1200
 
 ProxyAssetsAddress=$(contract_proxy_address "Assets")
 echo "ProxyAssets: $ProxyAssetsAddress"
 
-npx zos create SuperProtectorRole --init initialize --args "$ProxySuperProtectorMultiSigWalletAddress","$MasterPropertyValueAddress" --network="$Network"
+npx zos create SuperProtectorRole --init initialize --args "$ProxySuperProtectorMultiSigWalletAddress","$MasterPropertyValueAddress" --network="$Network" --timeout=1200
 
 ProxySuperProtectorRoleAddress=$(contract_proxy_address "SuperProtectorRole")
 
-npx zos create BasicProtectorRole --init initialize --args "$ProxyBasicProtectorMultiSigWalletAddress" --network="$Network"
+npx zos create BasicProtectorRole --init initialize --args "$ProxyBasicProtectorMultiSigWalletAddress" --network="$Network" --timeout=1200
 
 ProxyBasicProtectorRoleAddress=$(contract_proxy_address "BasicProtectorRole")
 
 echo "$ProxyMintingAdminMultiSigWalletAddress"
 echo "$ProxyAssetsAddress"
 
-npx zos create MintingAdminRole --init initialize --args "$ProxyMintingAdminMultiSigWalletAddress","$ProxyAssetsAddress","$ProxyMPVTokenAddress","$ProxySuperProtectorRoleAddress","$ProxyBasicProtectorRoleAddress","$MintingReceiverWallet","$MasterPropertyValueAddress" --network="$Network"
+npx zos create MintingAdminRole --init initialize --args "$ProxyMintingAdminMultiSigWalletAddress","$ProxyAssetsAddress","$ProxyMPVTokenAddress","$ProxySuperProtectorRoleAddress","$ProxyBasicProtectorRoleAddress","$MintingReceiverWallet","$MasterPropertyValueAddress" --network="$Network" --timeout=1200
 
-npx zos create MasterPropertyValue --init initialize --args "$MPVTokenAddress","$ProxyAssetsAddress","$WhitelistAddress" --network="$Network"
+npx zos create MasterPropertyValue --init initialize --args "$MPVTokenAddress","$ProxyAssetsAddress","$WhitelistAddress" --network="$Network" --timeout=1200
 
 ProxyMasterPropertyValueAddress=$(contract_proxy_address "MasterPropertyValue")
 
-npx zos create Pausable --init initialize --network="$Network"
+npx zos create Pausable --init initialize --network="$Network" --timeout=1200
 
-npx zos create RedemptionAdminRole --init initialize --args "$ProxyRedemptionAdminMultiSigWalletAddress","$ProxyBasicProtectorMultiSigWalletAddress","$ProxySuperProtectorMultiSigWalletAddress","$ProxyAssetsAddress","$ProxyMPVTokenAddress","$ProxyMasterPropertyValueAddress" --network="$Network"
+npx zos create RedemptionAdminRole --init initialize --args "$ProxyRedemptionAdminMultiSigWalletAddress","$ProxyBasicProtectorMultiSigWalletAddress","$ProxySuperProtectorMultiSigWalletAddress","$ProxyAssetsAddress","$ProxyMPVTokenAddress","$ProxyMasterPropertyValueAddress" --network="$Network" --timeout=1200

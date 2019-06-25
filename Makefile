@@ -17,7 +17,7 @@ start:
 
 .PHONY: push
 push:
-	@npx zos push --network=$(network)
+	@npx zos push --network=$(network) --timeout=1200
 
 .PHONY: deploy
 deploy: push
