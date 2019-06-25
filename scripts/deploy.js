@@ -45,7 +45,7 @@ if (network && network != 'development') {
   provider = new HDWalletProvider(privateKey, url)
 }
 
-const gasPrice = 1000000000 // 1 gwei
+const gasPrice = process.env.GAS_PRICE || 5000000000 // 5 gwei
 
 const web3 = new Web3(provider)
 

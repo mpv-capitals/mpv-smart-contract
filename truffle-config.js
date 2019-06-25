@@ -53,7 +53,7 @@ function createProvider (url) {
   return provider
 }
 
-const gasPrice = 1000000000 // 1 gwei
+const gasPrice = process.env.GAS_PRICE || 5000000000 // 5 gwei
 
 module.exports = {
   /**
