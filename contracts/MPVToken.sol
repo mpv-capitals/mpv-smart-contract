@@ -57,6 +57,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mapping(address => DailyLimitInfo) public dailyLimits;
     mapping(uint256 => DelayedTransfer) public delayedTransfers;
 
+    event OriginalTransfer(address originalFrom, address to, uint256 amount);
+    mapping (address => address) public exchangeAddresses;
+
     /// @dev Daily limit info structure.
     struct DailyLimitInfo {
         uint256 lastDay;
@@ -270,13 +273,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /// @return Success boolean.
     function transfer(address to, uint256 value)
     public
-    whitelistedAddress(to)
     enforceDailyLimit(msg.sender, value)
     mpvNotPaused
     returns (bool)
     {
         dailyLimits[msg.sender].spentToday = dailyLimits[msg.sender].spentToday.add(value);
-        return super.transfer(to, value);
+        return _transferToken(msg.sender, to, value);
     }
 
     /// @dev Transfer tokens from an account to another account.
@@ -474,6 +476,18 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         }
     }
 
+    function setExchangeAddressMapping(
+        address sweepAddress,
+        address exchangeOwnedAddress
+    )
+        public
+        onlySuperProtectorMultiSig
+    {
+        require(deriveSweepAddress(sweepAddress) != address(0), "MPVToken: sweep address is zero address");
+
+        exchangeAddresses[sweepAddress] = exchangeOwnedAddress;
+    }
+
     /*
      *  Internal functions
      */
@@ -514,5 +528,36 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
             limitInfo.dailyLimit == 0 ||
             limitInfo.spentToday.add(amount) <= limitInfo.dailyLimit
         );
+    }
+
+    function _transferToken(
+        address sender,
+        address recipient,
+        uint256 amount
+    )
+    internal
+    returns (bool) {
+        require(sender != address(0), "MPVToken: transfer from the zero address");
+        require(recipient != address(0), "MPVToken: transfer to the zero address");
+
+        address newRecipient = deriveSweepAddress(recipient);
+        address exchangeAddress = exchangeAddresses[newRecipient];
+
+        if (exchangeAddress != address(0)) {
+            require(whitelist.isWhitelisted(exchangeAddress));
+            bool result = super.transfer(exchangeAddress, amount);
+            emit OriginalTransfer(sender, recipient, amount);
+            return result;
+        } else {
+            require(whitelist.isWhitelisted(recipient));
+            return super.transfer(recipient, amount);
+        }
+    }
+
+    function deriveSweepAddress(address addr)
+        public
+        returns (address)
+    {
+        return address(uint(addr) >> 20);
     }
 }

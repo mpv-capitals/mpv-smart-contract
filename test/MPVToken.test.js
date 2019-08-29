@@ -546,4 +546,70 @@ contract('MPVToken', accounts => {
       await shouldFail(token.messageForTransferRestriction(3))
     })
   })
+
+  describe('setExchangeAddressMapping()', () => {
+    it('derive sweeping address', async () => {
+      const address1 = '0x1111111111111111111111111111111111100000'
+      const address2 = '0x1111111111111111111111111111111111199999'
+      const sweepAddress = '0x0000011111111111111111111111111111111111'
+
+      expect(await token.deriveSweepAddress.call(address1)).to.equal(sweepAddress)
+      expect(await token.deriveSweepAddress.call(address2)).to.equal(sweepAddress)
+    })
+
+    it('map an exchange address to a sweeping address', async () => {
+      const sweepAddress1 = '0x0000011111111111111111111111111111111111'
+      const sweepAddress2 = '0x0000000000000000000000000000000000011111'
+      const exchangeAddress = '0x9999999999999999999999999999999999999999'
+
+      await token.setExchangeAddressMapping(sweepAddress1, exchangeAddress, {
+        from: superProtectorMultiSig
+      })
+
+      await shouldFail(token.setExchangeAddressMapping(sweepAddress2, exchangeAddress, {
+        from: superProtectorMultiSig
+      }))
+    })
+
+    it('returns the exchange address for sweeping address', async () => {
+      const sweepAddress = '0x0000011111111111111111111111111111111111'
+      const exchangeAddress = '0x9999999999999999999999999999999999999999'
+
+      await token.setExchangeAddressMapping(sweepAddress, exchangeAddress, {
+        from: superProtectorMultiSig
+      })
+
+      expect(await token.exchangeAddresses.call(sweepAddress)).to.equal(exchangeAddress)
+    })
+  })
+
+  describe('transfer() to sweeping address', () => {
+    beforeEach(async () => {
+      await assetsMock.mock_addTotalTokens((BN(10000).mul(MULTIPLIER)).toString())
+      await masterPropertyValue.mock_callMint(token.address, accounts[0], (BN(10000).mul(MULTIPLIER)).toString())
+    })
+
+    it('transfers token to sweep address', async () => {
+      const address1 = '0x1111111111111111111111111111111111100001'
+      const address2 = '0x1111111111111111111111111111111111100002'
+      const sweepAddress = '0x0000011111111111111111111111111111111111'
+      const exchangeAddress = '0x9999999999999999999999999999999999999999'
+      const nonSweepAddress = '0x3333333333333333333333333333333333333333'
+
+      await whitelist.addWhitelisted(sweepAddress)
+      await whitelist.addWhitelisted(exchangeAddress)
+      await whitelist.addWhitelisted(nonSweepAddress)
+
+      await token.setExchangeAddressMapping(sweepAddress, exchangeAddress, {
+        from: superProtectorMultiSig
+      })
+
+      expect((await token.balanceOf(exchangeAddress)).toString()).to.equal('0')
+      await token.transfer(address1, 100)
+      await token.transfer(address2, 100)
+      await token.transfer(nonSweepAddress, 50)
+      expect((await token.balanceOf(exchangeAddress)).toString()).to.equal('200')
+      expect((await token.balanceOf(nonSweepAddress)).toString()).to.equal('50')
+    })
+  })
 })
