@@ -57,7 +57,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mapping(address => DailyLimitInfo) public dailyLimits;
     mapping(uint256 => DelayedTransfer) public delayedTransfers;
 
-    //event SweepAddressUpdated(address indexed sender, address indexed sweepAddress, address indexed exchangeOwnedAddress);
+    event SweepAddressUpdated(address indexed sender, address indexed sweepAddress, address indexed exchangeOwnedAddress);
     event OriginalTransfer(address originalFrom, address originalTo, uint256 amount);
     mapping (address => address) public sweepAddresses;
 
@@ -483,7 +483,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         require(sweepAddress != address(0), "MPVToken: sweep address is zero address");
 
         sweepAddresses[sweepAddress] = exchangeOwnedAddress;
-        //emit SweepAddressUpdated(msg.sender, sweepAddress, exchangeOwnedAddress);
+        emit SweepAddressUpdated(msg.sender, sweepAddress, exchangeOwnedAddress);
     }
 
     /*
