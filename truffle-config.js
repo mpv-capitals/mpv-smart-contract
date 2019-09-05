@@ -55,6 +55,11 @@ function createProvider (url) {
 
 const gasPrice = process.env.GAS_PRICE || 5000000000 // 5 gwei
 
+const rpcUri = (network) => {
+  return `https://ethereum.api.nodesmith.io/v1/${network}/jsonrpc?apiKey=76ff0e4206914bed8b5864264455a5a8`
+  //return `https://${network}.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed`
+}
+
 module.exports = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
@@ -74,25 +79,25 @@ module.exports = {
       gasPrice
     },
     kovan: {
-      provider: createProvider('https://kovan.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
+      provider: createProvider(rpcUri('kovan')),
       network_id: 42, // eslint-disable-line camelcase
       gas: 6712383,
       gasPrice
     },
     rinkeby: {
-      provider: createProvider('https://rinkeby.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
+      provider: createProvider(rpcUri('rinkeby')),
       network_id: 4, // eslint-disable-line camelcase
       gas: 6712383,
       gasPrice
     },
     ropsten: {
-      provider: createProvider('https://ropsten.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
+      provider: createProvider(rpcUri('ropsten')),
       network_id: 3, // eslint-disable-line camelcase
       gas: 6712383,
       gasPrice
     },
     mainnet: {
-      provider: createProvider('https://mainnet.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed'),
+      provider: createProvider(rpcUri('mainnet')),
       network_id: 1, // eslint-disable-line camelcase
       gas: 6712383,
       gasPrice
