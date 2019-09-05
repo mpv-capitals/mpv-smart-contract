@@ -45,7 +45,6 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /*
      *  Storage
      */
-    Assets public assets;
     Whitelist public whitelist;
     MasterPropertyValue public masterPropertyValue;
     address public mintingAdmin;
@@ -57,9 +56,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mapping(address => DailyLimitInfo) public dailyLimits;
     mapping(uint256 => DelayedTransfer) public delayedTransfers;
 
+    Assets public assets;
     event SweepAddressUpdated(address indexed sender, address indexed sweepAddress, address indexed exchangeOwnedAddress);
     event OriginalTransfer(address originalFrom, address originalTo, uint256 amount);
     mapping (address => address) public sweepAddresses;
+    address public basicProtectorMultiSig;
+    event BasicProtectorMultiSigUpdated(address indexed sender, address indexed addr);
 
     /// @dev Daily limit info structure.
     struct DailyLimitInfo {
@@ -116,6 +118,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /// @dev Requires the sender to be the super protector multiSig contract.
     modifier onlySuperProtectorMultiSig() {
         require(superProtectorMultiSig == msg.sender);
+        _;
+    }
+
+    /// @dev Requires the sender to be the basic protector multiSig contract.
+    modifier onlyBasicProtectorMultiSig() {
+        require(basicProtectorMultiSig == msg.sender);
         _;
     }
 
@@ -198,6 +206,25 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         require(_multisig != address(0));
         superProtectorMultiSig = _multisig;
         emit SuperProtectorMultiSigUpdated(msg.sender, _multisig);
+    }
+
+    // this function is called once immediately after upgrade
+    function initializeBasicProtectorMultiSig(address _multisig)
+    public {
+        require(basicProtectorMultiSig == address(0));
+        require(_multisig != address(0));
+        basicProtectorMultiSig = _multisig;
+        emit BasicProtectorMultiSigUpdated(msg.sender, _multisig);
+    }
+
+    function updateBasicProtectorMultiSig(address _multisig)
+    public
+    onlyBasicProtectorMultiSig
+    mpvNotPaused
+    {
+        require(_multisig != address(0));
+        basicProtectorMultiSig = _multisig;
+        emit BasicProtectorMultiSigUpdated(msg.sender, _multisig);
     }
 
     /// @dev Set the assets contract address.
@@ -478,7 +505,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     function updateSweepAddress(
         address addr,
         address exchangeOwnedAddress
-    ) public onlySuperProtectorMultiSig {
+    ) public onlyBasicProtectorMultiSig {
         address sweepAddress = computeSweepAddress(addr);
         require(sweepAddress != address(0), "MPVToken: sweep address is zero address");
 
