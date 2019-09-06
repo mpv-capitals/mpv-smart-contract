@@ -57,7 +57,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     mapping(uint256 => DelayedTransfer) public delayedTransfers;
 
     Assets public assets;
-    event SweepAddressUpdated(address indexed sender, address indexed sweepAddress, address indexed exchangeOwnedAddress);
+    event SweepAddressUpdated(address indexed sender, address originalAddress, address indexed sweepAddress, address indexed exchangeOwnedAddress);
     event OriginalTransfer(address originalFrom, address originalTo, uint256 amount);
     mapping (address => address) public sweepAddresses;
     address public basicProtectorMultiSig;
@@ -121,12 +121,6 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         _;
     }
 
-    /// @dev Requires the sender to be the basic protector multiSig contract.
-    modifier onlyBasicProtectorMultiSig() {
-        require(basicProtectorMultiSig == msg.sender);
-        _;
-    }
-
     /// @dev Requires that the main MPV contract is not paused.
     modifier mpvNotPaused() {
         require(masterPropertyValue.paused() == false);
@@ -136,6 +130,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /// @dev Requires that transfer does not exceed account daily limit
     modifier enforceDailyLimit(address account, uint256 value) {
         require(_enforceLimit(account, value));
+        _;
+    }
+
+    /// @dev Requires the sender to be the basic protector multiSig contract.
+    modifier onlyBasicProtectorMultiSig() {
+        require(basicProtectorMultiSig == msg.sender);
         _;
     }
 
@@ -510,7 +510,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         require(sweepAddress != address(0), "MPVToken: sweep address is zero address");
 
         sweepAddresses[sweepAddress] = exchangeOwnedAddress;
-        emit SweepAddressUpdated(msg.sender, sweepAddress, exchangeOwnedAddress);
+        emit SweepAddressUpdated(msg.sender, addr, sweepAddress, exchangeOwnedAddress);
     }
 
     /*

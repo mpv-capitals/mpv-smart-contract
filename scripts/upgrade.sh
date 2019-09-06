@@ -38,7 +38,7 @@ echo "ProxySuperProtectorRole: $ProxySuperProtectorRoleAddress"
 echo "ProxyWhitelist: $ProxyWhitelistAddress"
 
 # push new code to network
-npx zos push --network="$Network"
+npx zos push --network="$Network" --force
 
 # update existing contract
 npx zos update MPVToken --network="$Network"

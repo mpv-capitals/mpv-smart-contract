@@ -13,7 +13,7 @@ const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const BN = n => new web3.utils.BN(n)
 const MULTIPLIER = BN(10).pow(BN(18))
 
-contract.only('MPVToken', accounts => {
+contract('MPVToken', accounts => {
   let token, whitelist, masterPropertyValue, superProtectorMultiSig, assetsMock
 
   beforeEach(async () => {
