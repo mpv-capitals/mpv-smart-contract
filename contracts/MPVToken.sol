@@ -2,7 +2,7 @@ pragma solidity ^0.5.1;
 
 import "openzeppelin-eth/contracts/math/SafeMath.sol";
 import "zos-lib/contracts/Initializable.sol";
-import "openzeppelin-eth/contracts/token/ERC20/ERC20.sol";
+import "./ERC20.sol";
 import "openzeppelin-eth/contracts/token/ERC20/ERC20Detailed.sol";
 import "./Assets.sol";
 import "./Whitelist.sol";
@@ -396,9 +396,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         require(delayedTransfer.countdownStart.add(delayedTransferCountdownLength) < now);
 
         if (delayedTransfer.transferMethod == TransferMethod.Transfer) {
-            super.transfer(delayedTransfer.to, delayedTransfer.value);
+            _transferToken(msg.sender, delayedTransfer.to, delayedTransfer.value, false);
         } else if (delayedTransfer.transferMethod == TransferMethod.TransferFrom) {
-            super.transferFrom(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value);
+            _transferToken(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value, true);
         }
         delete delayedTransfers[transferId];
         return true;
@@ -507,7 +507,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         address exchangeOwnedAddress
     ) public onlyBasicProtectorMultiSig {
         address sweepAddress = computeSweepAddress(addr);
-        require(sweepAddress != address(0), "MPVToken: sweep address is zero address");
+        require(sweepAddress != address(0));
 
         sweepAddresses[sweepAddress] = exchangeOwnedAddress;
         emit SweepAddressUpdated(msg.sender, addr, sweepAddress, exchangeOwnedAddress);
@@ -547,7 +547,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     pure
     returns(bool) {
         return (
-            // 0 == no daily limit
+            // NOTE: 0 == no daily limit
             limitInfo.dailyLimit == 0 ||
             limitInfo.spentToday.add(amount) <= limitInfo.dailyLimit
         );
@@ -560,9 +560,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         bool isTransferFrom
     )
     internal
-    returns (bool) {
-        require(sender != address(0), "MPVToken: transfer from the zero address");
-        require(recipient != address(0), "MPVToken: transfer to the zero address");
+    returns (bool result) {
+        require(sender != address(0));
+        require(recipient != address(0));
 
         address newRecipient = computeSweepAddress(recipient);
         address exchangeAddress = sweepAddresses[newRecipient];
@@ -570,7 +570,9 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         if (exchangeAddress != address(0)) {
             require(whitelist.isWhitelisted(exchangeAddress));
 
-            bool result;
+            emit Transfer(sender, recipient, amount);
+            emit Transfer(recipient, exchangeAddress, amount);
+
             if (isTransferFrom) {
                 result = super.transferFrom(sender, exchangeAddress, amount);
             } else {
@@ -578,15 +580,16 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
             }
 
             emit OriginalTransfer(sender, recipient, amount);
-            return result;
         } else {
             require(whitelist.isWhitelisted(recipient));
 
             if (isTransferFrom) {
-                return super.transferFrom(sender, recipient, amount);
+                result = super.transferFrom(sender, recipient, amount);
             } else {
-                return super.transfer(recipient, amount);
+                result = super.transfer(recipient, amount);
             }
+
+            emit Transfer(sender, recipient, amount);
         }
     }
 

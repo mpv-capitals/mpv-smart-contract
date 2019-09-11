@@ -559,7 +559,7 @@ contract('MPVToken', accounts => {
     describe('updateSweepAddress()', () => {
       it('derive sweep address', async () => {
         const address1 = '0x1111111111111111111111111111111111111111'
-        const address2 = '0x1111111111111111111111111111111111199999'
+        const address2 = '0x1111111111111111111111111111111111188888'
         const address3 = '0x1111111111111111111111111111111111199999'
         const sweepAddress = '0x0000011111111111111111111111111111111111'
 
@@ -626,15 +626,20 @@ contract('MPVToken', accounts => {
 
         expect(tx1.logs[0].event).to.equal('Transfer')
         expect(tx1.logs[0].args[0]).to.equal(accounts[0])
-        expect(tx1.logs[0].args[1]).to.equal(exchangeAddress)
+        expect(tx1.logs[0].args[1]).to.equal(address2)
         expect(tx1.logs[0].args[2].toString()).to.equal('100')
 
-        expect(tx1.logs[1].event).to.equal('OriginalTransfer')
-        expect(tx1.logs[1].args[0]).to.equal(accounts[0])
-        expect(tx1.logs[1].args[1]).to.equal(address2)
+        expect(tx1.logs[1].event).to.equal('Transfer')
+        expect(tx1.logs[1].args[0]).to.equal(address2)
+        expect(tx1.logs[1].args[1]).to.equal(exchangeAddress)
         expect(tx1.logs[1].args[2].toString()).to.equal('100')
 
-        expect(tx2.logs.length).to.equal(2)
+        expect(tx1.logs[2].event).to.equal('OriginalTransfer')
+        expect(tx1.logs[2].args[0]).to.equal(accounts[0])
+        expect(tx1.logs[2].args[1]).to.equal(address2)
+        expect(tx1.logs[2].args[2].toString()).to.equal('100')
+
+        expect(tx2.logs.length).to.equal(3)
         expect(tx3.logs.length).to.equal(1)
       })
     })
@@ -672,16 +677,22 @@ contract('MPVToken', accounts => {
 
         expect(tx1.logs[0].event).to.equal('Transfer')
         expect(tx1.logs[0].args[0]).to.equal(accounts[0])
-        expect(tx1.logs[0].args[1]).to.equal(exchangeAddress)
+        expect(tx1.logs[0].args[1]).to.equal(address2)
         expect(tx1.logs[0].args[2].toString()).to.equal('100')
-        expect(tx1.logs[1].event).to.equal('Approval')
 
-        expect(tx1.logs[2].event).to.equal('OriginalTransfer')
-        expect(tx1.logs[2].args[0]).to.equal(accounts[0])
-        expect(tx1.logs[2].args[1]).to.equal(address2)
-        expect(tx1.logs[2].args[2].toString()).to.equal('100')
+        expect(tx1.logs[1].event).to.equal('Transfer')
+        expect(tx1.logs[1].args[0]).to.equal(address2)
+        expect(tx1.logs[1].args[1]).to.equal(exchangeAddress)
+        expect(tx1.logs[1].args[2].toString()).to.equal('100')
 
-        expect(tx2.logs.length).to.equal(3)
+        expect(tx1.logs[2].event).to.equal('Approval')
+
+        expect(tx1.logs[3].event).to.equal('OriginalTransfer')
+        expect(tx1.logs[3].args[0]).to.equal(accounts[0])
+        expect(tx1.logs[3].args[1]).to.equal(address2)
+        expect(tx1.logs[3].args[2].toString()).to.equal('100')
+
+        expect(tx2.logs.length).to.equal(4)
         expect(tx3.logs.length).to.equal(2)
       })
     })
