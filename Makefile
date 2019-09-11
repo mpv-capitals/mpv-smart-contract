@@ -13,7 +13,7 @@ build:
 
 .PHONY: start
 start:
-	@ganache-cli --deterministic -a 10 --gasLimit=7000000
+	@ganache-cli --deterministic -a 10 --gasLimit=7712383
 
 .PHONY: push
 push:

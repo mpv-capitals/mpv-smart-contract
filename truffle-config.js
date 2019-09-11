@@ -75,31 +75,31 @@ module.exports = {
     development: {
       provider: createProvider('ws://localhost:8545'),
       network_id: '*', // eslint-disable-line camelcase
-      gas: 7000000,
+      gas: 6712383,
       gasPrice
     },
     kovan: {
       provider: createProvider(rpcUri('kovan')),
       network_id: 42, // eslint-disable-line camelcase
-      gas: 7000000,
+      gas: 6712383,
       gasPrice
     },
     rinkeby: {
       provider: createProvider(rpcUri('rinkeby')),
       network_id: 4, // eslint-disable-line camelcase
-      gas: 7000000,
+      gas: 6712383,
       gasPrice
     },
     ropsten: {
       provider: createProvider(rpcUri('ropsten')),
       network_id: 3, // eslint-disable-line camelcase
-      gas: 7000000,
+      gas: 6712383,
       gasPrice
     },
     mainnet: {
       provider: createProvider(rpcUri('mainnet')),
       network_id: 1, // eslint-disable-line camelcase
-      gas: 7000000,
+      gas: 6712383,
       gasPrice
     }
 

@@ -321,7 +321,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     returns (bool)
     {
         dailyLimits[from].spentToday = dailyLimits[from].spentToday.add(value);
-        return _transferToken(msg.sender, to, value, true);
+        return _transferToken(from, to, value, true);
     }
 
     /// @dev Starts delayedTransferCountdown to execute transfer in 48 hours
@@ -396,12 +396,12 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         require(delayedTransfer.countdownStart.add(delayedTransferCountdownLength) < now);
 
         if (delayedTransfer.transferMethod == TransferMethod.Transfer) {
-            _transferToken(msg.sender, delayedTransfer.to, delayedTransfer.value, false);
+            success = _transferToken(msg.sender, delayedTransfer.to, delayedTransfer.value, false);
         } else if (delayedTransfer.transferMethod == TransferMethod.TransferFrom) {
-            _transferToken(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value, true);
+            success = _transferToken(delayedTransfer.from, delayedTransfer.to, delayedTransfer.value, true);
         }
+
         delete delayedTransfers[transferId];
-        return true;
     }
 
     /// @dev Cancels a delayedTransfer if called by the initiator of the transfer
