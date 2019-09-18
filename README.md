@@ -148,6 +148,14 @@ make docs/site/start
     sudo apt-get install jq
     ```
 
+- Q: I'm getting the error `connection not open on send()` when running `truffle test`!
+
+  - A: Run:
+
+    $ npm i ganache-cli
+    $ make start
+    ```
+
 ## License
 
 [MIT](LICENSE)
