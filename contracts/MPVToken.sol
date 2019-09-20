@@ -55,13 +55,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     uint256 public delayedTransferNonce;
     mapping(address => DailyLimitInfo) public dailyLimits;
     mapping(uint256 => DelayedTransfer) public delayedTransfers;
-
     Assets public assets;
-    event SweepAddressUpdated(address indexed sender, address originalAddress, address indexed sweepAddress, address indexed exchangeOwnedAddress);
-    event OriginalTransfer(address originalFrom, address originalTo, uint256 amount);
-    mapping (address => address) public sweepAddresses;
-    address public basicProtectorMultiSig;
-    event BasicProtectorMultiSigUpdated(address indexed sender, address indexed addr);
 
     /// @dev Daily limit info structure.
     struct DailyLimitInfo {
@@ -138,6 +132,14 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
         require(basicProtectorMultiSig == msg.sender);
         _;
     }
+
+    // NOTE: NEW STORAGE IS APPENDED HERE
+
+    event SweepAddressUpdated(address indexed sender, address originalAddress, address indexed sweepAddress, address indexed exchangeOwnedAddress);
+    event OriginalTransfer(address originalFrom, address originalTo, uint256 amount);
+    mapping (address => address) public sweepAddresses;
+    address public basicProtectorMultiSig;
+    event BasicProtectorMultiSigUpdated(address indexed sender, address indexed addr);
 
     /*
     *  Public functions

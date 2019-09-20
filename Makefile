@@ -39,6 +39,10 @@ deploy/deps:
 set-admin:
 	@node scripts/proxy_admin.js $(network) $(admin)
 
+.PHONY: init-upgrade
+init-upgrade:
+	@node scripts/initialize_upgrade.js rinkeby zos.rinkeby.json
+
 .PHONY: create
 create:
 	@npx zos create MasterPropertyValue --init initialize --network=$(network)

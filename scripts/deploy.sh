@@ -43,15 +43,16 @@ read_var() {
 
 # == CONFIG ==
 
-ZosFile="$fvalue"
-if [ -z "$fvalue" ]; then
-  # get zos file if exists
-  ZosFile=$(ls | grep ^zos..*.json | tr -d '[:cntrl:]'| perl -pe 's/\[[0-9;]*[mGKF]//g')
-fi
-
 Network="$nvalue"
 if [ -z "$nvalue" ]; then
   Network="development"
+fi
+
+ZosFile="$fvalue"
+if [ -z "$fvalue" ]; then
+  # get zos file if exists
+  #ZosFile=$(ls | grep ^zos..*.json | tr -d '[:cntrl:]'| perl -pe 's/\[[0-9;]*[mGKF]//g')
+  ZosFile="zos.$Network.json"
 fi
 
 PRIVATE_KEY=$(read_var PRIVATE_KEY .env)
