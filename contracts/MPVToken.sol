@@ -45,6 +45,7 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     /*
      *  Storage
      */
+    Assets public assets;
     Whitelist public whitelist;
     MasterPropertyValue public masterPropertyValue;
     address public mintingAdmin;
@@ -55,7 +56,6 @@ contract MPVToken is Initializable, ERC20, ERC20Detailed {
     uint256 public delayedTransferNonce;
     mapping(address => DailyLimitInfo) public dailyLimits;
     mapping(uint256 => DelayedTransfer) public delayedTransfers;
-    Assets public assets;
 
     /// @dev Daily limit info structure.
     struct DailyLimitInfo {
