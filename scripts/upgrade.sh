@@ -1,11 +1,57 @@
 #!/bin/bash
 
-ZosFile="zos.rinkeby.json"
-Network=rinkeby
+set -e
+set -u
+set -o pipefail
+
+# check that `jq` command exists
+if ! type "jq" > /dev/null; then
+  printf "%s\n%s" "\"jq\" command is required." "sudo apt-get install jq"
+  return
+fi
+
+fvalue=""
+nvalue=""
+
+while getopts 'f:n:' OPTION; do
+  case "$OPTION" in
+    f)
+      fvalue="$OPTARG"
+      ;;
+    n)
+      nvalue="$OPTARG"
+      ;;
+    ?)
+      echo "script usage: $(basename $0) [-f zos_file] [-n network]" >&2
+      ;;
+  esac
+done
+shift "$(($OPTIND -1))"
+
+read_var() {
+  VAR=$(grep $1 $2 | xargs)
+  IFS="=" read -ra VAR <<< "$VAR"
+  echo ${VAR[1]}
+}
+
+Network="$nvalue"
+if [ -z "$nvalue" ]; then
+  Network="development"
+fi
+
+ZosFile="$fvalue"
+if [ -z "$fvalue" ]; then
+  # get zos file if exists
+  #ZosFile=$(ls | grep ^zos..*.json | tr -d '[:cntrl:]'| perl -pe 's/\[[0-9;]*[mGKF]//g')
+  ZosFile="zos.$Network.json"
+fi
 
 contract_proxy_address() {
   cat "$ZosFile" | jq ".proxies[\"master-property-value/$1\"][0].address" | sed -e 's/"//g'
 }
+
+echo "$Network"
+echo "$ZosFile"
 
 ProxyAssetsAddress=$(contract_proxy_address "Assets")
 ProxyBasicProtectorMultiSigWalletAddress=$(contract_proxy_address "BasicProtectorMultiSigWallet")
@@ -37,8 +83,12 @@ echo "ProxySuperProtectorMultiSigWallet: $ProxySuperProtectorMultiSigWalletAddre
 echo "ProxySuperProtectorRole: $ProxySuperProtectorRoleAddress"
 echo "ProxyWhitelist: $ProxyWhitelistAddress"
 
+echo "Pushing new logic contracts..."
+
 # push new code to network
-npx zos push --network="$Network" --force
+npx zos push --network="$Network"
+
+echo "Updating proxies..."
 
 # update existing contract
 npx zos update MPVToken --network="$Network"

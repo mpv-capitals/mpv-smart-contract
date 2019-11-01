@@ -75,7 +75,7 @@ async function getInstance(name, proxy) {
     address = getProxyAddress(name)
   }
   let instance = await MyContract.at(address)
-  console.log(`getInstance(${name})`)
+  console.log(`getInstance(${name})`, 'address:', address)
   return instance
 }
 
@@ -93,17 +93,17 @@ function getJson (name) {
 async function setMultisig() {
   let senderAddress = privateKeyToAddress(privateKey)
 
-  let superProtectorMultiSig = await getInstance('SuperProtectorMultiSigWallet', true)
+  //let superProtectorMultiSig = await getInstance('SuperProtectorMultiSigWallet', true)
   let basicProtectorMultiSig = await getInstance('BasicProtectorMultiSigWallet', true)
-  let operationAdminMultiSig = await getInstance('OperationAdminMultiSigWallet', true)
-  let mintingAdminMultiSig = await getInstance('MintingAdminMultiSigWallet', true)
-  let mintingAdminRole = await getInstance('MintingAdminRole', true)
-  let assets = await getInstance('Assets', true)
-  let redemptionAdminRole = await getInstance('RedemptionAdminRole', true)
-  let redemptionAdminMultiSig = await getInstance('RedemptionAdminMultiSigWallet', true)
-  let mpv  = await getInstance('MasterPropertyValue', true)
+  //let operationAdminMultiSig = await getInstance('OperationAdminMultiSigWallet', true)
+  //let mintingAdminMultiSig = await getInstance('MintingAdminMultiSigWallet', true)
+  //let mintingAdminRole = await getInstance('MintingAdminRole', true)
+  //let assets = await getInstance('Assets', true)
+  //let redemptionAdminRole = await getInstance('RedemptionAdminRole', true)
+  //let redemptionAdminMultiSig = await getInstance('RedemptionAdminMultiSigWallet', true)
+  //let mpv  = await getInstance('MasterPropertyValue', true)
   let mpvToken  = await getInstance('MPVToken', true)
-  let whitelist = await getInstance('Whitelist', true)
+  //let whitelist = await getInstance('Whitelist', true)
 
   try {
     console.log('mpvToken.initializeBasicProtectorMultiSig')

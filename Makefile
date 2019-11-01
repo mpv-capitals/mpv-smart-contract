@@ -39,9 +39,21 @@ deploy/deps:
 set-admin:
 	@node scripts/proxy_admin.js $(network) $(admin)
 
-.PHONY: init-upgrade
-init-upgrade:
+.PHONY: push-upgrade/rinkeby
+push-upgrade/rinkeby:
+	@./scripts/upgrade.sh -n rinkeby -f zos.rinkeby.json
+
+.PHONY: push-upgrade/production
+push-upgrade/production:
+	@./scripts/upgrade.sh -n mainnet -f zos.mainnet.json
+
+.PHONY: init-upgrade/rinkeby
+init-upgrade/rinkeby:
 	@node scripts/initialize_upgrade.js rinkeby zos.rinkeby.json
+
+.PHONY: init-upgrade/production
+init-upgrade/production:
+	@node scripts/initialize_upgrade.js mainnet zos.mainnet.json
 
 .PHONY: create
 create:
