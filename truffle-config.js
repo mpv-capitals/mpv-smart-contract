@@ -56,6 +56,8 @@ function createProvider (url) {
 const gasPrice = process.env.GAS_PRICE || 5000000000 // 5 gwei
 
 const rpcUri = (network) => {
+  // NOTE: nodesmith is known for not broadcasting transactions on mainnet,
+  // might need to use different provider
   return `https://ethereum.api.nodesmith.io/v1/${network}/jsonrpc?apiKey=76ff0e4206914bed8b5864264455a5a8`
   //return `https://${network}.infura.io/v3/a6b85a49167f411b8c58834a16acf5ed`
 }
